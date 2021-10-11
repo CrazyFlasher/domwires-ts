@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
-import {AppFactory, IAppFactory} from "../src/com/domwires/core/factory/IAppFactory";
+import {AppFactory, IAppFactory, MappingConfigDictionary} from "../src/com/domwires/core/factory/IAppFactory";
 import {expect} from "chai";
 import {
     IMockObject3,
@@ -18,6 +18,7 @@ import {
     MockPool4
 } from "./mock/MockObjects";
 import {MockCommand1} from "./mock/MockCommands";
+import {ISuperCoolModel} from "./mock/MockModels";
 
 describe('AppFactoryTest', function (this: Suite)
 {
@@ -32,6 +33,16 @@ describe('AppFactoryTest', function (this: Suite)
     {
         factory.dispose();
     });
+
+    // InversifyJS issue:
+    // https://github.com/inversify/InversifyJS/issues/1385
+    /* it('testInjectWithNameAndNoName', () =>
+    {
+        factory.mapToValue("number", 5);
+        factory.mapToValue("number", 7, "n2");
+
+        expect(factory.getInstance(MockModel0)).not.throw;
+    }); */
 
     it('testAutoRemap', () =>
     {
@@ -57,10 +68,10 @@ describe('AppFactoryTest', function (this: Suite)
 
     it('testInstantiateUnmappedToValue', () =>
     {
-        const o1:MockObj1 = factory.getInstance(MockObj1);
+        const o1: MockObj1 = factory.getInstance(MockObj1);
         factory.mapToValue(MockObj1, o1);
 
-        let o2:MockObj1 = factory.getInstance(MockObj1);
+        let o2: MockObj1 = factory.getInstance(MockObj1);
 
         expect(o1).equals(o2);
 
@@ -520,6 +531,62 @@ describe('AppFactoryTest', function (this: Suite)
         }
 
         expect(factory.getPoolCapacity(MockBusyPoolObject)).equals(3);
+    });
+
+    it("testMappingViaConfig", () =>
+    {
+        /* tslint:disable:no-string-literal */
+
+        const json: any = {};
+
+        json["IDefault$def"] = {
+            implementation: "Default",
+            newInstance: true
+        };
+
+        json["ISuperCoolModel"] = {
+            implementation: "SuperCoolModel"
+        };
+
+        json["number$coolValue"] = {
+            value: 7
+        };
+
+        json["boolean$myBool"] = {
+            value: false
+        };
+
+        // json["number"] = {
+        //     value: 5
+        // };
+
+        json["any$obj"] = {
+            value: {
+                firstName: "nikita",
+                lastName: "dzigurda"
+            }
+        };
+
+        json["string[]"] = {
+            value: ["botan", "sjava"]
+        };
+
+        const jsonOverride: any = {
+            "number$coolValue": {
+                value: 5
+            }
+        };
+
+        factory.appendMappingConfig(new MappingConfigDictionary(json).map);
+        factory.appendMappingConfig(new MappingConfigDictionary(jsonOverride).map);
+
+        const m: ISuperCoolModel = factory.getInstance("ISuperCoolModel");
+        expect(m.getCoolValue).equals(5);
+        expect(m.getMyBool).equals(false);
+        // expect(m.value).equals(5);
+        expect(m.def.result).equals(123);
+        expect(m.object.firstName).equals("nikita");
+        expect(m.array[1]).equals("sjava");
     });
 
     it('testMapToTypeAndValueOfSameType', () =>

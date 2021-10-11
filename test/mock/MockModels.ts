@@ -1,11 +1,21 @@
 import {AbstractModel} from "../../src/com/domwires/core/mvc/model/AbstractModel";
 import {MockMessageType, MockMessageType2} from "./MockMessageType";
-import {inject, named} from "inversify";
+import {inject, injectable, named} from "inversify";
+import {definableFromString, setDefaultImplementation} from "../../src/com/domwires/core/Global";
 
 export type MockTypeDef = {
     readonly a: string;
     readonly b: number;
 };
+
+export class MockModel0 extends AbstractModel
+{
+    @inject("number")
+    private n1: number;
+
+    @inject("number") @named("n2")
+    private n2: number;
+}
 
 export class MockModel1 extends AbstractModel
 {
@@ -91,13 +101,22 @@ export interface ISuperCoolModel
 
     get getCoolValue(): number;
 
-    get value(): number;
+    // get value(): number;
 
     get def(): IDefault;
 
     get object(): any;
 
     get array(): string[];
+}
+
+@injectable()
+export class Default implements IDefault
+{
+    get result(): number
+    {
+        return 123;
+    }
 }
 
 export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
@@ -108,8 +127,8 @@ export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
     @inject("number") @named("coolValue")
     public _coolValue: number;
 
-    @inject("number")
-    public _value: number;
+    // @inject("number")
+    // public _value: number;
 
     @inject("IDefault") @named("def")
     public _def: IDefault;
@@ -130,10 +149,10 @@ export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
         return this._coolValue;
     }
 
-    get value(): number
-    {
-        return this._value;
-    }
+    // get value(): number
+    // {
+    //     return this._value;
+    // }
 
     get def(): IDefault
     {
@@ -150,3 +169,8 @@ export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
         return this._array;
     }
 }
+
+definableFromString(SuperCoolModel);
+definableFromString(Default);
+setDefaultImplementation("ISuperCoolModel", SuperCoolModel);
+setDefaultImplementation("IDefault", Default);

@@ -36,6 +36,69 @@ type MappingData = {
 
 type Type<T> = string | Class<T>;
 
+export class DependencyVo
+{
+    private readonly _implementation: string;
+    private readonly _value: any;
+    private readonly _newInstance: boolean;
+
+    constructor(json: any)
+    {
+        if (json.implementation == null)
+        {
+            logger.warn("'implementation' is not set in json!");
+        }
+        else
+        {
+            this._implementation = json.implementation;
+        }
+
+        this._value = json.value;
+
+        if (json.newInstance)
+        {
+            this._newInstance = json.newInstance;
+        }
+    }
+
+    get implementation(): string
+    {
+        return this._implementation;
+    }
+
+    get value(): any
+    {
+        return this._value;
+    }
+
+    get newInstance(): boolean
+    {
+        return this._newInstance;
+    }
+}
+
+export class MappingConfigDictionary
+{
+    private _map: Map<string, DependencyVo> = new Map();
+
+    constructor(json: any)
+    {
+        if (json != null)
+        {
+            for (const key of Object.keys(json))
+            {
+                this._map.set(key, new DependencyVo(Reflect.get(json, key)));
+            }
+        }
+    }
+
+    get map(): Map<string, DependencyVo>
+    {
+        return this._map;
+    }
+}
+
+
 class PoolModel
 {
     private list: any[] = [];
@@ -194,6 +257,8 @@ export interface IAppFactory extends IAppFactoryImmutable, IDisposable
     increasePoolCapacity<T>(type: Type<T>, additionalCapacity: number): IAppFactory;
 
     setSafePool(value: boolean): IAppFactory;
+
+    appendMappingConfig(config: Map<string, DependencyVo>): IAppFactory;
 
     mapValueToLazy<T>(type: Type<T>, to: T, name?: string): IAppFactory;
 
@@ -405,21 +470,6 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
     instantiateValueUnmapped<T>(type: Type<T>): T
     {
-        // const returnType = this.includesName(this.typeMap.get(type));
-        // let value:any;
-        //
-        // if (!returnType)
-        // {
-        //     const defaultImpl:Class<T> = getDefaultImplementation(type);
-        //
-        //     if (defaultImpl)
-        //     {
-        //         logger.info("Returning instance of default implementation '" + defaultImpl.name + "'.");
-        //
-        //         value = defaultImpl;
-        //     }
-        // }
-
         const mappingData: MappingData = AppFactory.includesName(this.valueMap.get(type));
 
         if (mappingData)
@@ -610,6 +660,54 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
     setSafePool(value: boolean): IAppFactory
     {
         this._safePool = value;
+
+        return this;
+    }
+
+    appendMappingConfig(config: Map<string, DependencyVo>): IAppFactory
+    {
+        let name: string;
+        let d: DependencyVo;
+        let splitted: string[];
+
+        for (let interfaceDefinition of config.keys())
+        {
+            name = undefined;
+            d = config.get(interfaceDefinition);
+
+            splitted = interfaceDefinition.split("$");
+            if (splitted.length > 1)
+            {
+                name = splitted[1];
+                interfaceDefinition = splitted[0];
+            }
+
+            if (d.value != null)
+            {
+                if (name)
+                {
+                    this.mapToValue(interfaceDefinition, d.value, name);
+                }
+                else
+                {
+                    this.mapToValue(interfaceDefinition, d.value);
+                }
+            }
+            else
+            {
+                if (d.implementation != null)
+                {
+                    logger.info("Mapping '" + interfaceDefinition + "' to '" + d.implementation + "'");
+
+                    this.mapToType(interfaceDefinition, (global as any)[d.implementation], name);
+                }
+
+                if (d.newInstance)
+                {
+                    this.mapToValue(interfaceDefinition, this.getInstance(interfaceDefinition), name);
+                }
+            }
+        }
 
         return this;
     }
