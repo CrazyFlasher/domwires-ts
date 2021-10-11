@@ -175,8 +175,6 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         {
             this.config = {singletonCommands: true};
         }
-
-        this.factory.mapToValue("ICommandMapper", this);
     }
 
     dispose()

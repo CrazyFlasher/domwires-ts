@@ -44,7 +44,7 @@ describe('CommandMapperTest', function (this: Suite)
         factory = new AppFactory();
         factory.mapToValue("IAppFactory", factory);
 
-        commandMapper = factory.getInstance("ICommandMapper");
+        commandMapper = factory.instantiateValueUnmapped("ICommandMapper");
     });
 
     afterEach(() =>
@@ -59,7 +59,7 @@ describe('CommandMapperTest', function (this: Suite)
         commandMapper.unmap(MockMessageType.GOODBYE, MockCommand1);
         expect(commandMapper.hasMapping(MockMessageType.GOODBYE)).false;
 
-        const m: MockObj1 = factory.getInstance(MockObj1);
+        const m: MockObj1 = factory.instantiateValueUnmapped(MockObj1);
         factory.mapToValue(MockObj1, m);
 
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
