@@ -4,11 +4,6 @@ import ArrayUtils from "../../utils/ArrayUtils";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
 import {logger, setDefaultImplementation} from "../../Global";
 
-export interface IBubbleMessageHandler
-{
-    onMessageBubbled<T>(message: IMessage): boolean;
-}
-
 export interface IMessageDispatcherImmutable extends IDisposableImmutable
 {
     hasMessageListener(type: Enum): boolean;
@@ -16,6 +11,8 @@ export interface IMessageDispatcherImmutable extends IDisposableImmutable
     addMessageListener<T>(type: Enum, listener: (message?: IMessage<T>) => void, priority?: number): void;
 
     removeMessageListener<T>(type: Enum, listener: (message?: IMessage<T>) => void): void;
+
+    onMessageBubbled<T>(message: IMessage): boolean;
 }
 
 export interface IMessageDispatcher extends IMessageDispatcherImmutable, IDisposable
@@ -131,14 +128,14 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
 
             this._messageMap.set(type, messageMapForType);
         }
-        else if (this.getListenerWithPriority(messageMapForType, listener) == null)
+        else if (MessageDispatcher.getListenerWithPriority(messageMapForType, listener) == null)
         {
             messageMapForType.push(new Listener(listener, this, priority));
-            this.sortOnPriority(messageMapForType);
+            MessageDispatcher.sortOnPriority(messageMapForType);
         }
     }
 
-    private sortOnPriority(messageMapForType: Listener[]): void
+    private static sortOnPriority(messageMapForType: Listener[]): void
     {
         messageMapForType.sort((e1: Listener, e2: Listener) =>
         {
@@ -148,7 +145,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         });
     }
 
-    private getListenerWithPriority<T>(messageMapForType: Listener[], listener: (message?: IMessage<T>) => void): Listener
+    private static getListenerWithPriority<T>(messageMapForType: Listener[], listener: (message?: IMessage<T>) => void): Listener
     {
         for (let l of messageMapForType)
         {
@@ -200,17 +197,13 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
                     break;
                 }
 
-                if (this.instanceOfIBubbleMessageHandler(currentTarget))
-                {
-                    // onMessageBubbled() can stop the bubbling by returning false.
-                    // @ts-ignore
-                    const handler: IBubbleMessageHandler = message.setCurrentTarget(currentTarget) as IBubbleMessageHandler;
-                    bubbleUp = handler.onMessageBubbled(message);
+                // onMessageBubbled() can stop the bubbling by returning false.
 
-                    if (!bubbleUp)
-                    {
-                        break;
-                    }
+                bubbleUp = message.setCurrentTarget(currentTarget).onMessageBubbled(message);
+
+                if (!bubbleUp)
+                {
+                    break;
                 }
             }
         }
@@ -218,9 +211,9 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         this.isBubbling = false;
     }
 
-    private instanceOfIBubbleMessageHandler(object: any): object is IBubbleMessageHandler
+    onMessageBubbled<T>(message: IMessage): boolean
     {
-        return 'onMessageBubbled' in object;
+        return false;
     }
 
     private getMessage<T>(type: Enum, data: T, bubbles: boolean, forceReturnNew: boolean = false): Message
@@ -280,7 +273,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         {
             if (this._messageMap.get(type) != null)
             {
-                const l: Listener = this.getListenerWithPriority(this._messageMap.get(type), listener);
+                const l: Listener = MessageDispatcher.getListenerWithPriority(this._messageMap.get(type), listener);
                 if (l != null)
                 {
                     ArrayUtils.remove(this._messageMap.get(type), l);
@@ -316,7 +309,7 @@ class Listener<T = any>
     private readonly _priority: number;
     private readonly _bindedFunc: (message?: IMessage) => void;
 
-    constructor(func: (message?: IMessage) => void, bind:any, priority?: number)
+    constructor(func: (message?: IMessage) => void, bind: any, priority?: number)
     {
         if (priority == null) priority = 0;
 

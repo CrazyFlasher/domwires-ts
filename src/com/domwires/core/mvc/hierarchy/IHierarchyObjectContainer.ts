@@ -1,8 +1,7 @@
 import {IHierarchyObject, IHierarchyObjectImmutable} from "./IHierarchyObject";
-import {IBubbleMessageHandler, IMessage, IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
+import {IMessage} from "../message/IMessageDispatcher";
 import {AbstractHierarchyObject} from "./AbstractHierarchyObject";
 import ArrayUtils from "../../utils/ArrayUtils";
-import {Enum} from "../../Enum";
 import {setDefaultImplementation} from "../../Global";
 
 export interface IHierarchyObjectContainerImmutable extends IHierarchyObjectImmutable
@@ -12,7 +11,7 @@ export interface IHierarchyObjectContainerImmutable extends IHierarchyObjectImmu
     contains(child: IHierarchyObjectImmutable): boolean;
 }
 
-export interface IHierarchyObjectContainer extends IHierarchyObjectContainerImmutable, IHierarchyObject, IBubbleMessageHandler
+export interface IHierarchyObjectContainer extends IHierarchyObjectContainerImmutable, IHierarchyObject
 {
     get children(): ReadonlyArray<IHierarchyObject>;
 
@@ -105,7 +104,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         {
             if (message.previousTarget !== child)
             {
-                if (this.instanceOfIHierarchyObjectContainer(child))
+                if (HierarchyObjectContainer.instanceOfIHierarchyObjectContainer(child))
                 {
                     (child as IHierarchyObjectContainer).dispatchMessageToChildren(message);
                 }
@@ -119,7 +118,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return this;
     }
 
-    private instanceOfIHierarchyObjectContainer(object: any): object is IHierarchyObjectContainer
+    private static instanceOfIHierarchyObjectContainer(object: any): object is IHierarchyObjectContainer
     {
         return 'dispatchMessageToChildren' in object;
     }
