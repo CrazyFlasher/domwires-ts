@@ -14,7 +14,7 @@ export class MockContext1 extends AbstractContext
     {
         super.onMessageBubbled(message);
 
-        //bubble up! 
+        // bubble up!
         return true;
     }
 }
@@ -75,7 +75,7 @@ export class MockContext3 extends AbstractContext
     {
         super.onMessageBubbled(message);
 
-        //to pass message to parent context
+        // to pass message to parent context
         return true;
     }
 }
@@ -114,7 +114,7 @@ export class MockContext4 extends AbstractContext
     {
         super.onMessageBubbled(message);
 
-        //to pass message to parent context
+        // to pass message to parent context
         return true;
     }
 }
@@ -132,7 +132,7 @@ export class MockContext5 extends AbstractContext
             forwardMessageFromMediatorsToMediators: true,
             forwardMessageFromModelsToMediators: true,
             forwardMessageFromModelsToModels: false
-        }
+        };
 
         super.init();
 
@@ -204,7 +204,7 @@ export class MockContext7 extends AbstractContext
     {
         super.onMessageBubbled(message);
 
-        //to pass message to parent context
+        // to pass message to parent context
         return true;
     }
 }

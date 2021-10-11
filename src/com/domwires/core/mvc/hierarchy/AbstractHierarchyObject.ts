@@ -1,4 +1,3 @@
-import {AbstractDisposable} from "../../common/AbstractDisposable";
 import {IHierarchyObject} from "./IHierarchyObject";
 import {IHierarchyObjectContainer, IHierarchyObjectContainerImmutable} from "./IHierarchyObjectContainer";
 import {MessageDispatcher} from "../message/IMessageDispatcher";
@@ -42,10 +41,12 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
         return this;
     }
 
+    /* tslint:disable:no-empty */
     protected removedFromHierarchy(): void
     {
     }
 
+    /* tslint:disable:no-empty */
     protected addedToHierarchy(): void
     {
     }

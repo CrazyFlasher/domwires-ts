@@ -83,14 +83,14 @@ describe('BubbleMessageTest', function (this: Suite)
 
         const successFunc: (message: IMessage) => void = (message: IMessage) =>
         {
-            //message came from bottom to top
+            // message came from bottom to top
             bubbledEventType = message.type;
         };
 
-        //top element
+        // top element
         c1.addMessageListener(MockMessageType.HELLO, successFunc);
 
-        //bottom element
+        // bottom element
         m1.dispatchMessage(MockMessageType.HELLO, {name: "Anton"}, true);
 
         expect(bubbledEventType).equals(MockMessageType.HELLO);
@@ -107,10 +107,12 @@ describe('BubbleMessageTest', function (this: Suite)
         let bubbledEventType: Enum;
         let count: number;
 
+        /* tslint:disable:no-empty */
         const successFunc: () => void = () =>
         {
         };
 
+        /* tslint:disable: no-shadowed-variable */
         const c1: IContext = factory.instantiateValueUnmapped(MockContext1);
         const c2: IContext = factory.instantiateValueUnmapped(MockContext1);
         const c3: IContext = factory.instantiateValueUnmapped(MockContext1);
@@ -141,7 +143,7 @@ describe('BubbleMessageTest', function (this: Suite)
             count = 0;
             bubbledEventType = null;
 
-            //top element
+            // top element
             c1.addMessageListener(MockMessageType.HELLO, successFunc);
             c2.addMessageListener(MockMessageType.HELLO, successFunc);
             c3.addMessageListener(MockMessageType.HELLO, successFunc);
@@ -153,7 +155,7 @@ describe('BubbleMessageTest', function (this: Suite)
             c9.addMessageListener(MockMessageType.HELLO, successFunc);
             c10.addMessageListener(MockMessageType.HELLO, successFunc);
 
-            //bottom element
+            // bottom element
             c10.dispatchMessage(MockMessageType.HELLO, {name: "Anton"}, false);
         }
 

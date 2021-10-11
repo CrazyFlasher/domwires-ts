@@ -24,13 +24,13 @@ export interface IMediatorContainer extends IMediatorContainerImmutable, IMediat
 
     removeAllMediators(dispose?: boolean): IMediatorContainer;
 
-    get mediatorList(): Array<IMediator>;
+    get mediatorList(): IMediator[];
 }
 
 export class MediatorContainer extends HierarchyObjectContainer implements IMediatorContainer
 {
-    private _mediatorList: Array<IMediator> = [];
-    private _mediatorListImmutable: Array<IMediatorImmutable> = [];
+    private _mediatorList: IMediator[] = [];
+    private _mediatorListImmutable: IMediatorImmutable[] = [];
 
     public addMediator(mediator: IMediator): IMediatorContainer
     {
@@ -79,7 +79,7 @@ export class MediatorContainer extends HierarchyObjectContainer implements IMedi
     }
 
     // better to return copy, but in sake of performance, we do that way.
-    get mediatorList(): Array<IMediator>
+    get mediatorList(): IMediator[]
     {
         return this._mediatorList;
     }

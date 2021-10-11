@@ -81,6 +81,8 @@ describe('ContextTest', function (this: Suite)
 
     it('testMediatorMessageBubbledOnceForChildContext', () =>
     {
+        /* tslint:disable: no-shadowed-variable */
+
         MockMediator4.val = 0;
         const c: MockContext5 = f.instantiateValueUnmapped(MockContext5);
         expect(c.getModel().testVar).equals(1);

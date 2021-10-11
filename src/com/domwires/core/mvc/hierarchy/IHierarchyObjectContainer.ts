@@ -100,7 +100,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
 
     dispatchMessageToChildren<T>(message: IMessage): IHierarchyObjectContainer
     {
-        for (let child of this._childrenList)
+        for (const child of this._childrenList)
         {
             if (message.previousTarget !== child)
             {
@@ -158,7 +158,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
     {
         if (this._childrenList !== null)
         {
-            for (let child of this._childrenList)
+            for (const child of this._childrenList)
             {
                 if (dispose)
                 {

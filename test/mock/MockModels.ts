@@ -4,8 +4,8 @@ import {inject, named} from "inversify";
 
 export type MockTypeDef = {
     readonly a: string;
-    readonly b: Number;
-}
+    readonly b: number;
+};
 
 export class MockModel1 extends AbstractModel
 {
@@ -97,7 +97,7 @@ export interface ISuperCoolModel
 
     get object(): any;
 
-    get array(): Array<string>;
+    get array(): string[];
 }
 
 export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
@@ -117,8 +117,8 @@ export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
     @inject("any") @named("obj")
     public _object: any;
 
-    @inject("Array<string>")
-    public _array: Array<string>;
+    @inject("string[]")
+    public _array: string[];
 
     get getMyBool(): boolean
     {
@@ -145,7 +145,7 @@ export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
         return this._object;
     }
 
-    get array(): Array<string>
+    get array(): string[]
     {
         return this._array;
     }

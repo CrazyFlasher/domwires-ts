@@ -8,7 +8,7 @@ import {ICommandMapper, MappingConfig, MappingConfigList} from "../command/IComm
 import {IModel, IModelImmutable} from "../model/IModel";
 import {IMediator, IMediatorImmutable} from "../mediator/IMediator";
 import {Enum} from "../../Enum";
-import {IMessage, IMessageDispatcher, IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
+import {IMessage, IMessageDispatcher} from "../message/IMessageDispatcher";
 import {AbstractModel} from "../model/AbstractModel";
 import {AbstractMediator} from "../mediator/AbstractMediator";
 import {Class} from "../../Global";
@@ -20,7 +20,7 @@ export type ContextConfig = {
     readonly forwardMessageFromMediatorsToMediators: boolean;
     readonly forwardMessageFromModelsToMediators: boolean;
     readonly forwardMessageFromModelsToModels: boolean;
-}
+};
 
 export abstract class AbstractContext extends HierarchyObjectContainer implements IContext
 {
@@ -45,7 +45,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
                 forwardMessageFromMediatorsToMediators: true,
                 forwardMessageFromModelsToMediators: true,
                 forwardMessageFromModelsToModels: false
-            }
+            };
         }
 
         if (this.factory == null)
@@ -106,7 +106,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this.modelContainer.containsModel(model);
     }
 
-    get modelList(): Array<IModel>
+    get modelList(): IModel[]
     {
         this.checkIfDisposed();
 
@@ -162,7 +162,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this.mediatorContainer.containsMediator(mediator);
     }
 
-    get mediatorList(): Array<IMediator>
+    get mediatorList(): IMediator[]
     {
         this.checkIfDisposed();
 
@@ -248,7 +248,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this.commandMapper.map(messageType, commandClass, data, once, stopOnExecute);
     }
 
-    public map1<T>(messageType: Enum, commandClassList: Array<Class<ICommand>>, data?: T, once?: boolean,
+    public map1<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, once?: boolean,
                    stopOnExecute?: boolean): MappingConfigList<T>
     {
         this.checkIfDisposed();
@@ -256,7 +256,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this.commandMapper.map1(messageType, commandClassList, data, once, stopOnExecute);
     }
 
-    public map2<T>(messageTypeList: Array<Enum>, commandClass: Class<ICommand>, data?: T, once?: boolean,
+    public map2<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, once?: boolean,
                    stopOnExecute?: boolean): MappingConfigList<T>
     {
         this.checkIfDisposed();
@@ -264,7 +264,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this.commandMapper.map2(messageTypeList, commandClass, data, once, stopOnExecute);
     }
 
-    public map3<T>(messageTypeList: Array<Enum>, commandClassList: Array<Class<ICommand>>, data?: T, once?: boolean,
+    public map3<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, once?: boolean,
                    stopOnExecute?: boolean): MappingConfigList<T>
     {
         this.checkIfDisposed();
@@ -325,8 +325,8 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this;
     }
 
-    public executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Array<Class<IGuards>>,
-                             guardNotList?: Array<Class<IGuards>>): boolean
+    public executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[],
+                             guardNotList?: Class<IGuards>[]): boolean
     {
         this.checkIfDisposed();
 

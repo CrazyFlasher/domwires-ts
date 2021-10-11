@@ -21,7 +21,13 @@ import {
     MockVo2
 } from "./mock/MockCommands";
 import {MockObj1} from "./mock/MockObjects";
-import {MockAllowGuards, MockAllowGuards2, MockNotAllowGuards, MockValuesGuards} from "./mock/MockGuards";
+import {
+    MockAllowGuards,
+    MockAllowGuards2,
+    MockNotAllowGuards,
+    MockValuesGuards,
+    MockValuesNotSingletonGuards
+} from "./mock/MockGuards";
 import "../src/com/domwires/core/mvc/command/ICommandMapper";
 import {Enum} from "../src/com/domwires/core/Enum";
 import {MockModel2} from "./mock/MockModels";
@@ -169,7 +175,7 @@ describe('CommandMapperTest', function (this: Suite)
         const vo: MockVo = new MockVo();
         const itemId: string = "lol";
 
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {vo: vo, itemId: itemId, e: MockMessageType.HELLO});
+        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {vo, itemId, e: MockMessageType.HELLO});
 
         expect(vo.age).equals(11);
         expect(vo.name).equals("hi");
@@ -279,6 +285,15 @@ describe('CommandMapperTest', function (this: Suite)
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {s: "123", n: 123, o: {a: "olo"}});
     });
 
+    it('testMapValuesToGuardsNotSingleton', () =>
+    {
+        factory.mapToValue("CommandMapperConfig", {singletonCommands: false});
+        const cm: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
+
+        cm.map(MockMessageType.GOODBYE, MockCommand0).addGuards(MockValuesNotSingletonGuards);
+        cm.tryToExecuteCommand(MockMessageType.GOODBYE, {s: "123", n: 123, o: {a: "olo"}});
+    });
+
     it('testMapWithDataUnmaps', () =>
     {
         const m: MockObj1 = factory.getInstance(MockObj1);
@@ -323,9 +338,9 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testArray', () =>
     {
-        const v: Array<string> = [];
+        const v: string[] = [];
 
-        const mappingData: any = {v: v};
+        const mappingData: any = {v};
         commandMapper.executeCommand(MockCommand8, mappingData);
     });
 
@@ -391,14 +406,14 @@ describe('CommandMapperTest', function (this: Suite)
     it('testCommandIsNotSingleton', () =>
     {
         factory.mapToValue("CommandMapperConfig", {singletonCommands: false});
-        const commandMapper: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
+        const cm: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
 
         const model: MockModel2 = factory.getInstance(MockModel2);
         factory.mapToValue(MockModel2, model);
 
-        commandMapper.executeCommand(MockCommand19);
-        commandMapper.executeCommand(MockCommand19);
-        commandMapper.executeCommand(MockCommand19);
+        cm.executeCommand(MockCommand19);
+        cm.executeCommand(MockCommand19);
+        cm.executeCommand(MockCommand19);
 
         expect(model.testVar).equals(1);
     });
@@ -409,15 +424,15 @@ describe('CommandMapperTest', function (this: Suite)
         {
             const timeStarted = new Date().getTime();
 
-            const factory: IAppFactory = new AppFactory();
-            factory.mapToValue("IAppFactory", factory);
-            factory.mapToValue("CommandMapperConfig", config);
+            const f: IAppFactory = new AppFactory();
+            f.mapToValue("IAppFactory", f);
+            f.mapToValue("CommandMapperConfig", config);
 
-            const commandMapper: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
+            const cm: ICommandMapper = f.instantiateValueUnmapped("ICommandMapper");
 
             for (let i = 0; i < 100000; i++)
             {
-                commandMapper.executeCommand(commandClass, {
+                cm.executeCommand(commandClass, {
                     i: 7,
                     f: 5.5,
                     s: "Anton",

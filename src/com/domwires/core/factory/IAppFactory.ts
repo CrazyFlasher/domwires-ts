@@ -32,13 +32,13 @@ function mergeIntoLazyOne(from: Container): void
 type MappingData = {
     readonly typeOrValue: any;
     readonly name?: string;
-}
+};
 
 type Type<T> = string | Class<T>;
 
 class PoolModel
 {
-    private list: Array<any> = [];
+    private list: any[] = [];
     private _capacity: number;
 
     private currentIndex: number = 0;
@@ -69,7 +69,7 @@ class PoolModel
 
             this.currentIndex++;
 
-            if (this.currentIndex == this._capacity || this.currentIndex == this.list.length)
+            if (this.currentIndex === this._capacity || this.currentIndex === this.list.length)
             {
                 this.currentIndex = 0;
             }
@@ -141,11 +141,8 @@ class PoolModel
         }
 
         let count: number = 0;
-        let instance: any;
-        for (let i = 0; i < this.list.length; i++)
+        for (const instance of this.list)
         {
-            instance = this.list[i];
-
             if ((instance as any)[this.isBusyFlagGetterName])
             {
                 count++;
@@ -177,7 +174,7 @@ export interface IAppFactoryImmutable extends IDisposableImmutable
 
 export interface IAppFactory extends IAppFactoryImmutable, IDisposable
 {
-    mapToType<T>(type: Type<T>, to: Class<T>, name?: string): IAppFactory
+    mapToType<T>(type: Type<T>, to: Class<T>, name?: string): IAppFactory;
 
     mapToValue<T>(type: Type<T>, to: T, name?: string): IAppFactory;
 
@@ -218,11 +215,11 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
     private _safePool: boolean = true;
 
-    private includesName(list: MappingData[], name?: string): MappingData
+    private static includesName(list: MappingData[], name?: string): MappingData
     {
         if (!list) return null;
 
-        for (let value of list)
+        for (const value of list)
         {
             if ((!value.name && !name) || value.name === name)
             {
@@ -240,11 +237,9 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         super.dispose();
     }
 
-    private getTypeForType<T>(type: Type<T>): string
+    private static getTypeForType<T>(type: Type<T>): string
     {
-        const id: string = "__$" + this.getTypeName(type) + "$__";
-
-        return id;
+        return "__$" + AppFactory.getTypeName(type) + "$__";
     }
 
     private map<T>(type: Type<T>, to: T | Class<T>, name: string, map: Map<any, MappingData[]>, unmapMethod: (type: any, name?: any) => void): boolean
@@ -256,11 +251,11 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         {
             if (mappedToTypeOrValueList)
             {
-                const currentMapping = this.includesName(mappedToTypeOrValueList, name)
+                const currentMapping = AppFactory.includesName(mappedToTypeOrValueList, name);
 
                 if (currentMapping)
                 {
-                    const typeName = this.getTypeName(type);
+                    const typeName = AppFactory.getTypeName(type);
                     const toName = to.constructor.name;
 
                     if (currentMapping.typeOrValue === type)
@@ -297,7 +292,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
                     map.set(type, mappedToTypeOrValueList);
                 }
 
-                mappedToTypeOrValueList.push({typeOrValue: to, name: name});
+                mappedToTypeOrValueList.push({typeOrValue: to, name});
             }
         }
 
@@ -309,15 +304,15 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         const mappingList = map.get(type);
         if (mappingList)
         {
-            const mapping: MappingData = this.includesName(mappingList, name);
+            const mapping: MappingData = AppFactory.includesName(mappingList, name);
             if (mapping)
             {
                 ArrayUtils.remove(mappingList, mapping);
-                this.injector.unbind(map == this.typeMap ? this.getTypeForType(type) : type);
+                this.injector.unbind(map === this.typeMap ? AppFactory.getTypeForType(type) : type);
 
                 if (mappingList.length)
                 {
-                    for (let currentMapping of mappingList)
+                    for (const currentMapping of mappingList)
                     {
                         this.autoMapAfterUnmap = true;
 
@@ -342,11 +337,11 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
         if (this._safePool && this.getAllPoolItemsAreBusy(type))
         {
-            logger.warn("All pool items are busy for class '" + this.getTypeName(type) + "'. Extending pool...");
+            logger.warn("All pool items are busy for class '" + AppFactory.getTypeName(type) + "'. Extending pool...");
 
             this.increasePoolCapacity(type, 1);
 
-            logger.info("Pool capacity for '" + this.getTypeName(type) + "' increased!");
+            logger.info("Pool capacity for '" + AppFactory.getTypeName(type) + "' increased!");
         }
 
         return poolModel.get(type, createNewIfNeeded);
@@ -354,7 +349,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
     private clearPools(): IAppFactory
     {
-        this.poolModelMap.forEach((value, key) => value.dispose());
+        this.poolModelMap.forEach((value) => value.dispose());
 
         this.poolModelMap.clear();
 
@@ -365,11 +360,11 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
     {
         if (!this.poolModelMap.has(type))
         {
-            throw new Error("Pool '" + this.getTypeName(type) + "' is not registered! Call registerPool.");
+            throw new Error("Pool '" + AppFactory.getTypeName(type) + "' is not registered! Call registerPool.");
         }
     }
 
-    private getTypeName<T>(type: Type<T>): string
+    private static getTypeName<T>(type: Type<T>): string
     {
         return typeof type === "string" ? type : type.name;
     }
@@ -380,7 +375,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
         if (mapSuccess)
         {
-            const bs = this.injector.bind(this.getTypeForType(type)).to(to);
+            const bs = this.injector.bind(AppFactory.getTypeForType(type)).to(to);
 
             if (name)
             {
@@ -422,7 +417,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         //     }
         // }
 
-        const mappingData: MappingData = this.includesName(this.valueMap.get(type));
+        const mappingData: MappingData = AppFactory.includesName(this.valueMap.get(type));
 
         if (mappingData)
         {
@@ -433,7 +428,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
         if (mappingData)
         {
-            this.mapToValue(type, mappingData.typeOrValue)
+            this.mapToValue(type, mappingData.typeOrValue);
         }
 
         return instance;
@@ -450,7 +445,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         }
 
         const hasValue: boolean = this.hasValueMapping(type, name);
-        let hasType: boolean = this.hasTypeMapping(type, name);
+        const hasType: boolean = this.hasTypeMapping(type, name);
         let resolvedType: Type<T> = type;
 
         if (!hasValue && !hasType)
@@ -467,7 +462,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
         if (!hasValue)
         {
-            resolvedType = this.getTypeForType(type);
+            resolvedType = AppFactory.getTypeForType(type);
         }
 
         return name ? this.injector.getNamed(resolvedType, name) : this.injector.get(resolvedType);
@@ -475,12 +470,12 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
     hasTypeMapping<T>(type: Type<T>, name?: string): boolean
     {
-        return this.includesName(this.typeMap.get(type), name) != null;
+        return AppFactory.includesName(this.typeMap.get(type), name) != null;
     }
 
     hasValueMapping<T>(type: Type<T>, name?: string): boolean
     {
-        return this.includesName(this.valueMap.get(type), name) != null;
+        return AppFactory.includesName(this.valueMap.get(type), name) != null;
     }
 
     unmapFromType<T>(type: Type<T>, name?: string): IAppFactory
@@ -584,14 +579,14 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
     registerPool<T>(type: Type<T>, capacity: number = 5, instantiateNow?: boolean, isBusyFlagGetterName?: string): IAppFactory
     {
-        if (capacity == 0)
+        if (capacity === 0)
         {
             throw new Error("Capacity should be > 0!");
         }
 
         if (this.poolModelMap.has(type))
         {
-            logger.warn("Pool '" + this.getTypeName(type) + "' already registered! Call unregisterPool before.");
+            logger.warn("Pool '" + AppFactory.getTypeName(type) + "' already registered! Call unregisterPool before.");
         }
         else
         {

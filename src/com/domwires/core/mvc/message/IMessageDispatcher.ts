@@ -17,7 +17,7 @@ export interface IMessageDispatcherImmutable extends IDisposableImmutable
 
 export interface IMessageDispatcher extends IMessageDispatcherImmutable, IDisposable
 {
-    handleMessage<T>(message: IMessage): IMessageDispatcher
+    handleMessage<T>(message: IMessage): IMessageDispatcher;
 
     removeAllMessageListeners<T>(): IMessageDispatcher;
 
@@ -147,7 +147,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
 
     private static getListenerWithPriority<T>(messageMapForType: Listener[], listener: (message?: IMessage<T>) => void): Listener
     {
-        for (let l of messageMapForType)
+        for (const l of messageMapForType)
         {
             if (l.func === listener)
             {
@@ -314,7 +314,7 @@ class Listener<T = any>
         if (priority == null) priority = 0;
 
         this._func = func;
-        this._priority = priority
+        this._priority = priority;
         this._bindedFunc = func.bind(bind);
     }
 

@@ -65,7 +65,7 @@ describe('AppFactoryTest', function (this: Suite)
 
     it('testInstantiateUnmappedInject', () =>
     {
-        factory.mapToValue("Array<string>", ["a", "b", "c"]);
+        factory.mapToValue("string[]", ["a", "b", "c"]);
         factory.mapToValue("number", 5, "coolNumber");
         factory.mapToValue("any", {value: "test"});
         factory.mapToValue("string", "123");
@@ -235,13 +235,13 @@ describe('AppFactoryTest', function (this: Suite)
 
     it('testMapUnmapValue', () =>
     {
-        factory.mapToValue("Array<string>", ["a", "b", "c"]);
+        factory.mapToValue("string[]", ["a", "b", "c"]);
         factory.mapToValue("number", 5, "coolNumber");
         factory.mapToValue("any", {value: "test"});
         factory.mapToValue("string", "123");
         factory.mapToValue(MockObject2, new MockObject2());
 
-        expect(factory.hasValueMapping("Array<string>")).true;
+        expect(factory.hasValueMapping("string[]")).true;
         expect(factory.hasValueMapping("number")).false;
         expect(factory.hasValueMapping("number", "coolNumber")).true;
         expect(factory.hasValueMapping("any")).true;
@@ -266,7 +266,7 @@ describe('AppFactoryTest', function (this: Suite)
 
     it('testInjectPostConstruct', () =>
     {
-        factory.mapToValue("Array<string>", ["a", "b", "c"]);
+        factory.mapToValue("string[]", ["a", "b", "c"]);
         factory.mapToValue("number", 5, "coolNumber");
         factory.mapToValue("any", {value: "test"});
         factory.mapToValue("string", "123");
@@ -383,18 +383,18 @@ describe('AppFactoryTest', function (this: Suite)
         factory.mapToType("IMockPool2", MockPool4);
         factory.registerPool("IMockPool2", 2);
 
-        const instance_1: IMockPool2 = factory.getInstance("IMockPool2");
-        const instance_2: IMockPool2 = factory.getInstance("IMockPool2");
+        const instance1: IMockPool2 = factory.getInstance("IMockPool2");
+        const instance2: IMockPool2 = factory.getInstance("IMockPool2");
 
         let instanceFromPool: IMockPool2;
         instanceFromPool = factory.getInstance("IMockPool2");
-        expect(instanceFromPool).equals(instance_1);
+        expect(instanceFromPool).equals(instance1);
 
         instanceFromPool = factory.getInstance("IMockPool2");
-        expect(instanceFromPool).equals(instance_2);
+        expect(instanceFromPool).equals(instance2);
 
         instanceFromPool = factory.getInstance("IMockPool2");
-        expect(instanceFromPool).equals(instance_1);
+        expect(instanceFromPool).equals(instance1);
     });
 
     it('testOfPoolObjectsAreUnique', () =>

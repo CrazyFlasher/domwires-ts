@@ -25,14 +25,10 @@ describe('MessageDispatcherTest', function (this: Suite)
 
     it('testDispatchMessage', () =>
     {
-        type MessageData = {
-            readonly info: string;
-        };
-
         let gotMessage: boolean = false;
         let gotMessageType: Enum = MockMessageType.GOODBYE;
         let gotMessageTarget: IMessageDispatcherImmutable = null;
-        let gotMessageData: any = {};
+        const gotMessageData: any = {};
 
         d.addMessageListener(MockMessageType.HELLO, (m?: IMessage) =>
         {

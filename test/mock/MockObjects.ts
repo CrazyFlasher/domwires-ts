@@ -124,7 +124,7 @@ export interface MockObjects extends IDisposable
 
     get o(): any;
 
-    get g(): Array<string>;
+    get g(): string[];
 
     get pc(): boolean;
 
@@ -133,8 +133,8 @@ export interface MockObjects extends IDisposable
 
 export class MockObject extends AbstractDisposable implements MockObjects
 {
-    @inject("Array<string>")
-    private _g: Array<string>;
+    @inject("string[]")
+    private _g: string[];
 
     @inject("number") @named("coolNumber")
     private _n: number;
@@ -156,7 +156,7 @@ export class MockObject extends AbstractDisposable implements MockObjects
         this._pc = true;
     }
 
-    get g(): Array<string>
+    get g(): string[]
     {
         return this._g;
     }
@@ -187,6 +187,7 @@ export class MockObject extends AbstractDisposable implements MockObjects
     }
 }
 
+/* tslint:disable:no-empty-interface */
 export interface IMockObj1
 {
 
@@ -203,14 +204,14 @@ export class MockObj1 implements IMockObj1
         return this._d;
     }
 
-    get s(): string
-    {
-        return this._s;
-    }
-
     set d(value: number)
     {
         this._d = value;
+    }
+
+    get s(): string
+    {
+        return this._s;
     }
 
     set s(value: string)

@@ -14,10 +14,6 @@ export class MockVo
     age: number;
     str: string;
     e: Enum;
-
-    constructor()
-    {
-    }
 }
 
 export class MockVo2
@@ -106,7 +102,7 @@ export class MockCommand5 extends AbstractCommand
 export class MockCommand8 extends AbstractCommand
 {
     @lazyInjectNamed("Array", "v")
-    private v: Array<string>;
+    private v: string[];
 }
 
 export class MockCommand9 extends AbstractCommand
@@ -213,10 +209,6 @@ export class MockCommand17 extends AbstractCommand
 {
     @lazyInjectNamed("Enum", "e")
     private e: Enum;
-
-    execute()
-    {
-    }
 }
 
 export class MockCommand18 extends AbstractCommand
@@ -232,10 +224,6 @@ export class MockCommand18 extends AbstractCommand
 
     @lazyInjectNamed("MockMessageType", "e")
     private e: Enum;
-
-    execute()
-    {
-    }
 }
 
 export class MockCommand18NotLazy extends AbstractCommand
@@ -251,10 +239,6 @@ export class MockCommand18NotLazy extends AbstractCommand
 
     @inject("MockMessageType") @named("e")
     private e: Enum;
-
-    execute()
-    {
-    }
 }
 
 export class MockCommand19 extends AbstractCommand
@@ -276,6 +260,7 @@ export class MockCommand19Ex extends MockCommand19
 {
 }
 
+/* tslint:disable:no-empty-interface */
 export interface IMockCommand extends ICommand
 {
 }

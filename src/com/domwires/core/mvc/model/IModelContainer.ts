@@ -24,13 +24,13 @@ export interface IModelContainer extends IModelContainerImmutable, IModel, IHier
 
     removeAllModels(dispose?: boolean): IModelContainer;
 
-    get modelList(): Array<IModel>;
+    get modelList(): IModel[];
 }
 
 export class ModelContainer extends HierarchyObjectContainer implements IModelContainer
 {
-    private _modelList: Array<IModel> = [];
-    private _modelListImmutable: Array<IModelImmutable> = [];
+    private _modelList: IModel[] = [];
+    private _modelListImmutable: IModelImmutable[] = [];
 
     public addModel(model: IModel): IModelContainer
     {
@@ -79,7 +79,7 @@ export class ModelContainer extends HierarchyObjectContainer implements IModelCo
     }
 
     // better to return copy, but in sake of performance, we do that way.
-    get modelList(): Array<IModel>
+    get modelList(): IModel[]
     {
         return this._modelList;
     }
