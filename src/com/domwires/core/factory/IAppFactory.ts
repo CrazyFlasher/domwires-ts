@@ -258,7 +258,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
                     const typeName = AppFactory.getTypeName(type);
                     const toName = to.constructor.name;
 
-                    if (currentMapping.typeOrValue === type)
+                    if (currentMapping.typeOrValue === to)
                     {
                         logger.warn(typeName + " is already mapped to " + toName + ". No need to remap...");
 
@@ -388,13 +388,16 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
     mapToValue<T>(type: Type<T>, to: T, name?: string,): IAppFactory
     {
-        this.map(type, to, name, this.valueMap, this.unmapFromValue.bind(this));
+        const mapSuccess: boolean = this.map(type, to, name, this.valueMap, this.unmapFromValue.bind(this));
 
-        const bs = this.injector.bind(type).toConstantValue(to);
-
-        if (name)
+        if (mapSuccess)
         {
-            bs.whenTargetNamed(name);
+            const bs = this.injector.bind(type).toConstantValue(to);
+
+            if (name)
+            {
+                bs.whenTargetNamed(name);
+            }
         }
 
         return this;

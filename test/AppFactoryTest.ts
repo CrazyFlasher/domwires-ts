@@ -35,6 +35,17 @@ describe('AppFactoryTest', function (this: Suite)
 
     it('testAutoRemap', () =>
     {
+        // will remap only one
+        factory.mapToValue("IAppFactory", factory);
+        factory.mapToValue("IAppFactory", factory);
+        factory.mapToValue("IAppFactory", factory);
+        factory.mapToValue("IAppFactory", factory);
+        factory.mapToValue("IAppFactory", factory);
+        factory.mapToValue("IAppFactory", factory);
+        factory.mapToValue("IAppFactory", factory);
+        factory.mapToValue("IAppFactory", factory);
+        factory.mapToValue("IAppFactory", factory);
+        factory.mapToValue("IAppFactory", factory);
         factory.mapToValue("IAppFactory", factory);
         factory.mapToValue("IAppFactory", factory);
         factory.mapToValue("IAppFactory", factory);
