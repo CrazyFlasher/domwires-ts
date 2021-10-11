@@ -1,0 +1,181 @@
+import {IHierarchyObject, IHierarchyObjectImmutable} from "./IHierarchyObject";
+import {IBubbleMessageHandler, IMessage, IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
+import {AbstractHierarchyObject} from "./AbstractHierarchyObject";
+import ArrayUtils from "../../utils/ArrayUtils";
+import {Enum} from "../../Enum";
+import {setDefaultImplementation} from "../../Global";
+
+export interface IHierarchyObjectContainerImmutable extends IHierarchyObjectImmutable
+{
+    get childrenImmutable(): ReadonlyArray<IHierarchyObjectImmutable>;
+
+    contains(child: IHierarchyObjectImmutable): boolean;
+}
+
+export interface IHierarchyObjectContainer extends IHierarchyObjectContainerImmutable, IHierarchyObject, IBubbleMessageHandler
+{
+    get children(): ReadonlyArray<IHierarchyObject>;
+
+    add(child: IHierarchyObject, index?: number): boolean;
+
+    remove(child: IHierarchyObject, dispose?: boolean): boolean;
+
+    removeAll(dispose?: boolean): IHierarchyObjectContainer;
+
+    dispatchMessageToChildren<T>(message: IMessage): IHierarchyObjectContainer;
+}
+
+export class HierarchyObjectContainer extends AbstractHierarchyObject implements IHierarchyObjectContainer
+{
+    private _childrenList: IHierarchyObject[] = [];
+    private _childrenListImmutable: IHierarchyObjectImmutable[] = [];
+
+    dispose()
+    {
+        this.removeAll(true);
+
+        this._childrenList = null;
+        this._childrenListImmutable = null;
+
+        super.dispose();
+    }
+
+    add(child: IHierarchyObject, index?: number): boolean
+    {
+        let success: boolean = false;
+
+        if (index !== undefined && index > this._childrenList.length)
+        {
+            throw new Error("Invalid child index! Index shouldn't be bigger that children list length!");
+        }
+
+        const contains: boolean = this._childrenList.indexOf(child) !== -1;
+
+        if (index !== undefined)
+        {
+            if (contains)
+            {
+                ArrayUtils.remove(this._childrenList, child);
+                ArrayUtils.remove(this._childrenListImmutable, child);
+            }
+
+            this._childrenList.splice(index, 0, child);
+            this._childrenListImmutable.splice(index, 0, child);
+
+            success = true;
+        }
+
+        if (!contains)
+        {
+            if (index === undefined)
+            {
+                this._childrenList.push(child);
+                this._childrenListImmutable.push(child);
+            }
+
+            if (child.parent)
+            {
+                child.parent.remove(child);
+            }
+
+            child.setParent(this);
+        }
+
+        return success;
+    }
+
+    get children(): ReadonlyArray<IHierarchyObject>
+    {
+        return this._childrenList;
+    }
+
+    get childrenImmutable(): ReadonlyArray<IHierarchyObjectImmutable>
+    {
+        return this._childrenListImmutable;
+    }
+
+    contains(child: IHierarchyObjectImmutable): boolean
+    {
+        return this._childrenListImmutable !== null && this._childrenListImmutable.indexOf(child) !== -1;
+    }
+
+    dispatchMessageToChildren<T>(message: IMessage): IHierarchyObjectContainer
+    {
+        for (let child of this._childrenList)
+        {
+            if (message.previousTarget !== child)
+            {
+                if (this.instanceOfIHierarchyObjectContainer(child))
+                {
+                    (child as IHierarchyObjectContainer).dispatchMessageToChildren(message);
+                }
+                else
+                {
+                    child.handleMessage(message);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    private instanceOfIHierarchyObjectContainer(object: any): object is IHierarchyObjectContainer
+    {
+        return 'dispatchMessageToChildren' in object;
+    }
+
+    onMessageBubbled<T>(message: IMessage): boolean
+    {
+        this.handleMessage(message);
+
+        return true;
+    }
+
+    remove(child: IHierarchyObject, dispose?: boolean): boolean
+    {
+        let success: boolean = false;
+
+        if (this.contains(child))
+        {
+            ArrayUtils.remove(this._childrenList, child);
+            ArrayUtils.remove(this._childrenListImmutable, child);
+
+            if (dispose)
+            {
+                child.dispose();
+            }
+            else
+            {
+                child.setParent(null);
+            }
+
+            success = true;
+        }
+
+        return success;
+    }
+
+    removeAll(dispose?: boolean): IHierarchyObjectContainer
+    {
+        if (this._childrenList !== null)
+        {
+            for (let child of this._childrenList)
+            {
+                if (dispose)
+                {
+                    child.dispose();
+                }
+                else
+                {
+                    child.setParent(null);
+                }
+            }
+
+            ArrayUtils.clear(this._childrenList);
+            ArrayUtils.clear(this._childrenListImmutable);
+        }
+        return this;
+    }
+}
+
+setDefaultImplementation("IHierarchyObjectContainer", HierarchyObjectContainer);
