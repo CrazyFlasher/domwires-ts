@@ -260,7 +260,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
                     if (currentMapping.typeOrValue === to)
                     {
-                        logger.warn(typeName + " is already mapped to " + toName + ". No need to remap...");
+                        // "type" is already mapped to "to". No need to remap
 
                         mapOrRemap = false;
                     }
