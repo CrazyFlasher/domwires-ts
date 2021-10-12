@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {IDisposable, IDisposableImmutable} from "../../common/IDisposable";
 import {Enum} from "../../Enum";
 import ArrayUtils from "../../utils/ArrayUtils";
@@ -12,14 +14,14 @@ export interface IMessageDispatcherImmutable extends IDisposableImmutable
 
     removeMessageListener<T>(type: Enum, listener: (message?: IMessage<T>) => void): void;
 
-    onMessageBubbled<T>(message: IMessage): boolean;
+    onMessageBubbled(message: IMessage): boolean;
 }
 
 export interface IMessageDispatcher extends IMessageDispatcherImmutable, IDisposable
 {
-    handleMessage<T>(message: IMessage): IMessageDispatcher;
+    handleMessage(message: IMessage): IMessageDispatcher;
 
-    removeAllMessageListeners<T>(): IMessageDispatcher;
+    removeAllMessageListeners(): IMessageDispatcher;
 
     dispatchMessage<T>(type: Enum, data?: T, bubbles?: boolean): IMessageDispatcher;
 }
@@ -158,7 +160,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return null;
     }
 
-    dispatchMessage<T>(type: Enum, data?: T, bubbles: boolean = true): IMessageDispatcher
+    dispatchMessage<T>(type: Enum, data?: T, bubbles = true): IMessageDispatcher
     {
         if (this.isBubbling)
         {
@@ -211,12 +213,13 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         this.isBubbling = false;
     }
 
-    onMessageBubbled<T>(message: IMessage): boolean
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    onMessageBubbled(message: IMessage): boolean
     {
         return false;
     }
 
-    private getMessage<T>(type: Enum, data: T, bubbles: boolean, forceReturnNew: boolean = false): Message
+    private getMessage<T>(type: Enum, data: T, bubbles: boolean, forceReturnNew = false): Message
     {
         if (!this._message || forceReturnNew)
         {
@@ -230,7 +233,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return this._message;
     }
 
-    handleMessage<T>(message: IMessage): IMessageDispatcher
+    handleMessage(message: IMessage): IMessageDispatcher
     {
         if (this._messageMap != null)
         {
@@ -255,7 +258,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return false;
     }
 
-    removeAllMessageListeners<T>(): IMessageDispatcher
+    removeAllMessageListeners(): IMessageDispatcher
     {
         if (this._messageMap != null)
         {
@@ -309,7 +312,7 @@ class Listener<T = any>
     private readonly _priority: number;
     private readonly _bindedFunc: (message?: IMessage) => void;
 
-    constructor(func: (message?: IMessage) => void, bind: any, priority?: number)
+    constructor(func: (message?: IMessage) => void, bind: T, priority?: number)
     {
         if (priority == null) priority = 0;
 

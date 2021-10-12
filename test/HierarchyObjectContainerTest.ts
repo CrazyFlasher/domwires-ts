@@ -32,6 +32,7 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
 
         const eventHandler: () => void = () =>
         {
+            /* eslint-disable @typescript-eslint/no-empty-function */
         };
 
         hoc.addMessageListener(MockMessageType.HELLO, eventHandler);
@@ -97,6 +98,7 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
     {
         const eventHandler: () => void = () =>
         {
+            /* eslint-disable @typescript-eslint/no-empty-function */
         };
 
         hoc.addMessageListener(MockMessageType.HELLO, eventHandler);
@@ -117,6 +119,7 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
     {
         const eventHandler: () => void = () =>
         {
+            /* eslint-disable @typescript-eslint/no-empty-function */
         };
 
         hoc.addMessageListener(MockMessageType.HELLO, eventHandler);

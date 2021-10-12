@@ -74,7 +74,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this;
     }
 
-    public removeModel(model: IModel, dispose: boolean = false): IModelContainer
+    public removeModel(model: IModel, dispose = false): IModelContainer
     {
         this.checkIfDisposed();
 
@@ -83,7 +83,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this;
     }
 
-    public removeAllModels(dispose: boolean = false): IModelContainer
+    public removeAllModels(dispose = false): IModelContainer
     {
         this.checkIfDisposed();
 
@@ -192,14 +192,14 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         this.commandMapper = null;
     }
 
-    override onMessageBubbled<T>(message: IMessage): boolean
+    override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
         return false;
     }
 
-    override handleMessage<T>(message: IMessage): IMessageDispatcher
+    override handleMessage(message: IMessage): IMessageDispatcher
     {
         super.handleMessage(message);
 
@@ -231,7 +231,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this;
     }
 
-    override dispatchMessageToChildren<T>(message: IMessage): IHierarchyObjectContainer
+    override dispatchMessageToChildren(message: IMessage): IHierarchyObjectContainer
     {
         super.dispatchMessageToChildren(message);
 
@@ -272,7 +272,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this.commandMapper.map3(messageTypeList, commandClassList, data, once, stopOnExecute);
     }
 
-    public unmap<T>(messageType: Enum, commandClass: Class<ICommand>): ICommandMapper
+    public unmap(messageType: Enum, commandClass: Class<ICommand>): ICommandMapper
     {
         this.checkIfDisposed();
 
@@ -286,7 +286,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this.commandMapper.clear();
     }
 
-    public unmapAll<T>(messageType: Enum): ICommandMapper
+    public unmapAll(messageType: Enum): ICommandMapper
     {
         this.checkIfDisposed();
 
@@ -307,7 +307,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         this.commandMapper.tryToExecuteCommand(messageType, messageData);
     }
 
-    public dispatchMessageToMediators<T>(message: IMessage): IContext
+    public dispatchMessageToMediators(message: IMessage): IContext
     {
         this.checkIfDisposed();
 
@@ -316,7 +316,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this;
     }
 
-    public dispatchMessageToModels<T>(message: IMessage): IContext
+    public dispatchMessageToModels(message: IMessage): IContext
     {
         this.checkIfDisposed();
 

@@ -45,7 +45,7 @@ export class MediatorContainer extends HierarchyObjectContainer implements IMedi
         return this;
     }
 
-    public removeMediator(mediator: IMediator, dispose: boolean = false): IMediatorContainer
+    public removeMediator(mediator: IMediator, dispose = false): IMediatorContainer
     {
         const success: boolean = this.remove(mediator, dispose);
 
@@ -58,7 +58,7 @@ export class MediatorContainer extends HierarchyObjectContainer implements IMedi
         return this;
     }
 
-    public removeAllMediators(dispose: boolean = false): IMediatorContainer
+    public removeAllMediators(dispose = false): IMediatorContainer
     {
         this.removeAll(dispose);
 

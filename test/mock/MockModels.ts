@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {AbstractModel} from "../../src/com/domwires/core/mvc/model/AbstractModel";
 import {MockMessageType, MockMessageType2} from "./MockMessageType";
 import {inject, injectable, named} from "inversify";
@@ -24,17 +26,17 @@ export class MockModel1 extends AbstractModel
 
 export class MockModel2 extends AbstractModel
 {
-    public testVar: number = 0;
+    public testVar = 0;
 }
 
 export class MockModel3 extends AbstractModel
 {
-    public testVar: number = 0;
+    public testVar = 0;
 }
 
 export class MockModel4 extends AbstractModel
 {
-    private _testVar: number = 0;
+    private _testVar = 0;
 
     get testVar(): number
     {
@@ -61,7 +63,7 @@ export class MockModel5 extends AbstractModel
 
 export class MockModel6 extends AbstractModel
 {
-    public v: number = 0;
+    public v = 0;
 
     override addedToHierarchy(): void
     {
@@ -122,7 +124,7 @@ export class Default implements IDefault
 export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
 {
     @inject("boolean") @named("myBool")
-    public _myBool: boolean = true;
+    public _myBool = true;
 
     @inject("number") @named("coolValue")
     public _coolValue: number;

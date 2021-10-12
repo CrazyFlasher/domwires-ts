@@ -45,7 +45,7 @@ export class ModelContainer extends HierarchyObjectContainer implements IModelCo
         return this;
     }
 
-    public removeModel(model: IModel, dispose: boolean = false): IModelContainer
+    public removeModel(model: IModel, dispose = false): IModelContainer
     {
         const success: boolean = this.remove(model, dispose);
 
@@ -58,7 +58,7 @@ export class ModelContainer extends HierarchyObjectContainer implements IModelCo
         return this;
     }
 
-    public removeAllModels(dispose: boolean = false): IModelContainer
+    public removeAllModels(dispose = false): IModelContainer
     {
         this.removeAll(dispose);
 

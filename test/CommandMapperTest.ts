@@ -173,7 +173,7 @@ describe('CommandMapperTest', function (this: Suite)
         commandMapper.map(MockMessageType.GOODBYE, MockCommand2);
 
         const vo: MockVo = new MockVo();
-        const itemId: string = "lol";
+        const itemId = "lol";
 
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {vo, itemId, e: MockMessageType.HELLO});
 
@@ -340,7 +340,7 @@ describe('CommandMapperTest', function (this: Suite)
     {
         const v: string[] = [];
 
-        const mappingData: any = {v};
+        const mappingData = {v};
         commandMapper.executeCommand(MockCommand8, mappingData);
     });
 

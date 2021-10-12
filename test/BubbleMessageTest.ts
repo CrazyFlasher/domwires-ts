@@ -104,11 +104,9 @@ describe('BubbleMessageTest', function (this: Suite)
 
     it('testBubblingFromBottomToTopPerf', () =>
     {
-        let bubbledEventType: Enum;
-        let count: number;
-
         const successFunc: () => void = () =>
         {
+            /* eslint-disable @typescript-eslint/no-empty-function */
         };
 
         const c1: IContext = factory.instantiateValueUnmapped(MockContext1);
@@ -138,9 +136,6 @@ describe('BubbleMessageTest', function (this: Suite)
 
         for (let i = 0; i < 100000; i++)
         {
-            count = 0;
-            bubbledEventType = null;
-
             // top element
             c1.addMessageListener(MockMessageType.HELLO, successFunc);
             c2.addMessageListener(MockMessageType.HELLO, successFunc);

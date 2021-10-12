@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {Container} from "inversify";
 import "reflect-metadata";
 import getDecorators from "inversify-inject-decorators";
 import ArrayUtils from "../utils/ArrayUtils";
 import {IDisposable, IDisposableImmutable} from "../common/IDisposable";
 import {AbstractDisposable} from "../common/AbstractDisposable";
-import {Class, getDefaultImplementation, logger} from "../Global";
+import {Class, getClassFromString, getDefaultImplementation, logger} from "../Global";
 import {getBindingDictionary} from "inversify/lib/planning/planner";
 
 const lazyContainer: Container = new Container();
@@ -29,17 +31,17 @@ function mergeIntoLazyOne(from: Container): void
     });
 }
 
-type MappingData = {
-    readonly typeOrValue: any;
+type MappingData<T = any> = {
+    readonly typeOrValue: T;
     readonly name?: string;
 };
 
-type Type<T> = string | Class<T>;
+type Type<T = any> = string | Class<T>;
 
 export class DependencyVo
 {
     private readonly _implementation: string;
-    private readonly _value: any;
+    private readonly _value: JSON;
     private readonly _newInstance: boolean;
 
     constructor(json: any)
@@ -104,7 +106,7 @@ class PoolModel
     private list: any[] = [];
     private _capacity: number;
 
-    private currentIndex: number = 0;
+    private currentIndex = 0;
     private factory: IAppFactory;
     private readonly isBusyFlagGetterName: string;
 
@@ -115,7 +117,7 @@ class PoolModel
         this.isBusyFlagGetterName = isBusyFlagGetterName;
     }
 
-    public get<T>(type: Type<T>, createNewIfNeeded: boolean = true): T
+    public get<T>(type: Type<T>, createNewIfNeeded = true): T
     {
         let instance: T;
 
@@ -203,7 +205,7 @@ class PoolModel
             return 0;
         }
 
-        let count: number = 0;
+        let count = 0;
         for (const instance of this.list)
         {
             if ((instance as any)[this.isBusyFlagGetterName])
@@ -271,14 +273,14 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 {
     private injector: Container = new Container();
 
-    private typeMap: Map<Type<any>, MappingData[]> = new Map<Type<any>, MappingData[]>();
-    private valueMap: Map<Type<any>, MappingData[]> = new Map<Type<any>, MappingData[]>();
+    private typeMap: Map<Type, MappingData[]> = new Map<Type, MappingData[]>();
+    private valueMap: Map<Type, MappingData[]> = new Map<Type, MappingData[]>();
 
     private autoMapAfterUnmap: boolean;
 
-    private poolModelMap: Map<Type<any>, PoolModel> = new Map<Type<any>, PoolModel>();
+    private poolModelMap: Map<Type, PoolModel> = new Map<Type, PoolModel>();
 
-    private _safePool: boolean = true;
+    private _safePool = true;
 
     private static includesName(list: MappingData[], name?: string): MappingData
     {
@@ -307,10 +309,10 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return "__$" + AppFactory.getTypeName(type) + "$__";
     }
 
-    private map<T>(type: Type<T>, to: T | Class<T>, name: string, map: Map<any, MappingData[]>, unmapMethod: (type: any, name?: any) => void): boolean
+    private map<T>(type: Type<T>, to: T | Class<T>, name: string, map: Map<any, MappingData[]>, unmapMethod: (type: Type<T>, name?: string) => void): boolean
     {
         let mappedToTypeOrValueList: MappingData[] = map.get(type);
-        let mapOrRemap: boolean = true;
+        let mapOrRemap = true;
 
         if (!this.autoMapAfterUnmap)
         {
@@ -394,7 +396,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         }
     }
 
-    private getFromPool<T>(type: Type<T>, createNewIfNeeded: boolean = true): T
+    private getFromPool<T>(type: Type<T>, createNewIfNeeded = true): T
     {
         this.checkPoolHasType(type);
 
@@ -630,7 +632,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return this;
     }
 
-    registerPool<T>(type: Type<T>, capacity: number = 5, instantiateNow?: boolean, isBusyFlagGetterName?: string): IAppFactory
+    registerPool<T>(type: Type<T>, capacity = 5, instantiateNow?: boolean, isBusyFlagGetterName?: string): IAppFactory
     {
         if (capacity === 0)
         {
@@ -699,7 +701,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
                 {
                     logger.info("Mapping '" + interfaceDefinition + "' to '" + d.implementation + "'");
 
-                    this.mapToType(interfaceDefinition, (global as any)[d.implementation], name);
+                    this.mapToType(interfaceDefinition, getClassFromString(d.implementation), name);
                 }
 
                 if (d.newInstance)

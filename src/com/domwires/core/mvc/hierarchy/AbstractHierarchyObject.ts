@@ -43,10 +43,12 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
 
     protected removedFromHierarchy(): void
     {
+        /* eslint-disable @typescript-eslint/no-empty-function */
     }
 
     protected addedToHierarchy(): void
     {
+        /* eslint-disable @typescript-eslint/no-empty-function */
     }
 
 }

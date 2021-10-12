@@ -4,9 +4,10 @@ import {inject, named, optional} from "inversify";
 import {MockObj1} from "./MockObjects";
 import {Enum} from "../../src/com/domwires/core/Enum";
 import {MockModel2, MockModel3, MockModel4, MockModel6} from "./MockModels";
-import {MockMessageType} from "./MockMessageType";
 import {setDefaultImplementation} from "../../src/com/domwires/core/Global";
 import {lazyInject, lazyInjectNamed} from "../../src/com/domwires/core/factory/IAppFactory";
+
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 export class MockVo
 {
@@ -246,7 +247,7 @@ export class MockCommand19 extends AbstractCommand
     @inject(MockModel2)
     private model: MockModel2;
 
-    private id: number = 0;
+    private id = 0;
 
     execute()
     {

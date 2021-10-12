@@ -1,7 +1,6 @@
 import {AbstractMediator} from "../../src/com/domwires/core/mvc/mediator/AbstractMediator";
 import {MockMessageType} from "./MockMessageType";
 import {postConstruct} from "inversify";
-import {logger} from "../../src/com/domwires/core/Global";
 
 export class MockMediator1 extends AbstractMediator
 {
@@ -38,15 +37,15 @@ export class MockMediator3 extends AbstractMediator
 
 export class MockMediator4 extends AbstractMediator
 {
-    static val: number = 0;
+    static val = 0;
 
     @postConstruct()
     private init(): void
     {
-        this.addMessageListener(MockMessageType.SHALOM, this.onShalom);
+        this.addMessageListener(MockMessageType.SHALOM, MockMediator4.onShalom);
     }
 
-    private onShalom()
+    private static onShalom()
     {
         MockMediator4.val++;
     }

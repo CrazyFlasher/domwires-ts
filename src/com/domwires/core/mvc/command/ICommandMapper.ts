@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {IDisposable, IDisposableImmutable} from "../../common/IDisposable";
 import {Enum} from "../../Enum";
 import {ICommand} from "./ICommand";
@@ -22,7 +24,7 @@ export class MappingConfig<T>
     private _oppositeGuardList: Class<IGuards>[];
     private readonly _stopOnExecute: boolean;
 
-    constructor(commandClass: Class<ICommand>, data: T, once: boolean, stopOnExecute: boolean = false)
+    constructor(commandClass: Class<ICommand>, data: T, once: boolean, stopOnExecute = false)
     {
         this._commandClass = commandClass;
         this._data = data;
@@ -142,11 +144,11 @@ export interface ICommandMapper extends ICommandMapperImmutable, IDisposable
     map3<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, once?: boolean,
             stopOnExecute?: boolean): MappingConfigList<T>;
 
-    unmap<T>(messageType: Enum, commandClass: Class<ICommand>): ICommandMapper;
+    unmap(messageType: Enum, commandClass: Class<ICommand>): ICommandMapper;
 
     clear(): ICommandMapper;
 
-    unmapAll<T>(messageType: Enum): ICommandMapper;
+    unmapAll(messageType: Enum): ICommandMapper;
 
     tryToExecuteCommand<T>(messageType: Enum, messageData?: T): void;
 
@@ -398,11 +400,11 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return result;
     }
 
-    private guardsAllow<T>(guardList: Class<IGuards>[], opposite?: boolean): boolean
+    private guardsAllow(guardList: Class<IGuards>[], opposite?: boolean): boolean
     {
         let guards: IGuards;
 
-        const guardsAllow: boolean = true;
+        const guardsAllow = true;
 
         for (const guardClass of guardList)
         {
@@ -427,7 +429,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return guardsAllow;
     }
 
-    private mapValues<T>(data: T, map: boolean = true): void
+    private mapValues<T>(data: T, map = true): void
     {
         for (const propName of Object.keys(data))
         {
@@ -435,7 +437,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         }
     }
 
-    private mapProperty<T>(data: T, propertyName: string, map: boolean = true): void
+    private mapProperty<T>(data: T, propertyName: string, map = true): void
     {
         const value = Reflect.get(data as any, propertyName);
 
@@ -448,7 +450,8 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
             if (map)
             {
                 this.factory.mapToValue(this.getType(value.constructor.name), value, propertyName);
-            } else
+            }
+            else
             {
                 this.factory.unmapFromValue(this.getType(value.constructor.name), propertyName);
             }
@@ -479,7 +482,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return this;
     }
 
-    private static mappingListContains<T>(list: MappingConfig<T>[], commandClass: Class<ICommand>, ignoreGuards: boolean = false): MappingConfig<T>
+    private static mappingListContains<T>(list: MappingConfig<T>[], commandClass: Class<ICommand>, ignoreGuards = false): MappingConfig<T>
     {
         for (const mappingVo of list)
         {

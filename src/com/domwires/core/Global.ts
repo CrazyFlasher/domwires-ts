@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {Logger} from "tslog";
 
-export type Class<T> = new(...args: any[]) => T;
+export type Class<T> = new(...args: T[]) => T;
 
 export const logger: Logger = new Logger();
 
@@ -12,7 +14,19 @@ export function definableFromString<T>(clazz:Class<T>): void
     (global as any)[clazz.name] = clazz;
 }
 
-export function setDefaultImplementation(key: string | Class<any>, value: Class<any>): void
+export function getClassFromString<T>(value: string): Class<T>
+{
+    const clazz = (global as any)[value];
+
+    if (!clazz)
+    {
+        throw new Error("Cannot get class from string '" + value + "'. Did you call 'definableFromString(value)?");
+    }
+
+    return clazz;
+}
+
+export function setDefaultImplementation<T>(key: string | Class<T>, value: Class<T>): void
 {
     if (defaultImplMap.has(key))
     {

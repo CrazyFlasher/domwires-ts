@@ -535,6 +535,8 @@ describe('AppFactoryTest', function (this: Suite)
 
     it("testMappingViaConfig", () =>
     {
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+
         const json: any = {};
 
         json["IDefault$def"] = {
@@ -569,7 +571,7 @@ describe('AppFactoryTest', function (this: Suite)
             value: ["botan", "sjava"]
         };
 
-        const jsonOverride: any = {
+        const jsonOverride = {
             "number$coolValue": {
                 value: 5
             }
@@ -601,43 +603,4 @@ describe('AppFactoryTest', function (this: Suite)
 
         factory.getInstance(MockObj1);
     });
-
-    /*it('teeest', () =>
-    {
-        function inject(name?:string, optional:boolean = false)
-        {
-            return Reflect.metadata("inject", {name: name, optional: optional});
-        }
-
-        function getInject(target: any, propertyKey: string) {
-            return Reflect.getMetadata("inject", target, propertyKey);
-        }
-
-        class Obj
-        {
-            @inject("asd", true)
-            private a:number;
-
-            @inject()
-            private b:string;
-
-            private init():void
-            {
-                console.log(this.a);
-            }
-        }
-
-        let o = new Obj();
-        console.log(Reflect.getMetadata("inject", o, "a"));
-
-        Reflect.set(o, "b", "123");
-        Reflect.set(o, "a", 5);
-        Reflect.set(o, "c", 77);
-
-        for (let p in o)
-        {
-            console.log(p);
-        }
-    });*/
-
 });

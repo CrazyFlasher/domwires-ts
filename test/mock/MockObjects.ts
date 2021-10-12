@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {inject, injectable, named, postConstruct} from "inversify";
 import "reflect-metadata";
 import {IDisposable} from "../../src/com/domwires/core/common/IDisposable";
@@ -189,13 +192,12 @@ export class MockObject extends AbstractDisposable implements MockObjects
 
 export interface IMockObj1
 {
-
 }
 
 @injectable()
 export class MockObj1 implements IMockObj1
 {
-    private _d: number = 0;
+    private _d = 0;
     private _s: string;
 
     get d(): number

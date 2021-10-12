@@ -10,7 +10,7 @@ import {ICommand} from "../../src/com/domwires/core/mvc/command/ICommand";
 
 export class MockContext1 extends AbstractContext
 {
-    override onMessageBubbled<T>(message: IMessage): boolean
+    override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
@@ -71,7 +71,7 @@ export class MockContext3 extends AbstractContext
         this.testMediator.dispatch();
     }
 
-    override onMessageBubbled<T>(message: IMessage): boolean
+    override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
@@ -110,7 +110,7 @@ export class MockContext4 extends AbstractContext
         this.testMediator.dispatch();
     }
 
-    override onMessageBubbled<T>(message: IMessage): boolean
+    override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
@@ -200,7 +200,7 @@ export class MockContext7 extends AbstractContext
         this.testMediator.dispatch();
     }
 
-    override onMessageBubbled<T>(message: IMessage): boolean
+    override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 

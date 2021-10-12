@@ -6,5 +6,6 @@ export abstract class AbstractCommand implements ICommand
 {
     execute(): void
     {
+        /* eslint-disable @typescript-eslint/no-empty-function */
     }
 }

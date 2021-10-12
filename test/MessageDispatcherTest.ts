@@ -12,6 +12,8 @@ import {Enum} from "../src/com/domwires/core/Enum";
 
 describe('MessageDispatcherTest', function (this: Suite)
 {
+    /* eslint-disable @typescript-eslint/no-empty-function */
+
     let d: IMessageDispatcher;
 
     beforeEach(() => d = new MessageDispatcher());
@@ -25,7 +27,9 @@ describe('MessageDispatcherTest', function (this: Suite)
 
     it('testDispatchMessage', () =>
     {
-        let gotMessage: boolean = false;
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+
+        let gotMessage = false;
         let gotMessageType: Enum = MockMessageType.GOODBYE;
         let gotMessageTarget: IMessageDispatcherImmutable = null;
         const gotMessageData: any = {};
@@ -146,7 +150,7 @@ describe('MessageDispatcherTest', function (this: Suite)
 
     it('testPriority_1', () =>
     {
-        let x: number = 0;
+        let x = 0;
 
         const listener1: () => void = () => x += 1;
         const listener2: () => void = () => x *= 2;
@@ -161,7 +165,7 @@ describe('MessageDispatcherTest', function (this: Suite)
 
     it('testPriority_2', () =>
     {
-        let x: number = 0;
+        let x = 0;
 
         const listener1: () => void = () => x += 1;
         const listener2: () => void = () => x *= 2;

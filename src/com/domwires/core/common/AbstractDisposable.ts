@@ -4,7 +4,7 @@ import {IDisposable} from "./IDisposable";
 @injectable()
 export abstract class AbstractDisposable implements IDisposable
 {
-    private _isDisposed: boolean = false;
+    private _isDisposed = false;
 
     public get isDisposed(): boolean
     {

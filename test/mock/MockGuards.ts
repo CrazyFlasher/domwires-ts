@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {AbstractGuards} from "../../src/com/domwires/core/mvc/command/AbstractGuards";
 import {lazyInjectNamed} from "../../src/com/domwires/core/factory/IAppFactory";
 import {inject, named} from "inversify";

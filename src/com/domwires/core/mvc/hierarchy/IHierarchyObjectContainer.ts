@@ -21,7 +21,7 @@ export interface IHierarchyObjectContainer extends IHierarchyObjectContainerImmu
 
     removeAll(dispose?: boolean): IHierarchyObjectContainer;
 
-    dispatchMessageToChildren<T>(message: IMessage): IHierarchyObjectContainer;
+    dispatchMessageToChildren(message: IMessage): IHierarchyObjectContainer;
 }
 
 export class HierarchyObjectContainer extends AbstractHierarchyObject implements IHierarchyObjectContainer
@@ -41,7 +41,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
 
     add(child: IHierarchyObject, index?: number): boolean
     {
-        let success: boolean = false;
+        let success = false;
 
         if (index !== undefined && index > this._childrenList.length)
         {
@@ -98,7 +98,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return this._childrenListImmutable !== null && this._childrenListImmutable.indexOf(child) !== -1;
     }
 
-    dispatchMessageToChildren<T>(message: IMessage): IHierarchyObjectContainer
+    dispatchMessageToChildren(message: IMessage): IHierarchyObjectContainer
     {
         for (const child of this._childrenList)
         {
@@ -118,12 +118,12 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return this;
     }
 
-    private static instanceOfIHierarchyObjectContainer(object: any): object is IHierarchyObjectContainer
+    private static instanceOfIHierarchyObjectContainer(object: IHierarchyObject): object is IHierarchyObjectContainer
     {
         return 'dispatchMessageToChildren' in object;
     }
 
-    onMessageBubbled<T>(message: IMessage): boolean
+    onMessageBubbled(message: IMessage): boolean
     {
         this.handleMessage(message);
 
@@ -132,7 +132,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
 
     remove(child: IHierarchyObject, dispose?: boolean): boolean
     {
-        let success: boolean = false;
+        let success = false;
 
         if (this.contains(child))
         {
