@@ -12,7 +12,7 @@ import ArrayUtils from "../../utils/ArrayUtils";
 import "reflect-metadata";
 
 export type CommandMapperConfig = {
-    readonly singletonCommands: boolean
+    readonly singletonCommands: boolean;
 };
 
 export class MappingConfig<T>

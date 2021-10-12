@@ -10,5 +10,8 @@
     "plugin:@typescript-eslint/recommended"
   ],
   "rules": {
+    "semi": ["error", "always"],
+    "@typescript-eslint/semi": ["error"],
+    "@typescript-eslint/member-delimiter-style": "error"
   }
 }
