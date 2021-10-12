@@ -12,6 +12,7 @@
   "rules": {
     "semi": ["error", "always"],
     "@typescript-eslint/semi": ["error"],
-    "@typescript-eslint/member-delimiter-style": "error"
+    "@typescript-eslint/member-delimiter-style": "error",
+    "@typescript-eslint/explicit-member-accessibility": "error"
   }
 }
