@@ -4,14 +4,14 @@ export class MockHierarchyObjectContainer extends HierarchyObjectContainer
 {
     private value: boolean;
 
-    dispose()
+    public dispose()
     {
         this.value = true;
 
         super.dispose();
     }
 
-    getValue(): boolean
+    public getValue(): boolean
     {
         return this.value;
     }

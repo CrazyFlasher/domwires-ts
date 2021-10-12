@@ -49,7 +49,7 @@ class Message<T = any> implements IMessage
     private _previousTarget: IMessageDispatcherImmutable;
     private _currentTarget: IMessageDispatcherImmutable;
 
-    setCurrentTarget(value: IMessageDispatcherImmutable): IMessageDispatcherImmutable
+    public setCurrentTarget(value: IMessageDispatcherImmutable): IMessageDispatcherImmutable
     {
         this._previousTarget = this._currentTarget;
 
@@ -58,52 +58,52 @@ class Message<T = any> implements IMessage
         return this._currentTarget;
     }
 
-    get bubbles(): boolean
+    public get bubbles(): boolean
     {
         return this._bubbles;
     }
 
-    set bubbles(value: boolean)
+    public set bubbles(value: boolean)
     {
         this._bubbles = value;
     }
 
-    get currentTarget(): IMessageDispatcherImmutable
+    public get currentTarget(): IMessageDispatcherImmutable
     {
         return this._currentTarget;
     }
 
-    get data(): T
+    public get data(): T
     {
         return this._data;
     }
 
-    set data(value: T)
+    public set data(value: T)
     {
         this._data = value;
     }
 
-    get previousTarget(): IMessageDispatcherImmutable
+    public get previousTarget(): IMessageDispatcherImmutable
     {
         return this._previousTarget;
     }
 
-    get initialTarget(): IMessageDispatcherImmutable
+    public get initialTarget(): IMessageDispatcherImmutable
     {
         return this._initialTarget;
     }
 
-    set initialTarget(value: IMessageDispatcherImmutable)
+    public set initialTarget(value: IMessageDispatcherImmutable)
     {
         this._initialTarget = value;
     }
 
-    get type(): Enum
+    public get type(): Enum
     {
         return this._type;
     }
 
-    set type(value: Enum)
+    public set type(value: Enum)
     {
         this._type = value;
     }
@@ -116,7 +116,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
 
     private isBubbling: boolean;
 
-    addMessageListener<T>(type: Enum, listener: (message?: IMessage<T>) => void, priority?: number): void
+    public addMessageListener<T>(type: Enum, listener: (message?: IMessage<T>) => void, priority?: number): void
     {
         if (!this._messageMap)
         {
@@ -160,7 +160,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return null;
     }
 
-    dispatchMessage<T>(type: Enum, data?: T, bubbles = true): IMessageDispatcher
+    public dispatchMessage<T>(type: Enum, data?: T, bubbles = true): IMessageDispatcher
     {
         if (this.isBubbling)
         {
@@ -214,7 +214,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
     }
 
     /* eslint-disable @typescript-eslint/no-unused-vars */
-    onMessageBubbled(message: IMessage): boolean
+    public onMessageBubbled(message: IMessage): boolean
     {
         return false;
     }
@@ -233,7 +233,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return this._message;
     }
 
-    handleMessage(message: IMessage): IMessageDispatcher
+    public handleMessage(message: IMessage): IMessageDispatcher
     {
         if (this._messageMap != null)
         {
@@ -248,7 +248,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return this;
     }
 
-    hasMessageListener(type: Enum): boolean
+    public hasMessageListener(type: Enum): boolean
     {
         if (this._messageMap != null)
         {
@@ -258,7 +258,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return false;
     }
 
-    removeAllMessageListeners(): IMessageDispatcher
+    public removeAllMessageListeners(): IMessageDispatcher
     {
         if (this._messageMap != null)
         {
@@ -270,7 +270,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return this;
     }
 
-    removeMessageListener<T>(type: Enum, listener: (message?: IMessage<T>) => void): void
+    public removeMessageListener<T>(type: Enum, listener: (message?: IMessage<T>) => void): void
     {
         if (this._messageMap != null)
         {
@@ -290,7 +290,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         }
     }
 
-    dispose()
+    public dispose()
     {
         this.removeAllMessageListeners();
 
@@ -312,7 +312,7 @@ class Listener<T = any>
     private readonly _priority: number;
     private readonly _bindedFunc: (message?: IMessage) => void;
 
-    constructor(func: (message?: IMessage) => void, bind: T, priority?: number)
+    public constructor(func: (message?: IMessage) => void, bind: T, priority?: number)
     {
         if (priority == null) priority = 0;
 
@@ -321,17 +321,17 @@ class Listener<T = any>
         this._bindedFunc = func.bind(bind);
     }
 
-    get priority(): number
+    public get priority(): number
     {
         return this._priority;
     }
 
-    get func(): (message?: IMessage) => void
+    public get func(): (message?: IMessage) => void
     {
         return this._func;
     }
 
-    get bindedFunc(): (message?: IMessage) => void
+    public get bindedFunc(): (message?: IMessage) => void
     {
         return this._bindedFunc;
     }

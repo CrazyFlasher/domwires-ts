@@ -92,7 +92,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this;
     }
 
-    get numModels(): number
+    public get numModels(): number
     {
         this.checkIfDisposed();
 
@@ -106,14 +106,14 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this.modelContainer.containsModel(model);
     }
 
-    get modelList(): IModel[]
+    public get modelList(): IModel[]
     {
         this.checkIfDisposed();
 
         return this.modelContainer.modelList;
     }
 
-    get modelListImmutable(): ReadonlyArray<IModelImmutable>
+    public get modelListImmutable(): ReadonlyArray<IModelImmutable>
     {
         this.checkIfDisposed();
 
@@ -148,7 +148,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this;
     }
 
-    get numMediators(): number
+    public get numMediators(): number
     {
         this.checkIfDisposed();
 
@@ -162,21 +162,21 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this.mediatorContainer.containsMediator(mediator);
     }
 
-    get mediatorList(): IMediator[]
+    public get mediatorList(): IMediator[]
     {
         this.checkIfDisposed();
 
         return this.mediatorContainer.mediatorList;
     }
 
-    get mediatorListImmutable(): ReadonlyArray<IMediatorImmutable>
+    public get mediatorListImmutable(): ReadonlyArray<IMediatorImmutable>
     {
         this.checkIfDisposed();
 
         return this.mediatorContainer.mediatorListImmutable;
     }
 
-    override dispose(): void
+    public override dispose(): void
     {
         this.commandMapper.dispose();
 
@@ -192,14 +192,14 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         this.commandMapper = null;
     }
 
-    override onMessageBubbled(message: IMessage): boolean
+    public override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
         return false;
     }
 
-    override handleMessage(message: IMessage): IMessageDispatcher
+    public override handleMessage(message: IMessage): IMessageDispatcher
     {
         super.handleMessage(message);
 
@@ -231,7 +231,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this;
     }
 
-    override dispatchMessageToChildren(message: IMessage): IHierarchyObjectContainer
+    public override dispatchMessageToChildren(message: IMessage): IHierarchyObjectContainer
     {
         super.dispatchMessageToChildren(message);
 
@@ -333,7 +333,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this.commandMapper.executeCommand(commandClass, data, guardList, guardNotList);
     }
 
-    setMergeMessageDataAndMappingData(value: boolean): ICommandMapper
+    public setMergeMessageDataAndMappingData(value: boolean): ICommandMapper
     {
         return this.commandMapper.setMergeMessageDataAndMappingData(value);
     }

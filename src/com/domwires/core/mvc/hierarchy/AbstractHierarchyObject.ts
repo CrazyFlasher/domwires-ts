@@ -6,24 +6,24 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
 {
     private _parent: IHierarchyObjectContainer;
 
-    dispose()
+    public dispose()
     {
         this._parent = null;
 
         super.dispose();
     }
 
-    get parent(): IHierarchyObjectContainer
+    public get parent(): IHierarchyObjectContainer
     {
         return this._parent;
     }
 
-    get parentImmutable(): IHierarchyObjectContainerImmutable
+    public get parentImmutable(): IHierarchyObjectContainerImmutable
     {
         return this.parent;
     }
 
-    setParent(value: IHierarchyObjectContainer): IHierarchyObject
+    public setParent(value: IHierarchyObjectContainer): IHierarchyObject
     {
         const hasParent: boolean = this._parent != null;
 

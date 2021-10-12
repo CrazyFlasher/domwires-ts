@@ -4,7 +4,7 @@ export default class ArrayUtils
      * Clears array.
      * @param array input array
      */
-    static clear<T>(array: T[]): void
+    public static clear<T>(array: T[]): void
     {
         if (array == null) throw new Error("Array is null!");
 
@@ -17,7 +17,7 @@ export default class ArrayUtils
      * @param element element to check
      * @return true, if element is the last
      */
-    static isLast<T>(array: ReadonlyArray<T>, element: T): boolean
+    public static isLast<T>(array: ReadonlyArray<T>, element: T): boolean
     {
         if (array == null) throw new Error("Array is null!");
 
@@ -30,7 +30,7 @@ export default class ArrayUtils
      * @param element element to check
      * @return true, if input array contains element
      */
-    static contains<T>(array: ReadonlyArray<T>, element: T): boolean
+    public static contains<T>(array: ReadonlyArray<T>, element: T): boolean
     {
         if (array == null) throw new Error("Array is null!");
 
@@ -42,7 +42,7 @@ export default class ArrayUtils
      * @param array input array
      * @param element element to remove from input array
      */
-    static remove<T>(array: T[], element: T): void
+    public static remove<T>(array: T[], element: T): void
     {
         if (array == null) throw new Error("Array is null!");
         const index = array.indexOf(element);

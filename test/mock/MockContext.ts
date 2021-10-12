@@ -10,7 +10,7 @@ import {ICommand} from "../../src/com/domwires/core/mvc/command/ICommand";
 
 export class MockContext1 extends AbstractContext
 {
-    override onMessageBubbled(message: IMessage): boolean
+    public override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
@@ -23,7 +23,7 @@ export class MockContext2 extends AbstractContext
 {
     private testModel: MockModel2;
 
-    override init(): void
+    protected override init(): void
     {
         super.init();
 
@@ -35,7 +35,7 @@ export class MockContext2 extends AbstractContext
         this.map(MockMessageType.HELLO, MockCommand10);
     }
 
-    getTestModel(): MockModel2
+    public getTestModel(): MockModel2
     {
         return this.testModel;
     }
@@ -46,7 +46,7 @@ export class MockContext3 extends AbstractContext
     private testMediator: MockMediator2;
     private testModel2: MockModel3;
 
-    override init(): void
+    protected override init(): void
     {
         super.init();
 
@@ -61,17 +61,17 @@ export class MockContext3 extends AbstractContext
         this.map(MockMessageType.HELLO, MockCommand11);
     }
 
-    getTestModel(): MockModel3
+    public getTestModel(): MockModel3
     {
         return this.testModel2;
     }
 
-    ready(): void
+    public ready(): void
     {
         this.testMediator.dispatch();
     }
 
-    override onMessageBubbled(message: IMessage): boolean
+    public override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
@@ -85,7 +85,7 @@ export class MockContext4 extends AbstractContext
     private testMediator: MockMediator2;
     private testModel2: MockModel3;
 
-    override init(): void
+    protected override init(): void
     {
         super.init();
 
@@ -100,17 +100,17 @@ export class MockContext4 extends AbstractContext
         this.map(MockMessageType.HELLO, MockCommand11);
     }
 
-    getTestModel(): MockModel3
+    public getTestModel(): MockModel3
     {
         return this.testModel2;
     }
 
-    ready(): void
+    public ready(): void
     {
         this.testMediator.dispatch();
     }
 
-    override onMessageBubbled(message: IMessage): boolean
+    public override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
@@ -124,8 +124,7 @@ export class MockContext5 extends AbstractContext
     private v: MockMediator3;
     private m: MockModel4;
 
-    @postConstruct()
-    override init(): void
+    protected override init(): void
     {
         this.config = {
             forwardMessageFromMediatorsToModels: true,
@@ -150,7 +149,7 @@ export class MockContext5 extends AbstractContext
         this.v.dispatch();
     }
 
-    getModel(): MockModel4
+    public getModel(): MockModel4
     {
         return this.m;
     }
@@ -159,7 +158,7 @@ export class MockContext5 extends AbstractContext
 export class MockContext6 extends AbstractContext
 {
     @postConstruct()
-    override init(): void
+    public override init(): void
     {
         super.init();
 
@@ -175,7 +174,7 @@ export class MockContext7 extends AbstractContext
     private testMediator: MockMediator2;
     private testModel: MockModel2;
 
-    override init(): void
+    public override init(): void
     {
         super.init();
 
@@ -190,17 +189,17 @@ export class MockContext7 extends AbstractContext
         this.map(MockMessageType.HELLO, this.commandImpl);
     }
 
-    getTestModel(): MockModel2
+    public getTestModel(): MockModel2
     {
         return this.testModel;
     }
 
-    ready(): void
+    public ready(): void
     {
         this.testMediator.dispatch();
     }
 
-    override onMessageBubbled(message: IMessage): boolean
+    public override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
@@ -213,7 +212,7 @@ export class MockContext8 extends AbstractContext
 {
     public testModel: MockModel6;
 
-    override init(): void
+    public override init(): void
     {
         super.init();
 

@@ -24,7 +24,7 @@ export class MappingConfig<T>
     private _oppositeGuardList: Class<IGuards>[];
     private readonly _stopOnExecute: boolean;
 
-    constructor(commandClass: Class<ICommand>, data: T, once: boolean, stopOnExecute = false)
+    public constructor(commandClass: Class<ICommand>, data: T, once: boolean, stopOnExecute = false)
     {
         this._commandClass = commandClass;
         this._data = data;
@@ -89,7 +89,7 @@ export class MappingConfigList<T>
 {
     private readonly list: MappingConfig<T>[];
 
-    constructor()
+    public constructor()
     {
         this.list = [];
     }
@@ -179,14 +179,14 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         }
     }
 
-    dispose()
+    public dispose()
     {
         this.clear();
 
         super.dispose();
     }
 
-    map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T>
+    public map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T>
     {
         const mappingConfig: MappingConfig<T> = new MappingConfig(commandClass, data, once, stopOnExecute);
 
@@ -205,7 +205,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return mappingConfig;
     }
 
-    map1<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>
+    public map1<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>
     {
         const mappingConfigList: MappingConfigList<T> = new MappingConfigList();
 
@@ -218,7 +218,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return mappingConfigList;
     }
 
-    map2<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>
+    public map2<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>
     {
         const mappingConfigList: MappingConfigList<T> = new MappingConfigList();
 
@@ -231,7 +231,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return mappingConfigList;
     }
 
-    map3<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>
+    public map3<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>
     {
         const mappingConfigList: MappingConfigList<T> = new MappingConfigList();
 
@@ -250,7 +250,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return mappingConfigList;
     }
 
-    unmap<T>(messageType: Enum, commandClass: Class<ICommand>): ICommandMapper
+    public unmap<T>(messageType: Enum, commandClass: Class<ICommand>): ICommandMapper
     {
         let list: MappingConfig<T>[] = this.commandMap.get(messageType);
         if (list != null)
@@ -272,19 +272,19 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return this;
     }
 
-    hasMapping(messageType: Enum): boolean
+    public hasMapping(messageType: Enum): boolean
     {
         return this.commandMap.get(messageType) != null;
     }
 
-    clear(): ICommandMapper
+    public clear(): ICommandMapper
     {
         this.commandMap.clear();
 
         return this;
     }
 
-    unmapAll<T>(messageType: Enum): ICommandMapper
+    public unmapAll<T>(messageType: Enum): ICommandMapper
     {
         const list: MappingConfig<T>[] = this.commandMap.get(messageType);
         if (list != null)
@@ -295,7 +295,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return this;
     }
 
-    tryToExecuteCommand<T>(messageType: Enum, messageData?: T): void
+    public tryToExecuteCommand<T>(messageType: Enum, messageData?: T): void
     {
         const mappedToMessageCommands: MappingConfig<T>[] = this.commandMap.get(messageType);
 
@@ -350,7 +350,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return messageData;
     }
 
-    executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[], guardNotList?: Class<IGuards>[]): boolean
+    public executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[], guardNotList?: Class<IGuards>[]): boolean
     {
         if (this.config.singletonCommands)
         {
@@ -475,7 +475,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return value;
     }
 
-    setMergeMessageDataAndMappingData(value: boolean): ICommandMapper
+    public setMergeMessageDataAndMappingData(value: boolean): ICommandMapper
     {
         this._mergeMessageDataAndMappingData = value;
 

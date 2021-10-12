@@ -2,7 +2,7 @@ import {AbstractHierarchyObject} from "../../../src/com/domwires/core/mvc/hierar
 
 export class MockHierarchyObject extends AbstractHierarchyObject
 {
-    constructor()
+    public constructor()
     {
         super();
     }

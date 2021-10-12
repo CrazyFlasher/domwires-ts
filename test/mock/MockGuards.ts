@@ -15,7 +15,7 @@ export class MockValuesGuards extends AbstractGuards
     @lazyInjectNamed("any", "o")
     private o:any;
 
-    get allows(): boolean
+    public get allows(): boolean
     {
         if (this.s !== "123") throw new Error();
         if (this.n !== 123) throw new Error();
@@ -36,7 +36,7 @@ export class MockValuesNotSingletonGuards extends AbstractGuards
     @inject("any" ) @named("o")
     private o:any;
 
-    get allows(): boolean
+    public get allows(): boolean
     {
         if (this.s !== "123") throw new Error();
         if (this.n !== 123) throw new Error();
@@ -48,7 +48,7 @@ export class MockValuesNotSingletonGuards extends AbstractGuards
 
 export class MockAllowGuards extends AbstractGuards
 {
-    get allows(): boolean
+    public get allows(): boolean
     {
         return true;
     }
@@ -56,7 +56,7 @@ export class MockAllowGuards extends AbstractGuards
 
 export class MockAllowGuards2 extends AbstractGuards
 {
-    get allows(): boolean
+    public get allows(): boolean
     {
         return true;
     }
@@ -64,7 +64,7 @@ export class MockAllowGuards2 extends AbstractGuards
 
 export class MockNotAllowGuards extends AbstractGuards
 {
-    get allows(): boolean
+    public get allows(): boolean
     {
         return false;
     }

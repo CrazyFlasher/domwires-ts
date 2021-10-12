@@ -68,7 +68,7 @@ export class ModelContainer extends HierarchyObjectContainer implements IModelCo
         return this;
     }
 
-    get numModels(): number
+    public get numModels(): number
     {
         return (this.children != null) ? this.children.length : 0;
     }
@@ -79,13 +79,13 @@ export class ModelContainer extends HierarchyObjectContainer implements IModelCo
     }
 
     // better to return copy, but in sake of performance, we do that way.
-    get modelList(): IModel[]
+    public get modelList(): IModel[]
     {
         return this._modelList;
     }
 
     // better to return copy, but in sake of performance, we do that way.
-    get modelListImmutable(): ReadonlyArray<IModelImmutable>
+    public get modelListImmutable(): ReadonlyArray<IModelImmutable>
     {
         return this._modelListImmutable;
     }

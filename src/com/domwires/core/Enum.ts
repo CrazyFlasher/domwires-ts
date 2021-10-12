@@ -7,12 +7,12 @@ export abstract class Enum
         this._name = name;
     }
 
-    toString(): string
+    public toString(): string
     {
         return this._name;
     }
 
-    get name(): string
+    public get name(): string
     {
         return this._name;
     }

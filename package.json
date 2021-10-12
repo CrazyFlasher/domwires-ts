@@ -23,6 +23,6 @@
     "test": "mocha -r ts-node/register test/**/*.ts",
     "test:watch": "mocha -r ts-node/register --watch --watch-files test/*.ts test/**/*.ts",
     "eslint-setup": "npm install eslint --save-dev",
-    "eslint-run": " eslint . --ext .ts"
+    "eslint-run": "eslint . --ext .ts --fix"
   }
 }

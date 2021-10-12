@@ -68,7 +68,7 @@ export class MediatorContainer extends HierarchyObjectContainer implements IMedi
         return this;
     }
 
-    get numMediators(): number
+    public get numMediators(): number
     {
         return (this.children != null) ? this.children.length : 0;
     }
@@ -79,13 +79,13 @@ export class MediatorContainer extends HierarchyObjectContainer implements IMedi
     }
 
     // better to return copy, but in sake of performance, we do that way.
-    get mediatorList(): IMediator[]
+    public get mediatorList(): IMediator[]
     {
         return this._mediatorList;
     }
 
     // better to return copy, but in sake of performance, we do that way.
-    get mediatorListImmutable(): ReadonlyArray<IMediatorImmutable>
+    public get mediatorListImmutable(): ReadonlyArray<IMediatorImmutable>
     {
         return this._mediatorListImmutable;
     }

@@ -9,7 +9,7 @@ export class MockMediator1 extends AbstractMediator
 
 export class MockMediator2 extends AbstractMediator
 {
-    dispatch(): void
+    public dispatch(): void
     {
         this.dispatchMessage(MockMessageType.HELLO);
     }
@@ -28,7 +28,7 @@ export class MockMediator3 extends AbstractMediator
         this.dispatchMessage(MockMessageType.SHALOM);
     }
 
-    dispatch(): void
+    public dispatch(): void
     {
         this.dispatchMessage(MockMessageType.HELLO);
     }
@@ -37,7 +37,7 @@ export class MockMediator3 extends AbstractMediator
 
 export class MockMediator4 extends AbstractMediator
 {
-    static val = 0;
+    public static val = 0;
 
     @postConstruct()
     private init(): void

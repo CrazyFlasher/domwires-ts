@@ -2,12 +2,12 @@ import {Enum} from "../../src/com/domwires/core/Enum";
 
 export class MockMessageType extends Enum
 {
-    static readonly HELLO:MockMessageType = new MockMessageType("HELLO");
-    static readonly GOODBYE:MockMessageType = new MockMessageType("GOODBYE");
-    static readonly SHALOM:MockMessageType = new MockMessageType("SHALOM");
-    static readonly PREVED:MockMessageType = new MockMessageType("PREVED");
+    public static readonly HELLO:MockMessageType = new MockMessageType("HELLO");
+    public static readonly GOODBYE:MockMessageType = new MockMessageType("GOODBYE");
+    public static readonly SHALOM:MockMessageType = new MockMessageType("SHALOM");
+    public static readonly PREVED:MockMessageType = new MockMessageType("PREVED");
 
-    constructor(name: string)
+    public constructor(name: string)
     {
         super(name);
     }
@@ -15,12 +15,12 @@ export class MockMessageType extends Enum
 
 export class MockMessageType2 extends Enum
 {
-    static readonly HELLO:MockMessageType = new MockMessageType("HELLO");
-    static readonly GOODBYE:MockMessageType = new MockMessageType("GOODBYE");
-    static readonly SHALOM:MockMessageType = new MockMessageType("SHALOM");
-    static readonly PREVED:MockMessageType = new MockMessageType("PREVED");
+    public static readonly HELLO:MockMessageType = new MockMessageType("HELLO");
+    public static readonly GOODBYE:MockMessageType = new MockMessageType("GOODBYE");
+    public static readonly SHALOM:MockMessageType = new MockMessageType("SHALOM");
+    public static readonly PREVED:MockMessageType = new MockMessageType("PREVED");
 
-    constructor(name: string)
+    public constructor(name: string)
     {
         super(name);
     }

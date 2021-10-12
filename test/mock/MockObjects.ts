@@ -12,12 +12,12 @@ export class MockBusyPoolObject
 {
     private _isBusy: boolean;
 
-    get isBusy(): boolean
+    public get isBusy(): boolean
     {
         return this._isBusy;
     }
 
-    set isBusy(value: boolean)
+    public set isBusy(value: boolean)
     {
         this._isBusy = value;
     }
@@ -26,7 +26,7 @@ export class MockBusyPoolObject
 @injectable()
 export class MockPool1 implements IMockPool1
 {
-    get value(): number
+    public get value(): number
     {
         return 1;
     }
@@ -35,7 +35,7 @@ export class MockPool1 implements IMockPool1
 @injectable()
 export class MockPool2 implements IMockPool1
 {
-    get value(): number
+    public get value(): number
     {
         return 2;
     }
@@ -56,7 +56,7 @@ export class MockPool3 implements IMockPool1
         this.pcTimes++;
     }
 
-    get value(): number
+    public get value(): number
     {
         return this.v;
     }
@@ -68,12 +68,12 @@ export class MockPool4 implements IMockPool2
     private _s: string;
     private _n: number;
 
-    get n(): number
+    public get n(): number
     {
         return this._n;
     }
 
-    get s(): string
+    public get s(): string
     {
         return this._s;
     }
@@ -100,12 +100,12 @@ export interface IMockObject3 extends IDisposable
 
 export class MockObject3 extends AbstractDisposable implements IMockObject3
 {
-    get a(): number
+    public get a(): number
     {
         return 500;
     }
 
-    get b(): number
+    public get b(): number
     {
         return 700;
     }
@@ -113,7 +113,7 @@ export class MockObject3 extends AbstractDisposable implements IMockObject3
 
 export class MockObject2
 {
-    get n(): number
+    public get n(): number
     {
         return 7;
     }
@@ -159,32 +159,32 @@ export class MockObject extends AbstractDisposable implements MockObjects
         this._pc = true;
     }
 
-    get g(): string[]
+    public get g(): string[]
     {
         return this._g;
     }
 
-    get n(): number
+    public get n(): number
     {
         return this._n;
     }
 
-    get o(): any
+    public get o(): any
     {
         return this._o;
     }
 
-    get pc(): boolean
+    public get pc(): boolean
     {
         return this._pc;
     }
 
-    get s(): string
+    public get s(): string
     {
         return this._s;
     }
 
-    get mo(): MockObject2
+    public get mo(): MockObject2
     {
         return this._mo;
     }
@@ -200,22 +200,22 @@ export class MockObj1 implements IMockObj1
     private _d = 0;
     private _s: string;
 
-    get d(): number
+    public get d(): number
     {
         return this._d;
     }
 
-    set d(value: number)
+    public set d(value: number)
     {
         this._d = value;
     }
 
-    get s(): string
+    public get s(): string
     {
         return this._s;
     }
 
-    set s(value: string)
+    public set s(value: string)
     {
         this._s = value;
     }

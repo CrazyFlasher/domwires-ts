@@ -11,15 +11,15 @@ import {lazyInject, lazyInjectNamed} from "../../src/com/domwires/core/factory/I
 
 export class MockVo
 {
-    name: string;
-    age: number;
-    str: string;
-    e: Enum;
+    public name: string;
+    public age: number;
+    public str: string;
+    public e: Enum;
 }
 
 export class MockVo2
 {
-    olo: string;
+    public olo: string;
 }
 
 export class MockCommand0 extends AbstractCommand
@@ -32,7 +32,7 @@ export class MockCommand1 extends AbstractCommand
     @lazyInject(MockObj1)
     private obj: MockObj1;
 
-    override execute(): void
+    public override execute(): void
     {
         this.obj.d += 7;
     }
@@ -49,7 +49,7 @@ export class MockCommand2 extends AbstractCommand
     @lazyInjectNamed("MockMessageType", "e")
     private e: Enum;
 
-    execute()
+    public override execute()
     {
         this.vo.age = 11;
         this.vo.name = "hi";
@@ -66,7 +66,7 @@ export class MockCommand3 extends AbstractCommand
     @lazyInjectNamed("number", "olo")
     private olo: number;
 
-    execute()
+    public override execute()
     {
         this.obj.d += this.olo;
     }
@@ -80,7 +80,7 @@ export class MockCommand4 extends AbstractCommand
     @lazyInjectNamed("string", "olo")
     private olo: string;
 
-    execute()
+    public override execute()
     {
         this.obj.s = this.olo;
     }
@@ -94,7 +94,7 @@ export class MockCommand5 extends AbstractCommand
     @lazyInjectNamed("string", "olo")
     private olo: string;
 
-    execute()
+    public override execute()
     {
         if (this.obj) this.obj.s = this.olo;
     }
@@ -117,7 +117,7 @@ export class MockCommand10 extends AbstractCommand implements IMockCommand
     @inject(MockModel2)
     private testModel: MockModel2;
 
-    override execute(): void
+    public override execute(): void
     {
         super.execute();
 
@@ -130,7 +130,7 @@ export class MockCommand11 extends AbstractCommand
     @inject(MockModel3)
     private testModel: MockModel3;
 
-    override execute(): void
+    public override execute(): void
     {
         super.execute();
 
@@ -143,7 +143,7 @@ export class MockCommand12 extends AbstractCommand
     @inject(MockModel4)
     private testModel: MockModel4;
 
-    override execute(): void
+    public override execute(): void
     {
         super.execute();
 
@@ -156,7 +156,7 @@ export class MockCommand13 extends AbstractCommand implements IMockCommand
     @inject(MockModel2)
     private testModel: MockModel2;
 
-    override execute(): void
+    public override execute(): void
     {
         super.execute();
 
@@ -172,7 +172,7 @@ export class MockCommand14 extends AbstractCommand
     @lazyInjectNamed("string", "olo")
     private olo: string;
 
-    override execute(): void
+    public override execute(): void
     {
         super.execute();
 
@@ -185,7 +185,7 @@ export class MockCommand15 extends AbstractCommand
     @inject(MockObj1)
     private obj: MockObj1;
 
-    override execute(): void
+    public override execute(): void
     {
         super.execute();
 
@@ -198,7 +198,7 @@ export class MockCommand16 extends AbstractCommand implements IMockCommand
     @inject(MockModel6)
     private m: MockModel6;
 
-    override execute(): void
+    public override execute(): void
     {
         super.execute();
 
@@ -249,7 +249,7 @@ export class MockCommand19 extends AbstractCommand
 
     private id = 0;
 
-    execute()
+    public override execute()
     {
         this.id++;
 

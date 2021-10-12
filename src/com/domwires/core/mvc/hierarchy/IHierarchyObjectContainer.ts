@@ -29,7 +29,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
     private _childrenList: IHierarchyObject[] = [];
     private _childrenListImmutable: IHierarchyObjectImmutable[] = [];
 
-    dispose()
+    public dispose()
     {
         this.removeAll(true);
 
@@ -39,7 +39,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         super.dispose();
     }
 
-    add(child: IHierarchyObject, index?: number): boolean
+    public add(child: IHierarchyObject, index?: number): boolean
     {
         let success = false;
 
@@ -83,22 +83,22 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return success;
     }
 
-    get children(): ReadonlyArray<IHierarchyObject>
+    public get children(): ReadonlyArray<IHierarchyObject>
     {
         return this._childrenList;
     }
 
-    get childrenImmutable(): ReadonlyArray<IHierarchyObjectImmutable>
+    public get childrenImmutable(): ReadonlyArray<IHierarchyObjectImmutable>
     {
         return this._childrenListImmutable;
     }
 
-    contains(child: IHierarchyObjectImmutable): boolean
+    public contains(child: IHierarchyObjectImmutable): boolean
     {
         return this._childrenListImmutable !== null && this._childrenListImmutable.indexOf(child) !== -1;
     }
 
-    dispatchMessageToChildren(message: IMessage): IHierarchyObjectContainer
+    public dispatchMessageToChildren(message: IMessage): IHierarchyObjectContainer
     {
         for (const child of this._childrenList)
         {
@@ -123,14 +123,14 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return 'dispatchMessageToChildren' in object;
     }
 
-    onMessageBubbled(message: IMessage): boolean
+    public onMessageBubbled(message: IMessage): boolean
     {
         this.handleMessage(message);
 
         return true;
     }
 
-    remove(child: IHierarchyObject, dispose?: boolean): boolean
+    public remove(child: IHierarchyObject, dispose?: boolean): boolean
     {
         let success = false;
 
@@ -154,7 +154,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return success;
     }
 
-    removeAll(dispose?: boolean): IHierarchyObjectContainer
+    public removeAll(dispose?: boolean): IHierarchyObjectContainer
     {
         if (this._childrenList !== null)
         {

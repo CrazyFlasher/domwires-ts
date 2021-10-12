@@ -4,7 +4,7 @@ import {injectable} from "inversify";
 @injectable()
 export class AbstractGuards implements IGuards
 {
-    get allows(): boolean
+    public get allows(): boolean
     {
         return false;
     }

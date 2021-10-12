@@ -2,7 +2,7 @@ import {AbstractDisposable} from "../../../src/com/domwires/core/common/Abstract
 
 export default class MockDisposable extends AbstractDisposable
 {
-    constructor()
+    public constructor()
     {
         super();
     }

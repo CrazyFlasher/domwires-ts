@@ -11,7 +11,7 @@ export abstract class AbstractDisposable implements IDisposable
         return this._isDisposed;
     }
 
-    dispose(): void
+    public dispose(): void
     {
         if (this._isDisposed)
         {

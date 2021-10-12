@@ -38,12 +38,12 @@ export class MockModel4 extends AbstractModel
 {
     private _testVar = 0;
 
-    get testVar(): number
+    public get testVar(): number
     {
         return this._testVar;
     }
 
-    set testVar(value: number)
+    public set testVar(value: number)
     {
         this._testVar = value;
 
@@ -65,7 +65,7 @@ export class MockModel6 extends AbstractModel
 {
     public v = 0;
 
-    override addedToHierarchy(): void
+    public override addedToHierarchy(): void
     {
         super.addedToHierarchy();
 
@@ -115,7 +115,7 @@ export interface ISuperCoolModel
 @injectable()
 export class Default implements IDefault
 {
-    get result(): number
+    public get result(): number
     {
         return 123;
     }
@@ -141,12 +141,12 @@ export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
     @inject("string[]")
     public _array: string[];
 
-    get getMyBool(): boolean
+    public get getMyBool(): boolean
     {
         return this._myBool;
     }
 
-    get getCoolValue(): number
+    public get getCoolValue(): number
     {
         return this._coolValue;
     }
@@ -156,17 +156,17 @@ export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
     //     return this._value;
     // }
 
-    get def(): IDefault
+    public get def(): IDefault
     {
         return this._def;
     }
 
-    get object(): any
+    public get object(): any
     {
         return this._object;
     }
 
-    get array(): string[]
+    public get array(): string[]
     {
         return this._array;
     }
