@@ -260,7 +260,6 @@ export class MockCommand19Ex extends MockCommand19
 {
 }
 
-/* tslint:disable:no-empty-interface */
 export interface IMockCommand extends ICommand
 {
 }

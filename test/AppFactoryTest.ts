@@ -535,8 +535,6 @@ describe('AppFactoryTest', function (this: Suite)
 
     it("testMappingViaConfig", () =>
     {
-        /* tslint:disable:no-string-literal */
-
         const json: any = {};
 
         json["IDefault$def"] = {

@@ -107,12 +107,10 @@ describe('BubbleMessageTest', function (this: Suite)
         let bubbledEventType: Enum;
         let count: number;
 
-        /* tslint:disable:no-empty */
         const successFunc: () => void = () =>
         {
         };
 
-        /* tslint:disable: no-shadowed-variable */
         const c1: IContext = factory.instantiateValueUnmapped(MockContext1);
         const c2: IContext = factory.instantiateValueUnmapped(MockContext1);
         const c3: IContext = factory.instantiateValueUnmapped(MockContext1);

@@ -41,12 +41,10 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
         return this;
     }
 
-    /* tslint:disable:no-empty */
     protected removedFromHierarchy(): void
     {
     }
 
-    /* tslint:disable:no-empty */
     protected addedToHierarchy(): void
     {
     }

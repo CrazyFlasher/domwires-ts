@@ -9,7 +9,6 @@ import {MockMessageType} from "./mock/MockMessageType";
 import {MockHierarchyObjectContainer} from "./mock/mvc/MockHierarchyObjectContainer";
 import {IHierarchyObject} from "../src/com/domwires/core/mvc/hierarchy/IHierarchyObject";
 
-/* tslint:disable:variable-name */
 describe('HierarchyObjectContainerTest', function (this: Suite)
 {
     let hoc: IHierarchyObjectContainer;
@@ -31,7 +30,6 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
     {
         expect(hoc.hasMessageListener(MockMessageType.HELLO)).false;
 
-        /* tslint:disable:no-empty */
         const eventHandler: () => void = () =>
         {
         };
@@ -97,7 +95,6 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
 
     it('testRemoveMessageListener', () =>
     {
-        /* tslint:disable:no-empty */
         const eventHandler: () => void = () =>
         {
         };
@@ -118,7 +115,6 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
 
     it('testRemoveAllMessageListeners', () =>
     {
-        /* tslint:disable:no-empty */
         const eventHandler: () => void = () =>
         {
         };

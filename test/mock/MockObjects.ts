@@ -187,7 +187,6 @@ export class MockObject extends AbstractDisposable implements MockObjects
     }
 }
 
-/* tslint:disable:no-empty-interface */
 export interface IMockObj1
 {
 

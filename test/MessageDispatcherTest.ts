@@ -50,7 +50,6 @@ describe('MessageDispatcherTest', function (this: Suite)
     {
         expect(d.hasMessageListener(MockMessageType.HELLO)).false;
 
-        /* tslint:disable:no-empty */
         d.addMessageListener(MockMessageType.HELLO, () =>
         {
         });
@@ -60,7 +59,6 @@ describe('MessageDispatcherTest', function (this: Suite)
 
     it('testRemoveAllMessages', () =>
     {
-        /* tslint:disable:no-empty */
         const listener: () => void = () =>
         {
         };
@@ -79,7 +77,6 @@ describe('MessageDispatcherTest', function (this: Suite)
     {
         expect(d.hasMessageListener(MockMessageType.HELLO)).false;
 
-        /* tslint:disable:no-empty */
         const listener: () => void = () =>
         {
         };
@@ -99,17 +96,14 @@ describe('MessageDispatcherTest', function (this: Suite)
 
     it('testDispose', () =>
     {
-        /* tslint:disable:no-empty */
         d.addMessageListener(MockMessageType.HELLO, () =>
         {
         });
 
-        /* tslint:disable:no-empty */
         d.addMessageListener(MockMessageType.GOODBYE, () =>
         {
         });
 
-        /* tslint:disable:no-empty */
         d.addMessageListener(MockMessageType.SHALOM, () =>
         {
         });
@@ -125,7 +119,6 @@ describe('MessageDispatcherTest', function (this: Suite)
 
     it('testHasMessageListener', () =>
     {
-        /* tslint:disable:no-empty */
         const listener: () => void = () =>
         {
         };
