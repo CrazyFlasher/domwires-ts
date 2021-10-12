@@ -8,9 +8,10 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended"
+//    "plugin:prettier/recommended"
   ],
   "rules": {
-    "semi": ["error", "always"],
+    "semi": "off",
     "@typescript-eslint/semi": ["error"],
     "@typescript-eslint/member-delimiter-style": "error",
     "@typescript-eslint/explicit-member-accessibility": "error"
