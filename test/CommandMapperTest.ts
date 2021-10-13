@@ -430,7 +430,7 @@ describe('CommandMapperTest', function (this: Suite)
 
             const cm: ICommandMapper = f.instantiateValueUnmapped("ICommandMapper");
 
-            for (let i = 0; i < 100000; i++)
+            for (let i = 0; i < 1000; i++)
             {
                 cm.executeCommand(commandClass, {
                     i: 7,
