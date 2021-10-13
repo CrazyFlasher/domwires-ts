@@ -2,7 +2,7 @@
   "name": "domwires",
   "devDependencies": {
     "@types/chai": "^4.2.22",
-    "@types/inversify-inject-decorators": "^2.0.0",
+    "inversify-inject-decorators": "^3.1.0",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.9.6",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
@@ -14,20 +14,14 @@
     "reflect-metadata": "^0.1.13",
     "ts-node": "^10.2.1",
     "tslog": "^3.2.2",
-    "typescript": "^4.4.3",
-    "prettier": "^2.4.1",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^4.0.0"
+    "typescript": "^4.4.3"
   },
   "engines": {
     "node": ">=14.16.1"
   },
   "scripts": {
-    "ts-node-setup": "npm install -g ts-node",
-    "test": "mocha -r ts-node/register test/**/*.ts",
-    "test:watch": "mocha -r ts-node/register --watch --watch-files test/*.ts test/**/*.ts",
+    "test": "mocha -r ts-node/register ./test/**/*.ts",
     "eslint-setup": "npm install eslint --save-dev",
-    "prettier-setup": "npm install prettier --save-dev --save-exact",
     "eslint-run": "eslint . --ext .ts"
   }
 }
