@@ -23,6 +23,7 @@
     "node": ">=14.16.1"
   },
   "scripts": {
+    "ts-node-setup": "npm install -g ts-node",
     "test": "mocha -r ts-node/register test/**/*.ts",
     "test:watch": "mocha -r ts-node/register --watch --watch-files test/*.ts test/**/*.ts",
     "eslint-setup": "npm install eslint --save-dev",
