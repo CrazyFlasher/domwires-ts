@@ -16,7 +16,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm install
-      - run: npm run ts-node-setup
       - run: npm test
       - run: npm run eslint-setup
       - run: npm run eslint-run
