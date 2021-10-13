@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import {ICommand} from "../../src/com/domwires/core/mvc/command/ICommand";
 import {AbstractCommand} from "../../src/com/domwires/core/mvc/command/AbstractCommand";
 import {inject, named, optional} from "inversify";
