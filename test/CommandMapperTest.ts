@@ -254,7 +254,7 @@ describe('CommandMapperTest', function (this: Suite)
         const m: MockObj1 = factory.getInstance(MockObj1);
         factory.mapToValue(MockObj1, m);
 
-        commandMapper.map1(MockMessageType.GOODBYE, [MockCommand3], {olo: 5})
+        commandMapper.map(MockMessageType.GOODBYE, [MockCommand3], {olo: 5})
             .addGuards(MockAllowGuards)
             .addGuards(MockAllowGuards)
             .addGuardsNot(MockNotAllowGuards)
@@ -331,7 +331,7 @@ describe('CommandMapperTest', function (this: Suite)
         const m: MockObj1 = factory.getInstance(MockObj1);
         factory.mapToValue(MockObj1, m);
         factory.mapToValue("string", "test", "olo");
-        commandMapper.map1(MockMessageType.GOODBYE, [MockCommand4, MockCommand1], null, false, true);
+        commandMapper.map(MockMessageType.GOODBYE, [MockCommand4, MockCommand1], null, false, true);
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
         expect(m.d).equals(7);
     });

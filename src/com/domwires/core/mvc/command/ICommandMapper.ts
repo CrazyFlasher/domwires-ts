@@ -135,14 +135,17 @@ export interface ICommandMapper extends ICommandMapperImmutable, IDisposable
     map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, once?: boolean,
            stopOnExecute?: boolean): MappingConfig<T>;
 
-    map1<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, once?: boolean,
-            stopOnExecute?: boolean): MappingConfigList<T>;
+    map<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, once?: boolean,
+           stopOnExecute?: boolean): MappingConfigList<T>;
 
-    map2<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, once?: boolean,
-            stopOnExecute?: boolean): MappingConfigList<T>;
+    map<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, once?: boolean,
+           stopOnExecute?: boolean): MappingConfigList<T>;
 
-    map3<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, once?: boolean,
-            stopOnExecute?: boolean): MappingConfigList<T>;
+    map<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, once?: boolean,
+           stopOnExecute?: boolean): MappingConfigList<T>;
+
+    map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T, once?: boolean,
+           stopOnExecute?: boolean): MappingConfig<T> | MappingConfigList<T>;
 
     unmap(messageType: Enum, commandClass: Class<ICommand>): ICommandMapper;
 
@@ -186,7 +189,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         super.dispose();
     }
 
-    public map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T>
+    private _map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T>
     {
         const mappingConfig: MappingConfig<T> = new MappingConfig(commandClass, data, once, stopOnExecute);
 
@@ -205,45 +208,50 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return mappingConfig;
     }
 
-    public map1<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>
+    public map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T>;
+    public map<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>;
+    public map<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>;
+    public map<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>;
+    public map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T> | MappingConfigList<T>
+    public map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T> | MappingConfigList<T>
     {
-        const mappingConfigList: MappingConfigList<T> = new MappingConfigList();
-
-        for (const commandClass of commandClassList)
+        if (!(messageType instanceof Array) && !(commandClass instanceof Array))
         {
-            const soe: boolean = stopOnExecute && commandClassList.indexOf(commandClass) === commandClassList.length - 1;
-            mappingConfigList.push(this.map(messageType, commandClass, data, once, soe));
+            return this._map(messageType, commandClass, data, once, stopOnExecute);
         }
 
-        return mappingConfigList;
-    }
-
-    public map2<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>
-    {
         const mappingConfigList: MappingConfigList<T> = new MappingConfigList();
+        const commandClassList: Class<ICommand>[] = commandClass as Class<ICommand>[];
+        const messageTypeList: Enum[] = messageType as Enum[];
 
-        for (const messageType of messageTypeList)
+        if (!(messageType instanceof Array) && commandClass instanceof Array)
         {
-            const soe: boolean = stopOnExecute && messageTypeList.indexOf(messageType) === messageTypeList.length - 1;
-            mappingConfigList.push(this.map(messageType, commandClass, data, once, soe));
+            for (const commandClass of commandClassList)
+            {
+                const soe: boolean = stopOnExecute && commandClassList.indexOf(commandClass) === commandClassList.length - 1;
+                mappingConfigList.push(this._map(messageType, commandClass, data, once, soe));
+            }
         }
-
-        return mappingConfigList;
-    }
-
-    public map3<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>
-    {
-        const mappingConfigList: MappingConfigList<T> = new MappingConfigList();
-
-        for (const commandClass of commandClassList)
+        else if (messageType instanceof Array && !(commandClass instanceof Array))
         {
             for (const messageType of messageTypeList)
             {
-                const soe: boolean = stopOnExecute
-                    && messageTypeList.indexOf(messageType) === messageTypeList.length - 1
-                    && commandClassList.indexOf(commandClass) === commandClassList.length - 1;
+                const soe: boolean = stopOnExecute && messageTypeList.indexOf(messageType) === messageTypeList.length - 1;
+                mappingConfigList.push(this._map(messageType, commandClass, data, once, soe));
+            }
+        }
+        else if (messageType instanceof Array && commandClass instanceof Array)
+        {
+            for (const commandClass of commandClassList)
+            {
+                for (const messageType of messageTypeList)
+                {
+                    const soe: boolean = stopOnExecute
+                        && messageTypeList.indexOf(messageType) === messageTypeList.length - 1
+                        && commandClassList.indexOf(commandClass) === commandClassList.length - 1;
 
-                mappingConfigList.push(this.map(messageType, commandClass, data, once, soe));
+                    mappingConfigList.push(this._map(messageType, commandClass, data, once, soe));
+                }
             }
         }
 
