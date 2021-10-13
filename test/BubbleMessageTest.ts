@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
 import {AppFactory, IAppFactory} from "../src/com/domwires/core/factory/IAppFactory";

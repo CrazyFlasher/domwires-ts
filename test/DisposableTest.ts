@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import {expect} from "chai";
 import {Suite} from "mocha";
 import {IDisposable} from "../src/com/domwires/core/common/IDisposable";

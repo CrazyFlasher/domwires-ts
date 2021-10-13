@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import {Suite} from "mocha";
 import {AppFactory, IAppFactory} from "../src/com/domwires/core/factory/IAppFactory";
 import {IContext} from "../src/com/domwires/core/mvc/context/IContext";

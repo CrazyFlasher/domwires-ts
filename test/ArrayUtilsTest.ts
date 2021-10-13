@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import {before, it, Suite} from "mocha";
 import {expect} from "chai";
 import ArrayUtils from "../src/com/domwires/core/utils/ArrayUtils";
