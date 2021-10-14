@@ -20,7 +20,7 @@
     "node": ">=14.16.1"
   },
   "scripts": {
-    "test": "mocha -r ts-node/register ./test/**/*.ts",
+    "test": "mocha -r ts-node/register test/*.ts",
     "eslint-setup": "npm install eslint --save-dev",
     "eslint-run": "eslint . --ext .ts"
   }
