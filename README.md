@@ -4,7 +4,7 @@ Flexible and extensible MVC framework for projects written in [TypeScript](https
 
 `npm install https://github.com/CrazyFlasher/domwires-ts.git`
 
-#### Actual examples can be seen in [tests](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/test).
+#### Actual examples can be seen in [tests](https://github.com/CrazyFlasher/domwires-ts/blob/main/test).
 
 ### Features
 
