@@ -13,7 +13,7 @@ Flexible and extensible MVC framework for projects written in [TypeScript](https
 * Possibility to use many implementations for interface easily
 * Fast communication among components
   using [IMessageDispatcher](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/com/domwires/core/mvc/message/IMessageDispatcher.ts)
-* Object instantiation with dependencies injections using [IAppFactory](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/com/domwires/core/factory/IAppFactory.ts) which is base on [InversifyJS](https://github.com/inversify/InversifyJS)
+* Object instantiation with dependencies injections using [IAppFactory](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/com/domwires/core/factory/IAppFactory.ts) which is based on [InversifyJS](https://github.com/inversify/InversifyJS)
 * Possibility to specify dependencies in config and pass it
   to [IAppFactory](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/com/domwires/core/factory/IAppFactory.ts)
 * Easy object pooling management
