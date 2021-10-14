@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {Container} from "inversify";
-import "reflect-metadata";
 import getDecorators from "inversify-inject-decorators";
 import ArrayUtils from "../utils/ArrayUtils";
 import {IDisposable, IDisposableImmutable} from "../common/IDisposable";

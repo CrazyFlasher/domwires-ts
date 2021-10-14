@@ -144,7 +144,7 @@ describe('MessageDispatcherTest', function (this: Suite)
 
         d.dispatchMessage(MockMessageType.HELLO);
 
-        expect(a).false;
+        expect(a).true;
         expect(b).true;
     });
 

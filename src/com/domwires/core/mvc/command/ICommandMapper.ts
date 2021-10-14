@@ -9,7 +9,6 @@ import {inject, optional, postConstruct} from "inversify";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
 import {IAppFactory} from "../../factory/IAppFactory";
 import ArrayUtils from "../../utils/ArrayUtils";
-import "reflect-metadata";
 
 export type CommandMapperConfig = {
     readonly singletonCommands: boolean;
