@@ -46,7 +46,7 @@ describe('AppFactoryTest', function (this: Suite)
 
     it('testAutoRemap', () =>
     {
-        // will remap only one
+        // will remap only once
         factory.mapToValue("IAppFactory", factory);
         factory.mapToValue("IAppFactory", factory);
         factory.mapToValue("IAppFactory", factory);
@@ -95,122 +95,6 @@ describe('AppFactoryTest', function (this: Suite)
 
         expect(factory.instantiateValueUnmapped("IMockObject")).not.throw;
     });
-
-    /*it('testLazyInject', () =>
-    {
-        function copyDictionary(
-            origin: interfaces.Lookup<interfaces.Binding<any>>,
-            destination: interfaces.Lookup<interfaces.Binding<any>>
-        ) {
-
-            origin.traverse((key, value) => {
-                value.forEach((binding) => {
-                    destination.add(binding.serviceIdentifier, binding.clone());
-                });
-            });
-
-        }
-
-        const globalContainer: Container = new Container();
-
-        const {lazyInject, lazyInjectNamed} = getDecorators(globalContainer, false);
-
-        class AppFactory
-        {
-            public container: Container = new Container({autoBindInjectable: true});
-
-            public mapToValue(type:any, to:any, name?:string):void
-            {
-                if (!name)
-                {
-                    if (this.container.isBound(type))
-                    {
-                        this.container.unbind(type);
-                    }
-
-                    this.container.bind(type).toConstantValue(to);
-                } else
-                {
-                    if (this.container.isBoundNamed(type, name))
-                    {
-                        this.container.unbind(type);
-                    }
-
-                    this.container.bind(type).toConstantValue(to).whenTargetNamed(name);
-                }
-            }
-
-            public getInstance(type:any, name?:any):any
-            {
-                return !name ? this.container.get(type) : this.container.getNamed(type, name);
-            }
-        }
-
-        @injectable()
-        class Obj
-        {
-            @lazyInjectNamed("string", "olo")
-            private _s:string;
-
-            get s(): string
-            {
-                return this._s;
-            }
-        }
-
-        class Main
-        {
-            private f_1:AppFactory = new AppFactory();
-            private f_2:AppFactory = new AppFactory();
-
-            constructor()
-            {
-                this.f_1.mapToValue("string", "aaa", "olo");
-                this.f_2.mapToValue("string", "bbb", "olo");
-
-                copyDictionary(getBindingDictionary(this.f_1.container), getBindingDictionary(globalContainer));
-
-                let o_1:Obj = this.f_1.getInstance(Obj);
-                expect(o_1.s).equals("aaa");
-
-                globalContainer.unbindAll();
-
-                copyDictionary(getBindingDictionary(this.f_2.container), getBindingDictionary(globalContainer));
-
-                let o_2:Obj = this.f_2.getInstance(Obj);
-                expect(o_2.s).equals("bbb");
-
-                globalContainer.unbindAll();
-
-                this.f_1.mapToValue(Obj, o_1, "o1");
-                this.f_2.mapToValue(Obj, o_2, "o2");
-
-                this.f_1.mapToValue("string", "ccc", "olo");
-                this.f_2.mapToValue("string", "ddd", "olo");
-
-                copyDictionary(getBindingDictionary(this.f_1.container), getBindingDictionary(globalContainer));
-
-                let o_3:Obj = this.f_1.getInstance(Obj, "o1");
-
-                // string is re-injected to already existing objects
-                expect(o_3.s).equals("ccc");
-
-                globalContainer.unbindAll();
-
-                copyDictionary(getBindingDictionary(this.f_2.container), getBindingDictionary(globalContainer));
-
-                let o_4:Obj = this.f_2.getInstance(Obj, "o2");
-
-                // string is re-injected to already existing objects
-                expect(o_4.s).equals("ddd");
-
-                expect(o_3).equals(o_1);
-                expect(o_4).equals(o_2);
-            }
-        }
-
-        new Main();
-    });*/
 
     it('testClear', () =>
     {
@@ -586,6 +470,7 @@ describe('AppFactoryTest', function (this: Suite)
         // expect(m.value).equals(5);
         expect(m.def.result).equals(123);
         expect(m.object.firstName).equals("nikita");
+        expect(m.object.lastName).equals("dzigurda");
         expect(m.array[1]).equals("sjava");
     });
 

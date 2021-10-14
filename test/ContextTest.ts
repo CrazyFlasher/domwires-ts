@@ -91,7 +91,7 @@ describe('ContextTest', function (this: Suite)
     it('testMapToInterface', () =>
     {
         const factory: IAppFactory = new AppFactory();
-        factory.mapToValue("IAppFactory", new AppFactory());
+        factory.mapToValue("IAppFactory", factory);
         factory.mapToValue("Class<ICommand>", MockCommand10);
         const c: MockContext7 = factory.getInstance(MockContext7);
         c.ready();
@@ -100,9 +100,9 @@ describe('ContextTest', function (this: Suite)
         const c2: MockContext7 = factory.getInstance(MockContext7);
         c2.ready();
 
-        // expect(c2).not.equals(c);
+        expect(c2).not.equals(c);
         expect(c.getTestModel().testVar).equals(1);
-        // expect(c2.getTestModel().testVar).equals(2);
+        expect(c2.getTestModel().testVar).equals(2);
     });
 
     it('testStopOnExecute', () =>

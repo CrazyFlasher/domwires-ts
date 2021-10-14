@@ -51,9 +51,8 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         if (this.factory == null)
         {
             this.factory = new AppFactory();
+            this.factory.mapToValue("IAppFactory", this.factory);
         }
-
-        this.factory.mapToValue("IAppFactory", this.factory);
 
         this.modelContainer = this.factory.instantiateValueUnmapped("IModelContainer");
         this.add(this.modelContainer);

@@ -15,8 +15,10 @@ export class MockValuesGuards extends AbstractGuards
     @lazyInjectNamed("any", "o")
     private o:any;
 
-    public get allows(): boolean
+    public override get allows(): boolean
     {
+        super.allows;
+
         if (this.s !== "123") throw new Error();
         if (this.n !== 123) throw new Error();
         if (this.o.a !== "olo") throw new Error();
