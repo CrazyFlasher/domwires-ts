@@ -6,7 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
-        node: [14.x]
+        node: [14.18.1]
 
     runs-on: ubuntu-latest
     steps:
