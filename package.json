@@ -1,6 +1,6 @@
 {
   "name": "domwires",
-  "devDependencies": {
+  "dependencies": {
     "@types/chai": "^4.2.22",
     "inversify-inject-decorators": "^3.1.0",
     "@types/mocha": "^9.0.0",
