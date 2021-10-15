@@ -1,9 +1,14 @@
 {
   "name": "domwires",
   "version": "0.9.0",
+  "description": "Flexible and extensible MVC framework",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
   "dependencies": {
     "@types/chai": "^4.2.22",
-    "inversify-inject-decorators": "^3.1.0",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.9.6",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
@@ -11,6 +16,7 @@
     "chai": "^4.3.4",
     "eslint": "^8.0.0",
     "inversify": "^5.1.1",
+    "inversify-inject-decorators": "^3.1.0",
     "mocha": "^9.1.1",
     "reflect-metadata": "^0.1.13",
     "ts-node": "^10.2.1",
