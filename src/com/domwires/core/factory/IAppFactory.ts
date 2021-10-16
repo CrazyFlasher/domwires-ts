@@ -35,7 +35,7 @@ type MappingData<T = any> = {
     readonly name?: string;
 };
 
-type Type<T = any> = string | Class<T>;
+export type Type<T = any> = string | Class<T>;
 
 export class DependencyVo
 {

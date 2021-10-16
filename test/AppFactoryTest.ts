@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
-import {AppFactory, IAppFactory, MappingConfigDictionary} from "../src/com/domwires/core/factory/IAppFactory";
+import {AppFactory, IAppFactory, MappingConfigDictionary} from "../src";
 import {expect} from "chai";
 import {
     IMockObject3,
@@ -41,7 +41,7 @@ describe('AppFactoryTest', function (this: Suite)
         factory.mapToValue("number", 5);
         factory.mapToValue("number", 7, "n2");
 
-        expect(factory.getInstance(MockModel0)).not.throw;
+        expect(factory.getInstance(MockModel0)).not.throw();
     }); */
 
     it('testAutoRemap', () =>
@@ -82,7 +82,7 @@ describe('AppFactoryTest', function (this: Suite)
 
     it('testInstantiateUnmappedFromInterface', () =>
     {
-        expect(factory.instantiateValueUnmapped("IMockObj1")).not.throw;
+        expect(() => factory.instantiateValueUnmapped("IMockObj1")).not.throw();
     });
 
     it('testInstantiateUnmappedInject', () =>
@@ -93,7 +93,7 @@ describe('AppFactoryTest', function (this: Suite)
         factory.mapToValue("string", "123");
         factory.mapToValue(MockObject2, new MockObject2());
 
-        expect(factory.instantiateValueUnmapped("IMockObject")).not.throw;
+        expect(() => factory.instantiateValueUnmapped("IMockObject")).not.throw();
     });
 
     it('testClear', () =>
