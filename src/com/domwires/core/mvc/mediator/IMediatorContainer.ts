@@ -20,6 +20,8 @@ export interface IMediatorContainerImmutable extends IMediatorImmutable, IHierar
 
 export interface IMediatorContainer extends IMediatorContainerImmutable, IMediator, IHierarchyObjectContainer
 {
+    isIMediatorContainer(): void;
+
     addMediator(mediator: IMediator): IMediatorContainer;
 
     removeMediator(mediator: IMediator, dispose?: boolean): IMediatorContainer;
@@ -93,6 +95,10 @@ export class MediatorContainer extends HierarchyObjectContainer implements IMedi
     }
 
     public isIMediator(): void
+    {
+    }
+
+    public isIMediatorContainer(): void
     {
     }
 }

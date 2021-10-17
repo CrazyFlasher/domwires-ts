@@ -1,6 +1,6 @@
 {
   "name": "domwires",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "description": "Flexible and extensible MVC framework",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

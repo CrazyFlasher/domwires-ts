@@ -328,6 +328,14 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
     {
     }
 
+    public isIMediatorContainer(): void
+    {
+    }
+
+    public isIModelContainer(): void
+    {
+    }
+
     private checkIfDisposed(): void
     {
         if (this.isDisposed)

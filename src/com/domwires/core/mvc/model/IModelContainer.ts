@@ -20,6 +20,8 @@ export interface IModelContainerImmutable extends IModelImmutable, IHierarchyObj
 
 export interface IModelContainer extends IModelContainerImmutable, IModel, IHierarchyObjectContainer
 {
+    isIModelContainer(): void;
+
     addModel(model: IModel): IModelContainer;
 
     removeModel(model: IModel, dispose?: boolean): IModelContainer;
@@ -93,6 +95,10 @@ export class ModelContainer extends HierarchyObjectContainer implements IModelCo
     }
 
     public isIModel(): void
+    {
+    }
+
+    public isIModelContainer(): void
     {
     }
 }
