@@ -9,5 +9,5 @@ export interface IMediatorImmutable extends IHierarchyObjectImmutable
 
 export interface IMediator extends IMediatorImmutable, IHierarchyObject
 {
-
+    isIMediator(): void;
 }

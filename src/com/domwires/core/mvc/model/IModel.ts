@@ -9,5 +9,5 @@ export interface IModelImmutable extends IHierarchyObjectImmutable
 
 export interface IModel extends IModelImmutable, IHierarchyObject
 {
-
+    isIModel(): void;
 }

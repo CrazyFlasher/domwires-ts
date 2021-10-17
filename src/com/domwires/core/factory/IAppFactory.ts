@@ -5,7 +5,7 @@ import getDecorators from "inversify-inject-decorators";
 import ArrayUtils from "../utils/ArrayUtils";
 import {IDisposable, IDisposableImmutable} from "../common/IDisposable";
 import {AbstractDisposable} from "../common/AbstractDisposable";
-import {Class, getClassFromString, getDefaultImplementation, logger} from "../Global";
+import {Class, getClassFromString, getDefaultImplementation, logger, Type} from "../Global";
 import {getBindingDictionary} from "inversify/lib/planning/planner";
 
 const lazyContainer: Container = new Container();
@@ -34,8 +34,6 @@ type MappingData<T = any> = {
     readonly typeOrValue: T;
     readonly name?: string;
 };
-
-export type Type<T = any> = string | Class<T>;
 
 export class DependencyVo
 {

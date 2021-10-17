@@ -4,11 +4,13 @@ import {Logger} from "tslog";
 
 export type Class<T> = new(...args: T[]) => T;
 
+export type Type<T = any> = string | Class<T>;
+
 export const logger: Logger = new Logger();
 
 const defaultImplMap: Map<string | Class<any>, Class<any>> = new Map<string | Class<any>, Class<any>>();
 
-export function definableFromString<T>(clazz:Class<T>): void
+export function definableFromString<T>(clazz: Class<T>): void
 {
     logger.info("Manually defined classes: ", clazz.name);
     (global as any)[clazz.name] = clazz;
@@ -39,4 +41,9 @@ export function setDefaultImplementation<T>(key: string | Class<T>, value: Class
 export function getDefaultImplementation(key: string | Class<any>): Class<any>
 {
     return typeof key === "string" ? defaultImplMap.get(key) : key;
+}
+
+export function instanceOf<T>(object: T, typeName: string): object is T
+{
+    return 'is' + typeName in object;
 }

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 import {IModel, IModelImmutable} from "./IModel";
 import {
     HierarchyObjectContainer,
@@ -88,6 +90,10 @@ export class ModelContainer extends HierarchyObjectContainer implements IModelCo
     public get modelListImmutable(): ReadonlyArray<IModelImmutable>
     {
         return this._modelListImmutable;
+    }
+
+    public isIModel(): void
+    {
     }
 }
 

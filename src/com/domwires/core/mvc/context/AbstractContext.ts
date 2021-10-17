@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 import {inject, optional, postConstruct} from "inversify";
 import {AppFactory, IAppFactory} from "../../factory/IAppFactory";
 import {HierarchyObjectContainer, IHierarchyObjectContainer} from "../hierarchy/IHierarchyObjectContainer";
@@ -9,9 +11,7 @@ import {IModel, IModelImmutable} from "../model/IModel";
 import {IMediator, IMediatorImmutable} from "../mediator/IMediator";
 import {Enum} from "../../Enum";
 import {IMessage, IMessageDispatcher} from "../message/IMessageDispatcher";
-import {AbstractModel} from "../model/AbstractModel";
-import {AbstractMediator} from "../mediator/AbstractMediator";
-import {Class} from "../../Global";
+import {Class, instanceOf} from "../../Global";
 import {ICommand} from "../command/ICommand";
 import {IGuards} from "../command/IGuards";
 
@@ -204,7 +204,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
 
         this.tryToExecuteCommand(message.type, message.data);
 
-        if (message.initialTarget instanceof AbstractModel)
+        if (instanceOf(message.initialTarget, "IModel"))
         {
             if (this.config.forwardMessageFromModelsToModels)
             {
@@ -215,7 +215,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
                 this.dispatchMessageToMediators(message);
             }
         }
-        else if (message.initialTarget instanceof AbstractMediator)
+        else if (instanceOf(message.initialTarget, "IMediator"))
         {
             if (this.config.forwardMessageFromMediatorsToModels)
             {
@@ -314,6 +314,14 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
     public setMergeMessageDataAndMappingData(value: boolean): ICommandMapper
     {
         return this.commandMapper.setMergeMessageDataAndMappingData(value);
+    }
+
+    public isIMediator(): void
+    {
+    }
+
+    public isIModel(): void
+    {
     }
 
     private checkIfDisposed(): void

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 import {IMediator, IMediatorImmutable} from "./IMediator";
 import {
     HierarchyObjectContainer,
@@ -88,6 +90,10 @@ export class MediatorContainer extends HierarchyObjectContainer implements IMedi
     public get mediatorListImmutable(): ReadonlyArray<IMediatorImmutable>
     {
         return this._mediatorListImmutable;
+    }
+
+    public isIMediator(): void
+    {
     }
 }
 
