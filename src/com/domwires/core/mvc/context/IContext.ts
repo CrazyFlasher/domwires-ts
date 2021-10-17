@@ -5,7 +5,7 @@ import {IMessage} from "../message/IMessageDispatcher";
 
 export interface IContextImmutable extends IModelContainerImmutable, IMediatorContainerImmutable, ICommandMapperImmutable
 {
-
+    isIContext(): void;
 }
 
 export interface IContext extends IContextImmutable, IModelContainer, IMediatorContainer, ICommandMapper

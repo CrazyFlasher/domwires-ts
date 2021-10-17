@@ -43,7 +43,12 @@ export function getDefaultImplementation(key: string | Class<any>): Class<any>
     return typeof key === "string" ? defaultImplMap.get(key) : key;
 }
 
-export function instanceOf<T>(object: T, typeName: string): object is T
+export function instanceOf<T>(object: T, typeName?: string, methodName?: string): object is T
 {
-    return 'is' + typeName in object;
+    if (typeName)
+    {
+        return 'is' + typeName in object;
+    }
+
+    return methodName in object;
 }
