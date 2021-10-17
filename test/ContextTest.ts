@@ -1,14 +1,14 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
-import {AppFactory, IAppFactory} from "../src/com/domwires/core/factory/IAppFactory";
-import {IContext} from "../src/com/domwires/core/mvc/context/IContext";
+import {AppFactory, IAppFactory} from "../src";
+import {IContext} from "../src";
 import {expect} from "chai";
 import {MockContext1, MockContext2, MockContext3, MockContext5, MockContext7, MockContext8} from "./mock/MockContext";
 import {MockMediator1, MockMediator4} from "./mock/MockMediators";
 import {MockCommand10, MockCommand13, MockCommand14, MockCommand15} from "./mock/MockCommands";
 import {MockObj1} from "./mock/MockObjects";
 import {MockMessageType} from "./mock/MockMessageType";
-import {ContextConfig} from "../src/com/domwires/core/mvc/context/AbstractContext";
+import {ContextConfig} from "../src";
 import {MockModel1} from "./mock/MockModels";
 import "../src/com/domwires/core/mvc/model/IModelContainer";
 import "../src/com/domwires/core/mvc/mediator/IMediatorContainer";

@@ -250,40 +250,6 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this.commandMapper.map(messageType, commandClass, data, once, stopOnExecute);
     }
 
-
-
-    /* public map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, once?: boolean,
-                  stopOnExecute?: boolean): MappingConfig<T>
-    {
-        this.checkIfDisposed();
-
-        return this.commandMapper.map(messageType, commandClass, data, once, stopOnExecute);
-    }
-
-    public map1<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, once?: boolean,
-                   stopOnExecute?: boolean): MappingConfigList<T>
-    {
-        this.checkIfDisposed();
-
-        return this.commandMapper.map1(messageType, commandClassList, data, once, stopOnExecute);
-    }
-
-    public map2<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, once?: boolean,
-                   stopOnExecute?: boolean): MappingConfigList<T>
-    {
-        this.checkIfDisposed();
-
-        return this.commandMapper.map2(messageTypeList, commandClass, data, once, stopOnExecute);
-    }
-
-    public map3<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, once?: boolean,
-                   stopOnExecute?: boolean): MappingConfigList<T>
-    {
-        this.checkIfDisposed();
-
-        return this.commandMapper.map3(messageTypeList, commandClassList, data, once, stopOnExecute);
-    } */
-
     public unmap(messageType: Enum, commandClass: Class<ICommand>): ICommandMapper
     {
         this.checkIfDisposed();
