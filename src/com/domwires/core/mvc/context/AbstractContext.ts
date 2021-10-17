@@ -30,10 +30,10 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
     @inject("ContextConfig") @optional()
     protected config: ContextConfig;
 
-    private modelContainer: IModelContainer;
-    private mediatorContainer: IMediatorContainer;
+    protected modelContainer: IModelContainer;
+    protected mediatorContainer: IMediatorContainer;
 
-    private commandMapper: ICommandMapper;
+    protected commandMapper: ICommandMapper;
 
     @postConstruct()
     protected init(): void
