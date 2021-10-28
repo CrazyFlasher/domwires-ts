@@ -1,29 +1,35 @@
 {
   "name": "domwires",
-  "version": "0.9.9",
+  "version": "0.9.10",
   "description": "Flexible and extensible MVC framework",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CrazyFlasher/domwires-ts"
+  },
+  "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "/dist"
   ],
   "dependencies": {
-    "inversify": "^5.1.1",
-    "inversify-inject-decorators": "^3.1.0",
-    "reflect-metadata": "^0.1.13"
+    "npm": "8.1.1",
+    "inversify": "5.1.1",
+    "inversify-inject-decorators": "3.1.0",
+    "reflect-metadata": "0.1.13"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.22",
-    "@types/mocha": "^9.0.0",
-    "@types/node": "^16.9.6",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^5.0.0",
-    "chai": "^4.3.4",
-    "eslint": "^8.0.0",
-    "mocha": "^9.1.1",
-    "ts-node": "^10.2.1",
-    "tslog": "^3.2.2",
-    "typescript": "^4.4.3"
+    "@types/chai": "4.2.22",
+    "@types/mocha": "9.0.0",
+    "@types/node": "16.9.6",
+    "@typescript-eslint/eslint-plugin": "5.0.0",
+    "@typescript-eslint/parser": "5.0.0",
+    "chai": "4.3.4",
+    "eslint": "8.0.0",
+    "mocha": "9.1.1",
+    "ts-node": "10.2.1",
+    "tslog": "3.2.2",
+    "typescript": "4.4.3"
   },
   "engines": {
     "node": ">=14.18.1"
