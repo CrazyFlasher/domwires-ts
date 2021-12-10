@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {AbstractGuards} from "../../src/com/domwires/core/mvc/command/AbstractGuards";
-import {lazyInjectNamed} from "../../src/com/domwires/core/factory/IAppFactory";
+import {AbstractGuards} from "../../src";
+import {lazyInjectNamed} from "../../src";
 import {inject, named} from "inversify";
 
 export class MockValuesGuards extends AbstractGuards
@@ -38,7 +38,7 @@ export class MockValuesNotSingletonGuards extends AbstractGuards
     @inject("any" ) @named("o")
     private o:any;
 
-    public get allows(): boolean
+    public override get allows(): boolean
     {
         if (this.s !== "123") throw new Error();
         if (this.n !== 123) throw new Error();
@@ -50,7 +50,7 @@ export class MockValuesNotSingletonGuards extends AbstractGuards
 
 export class MockAllowGuards extends AbstractGuards
 {
-    public get allows(): boolean
+    public override get allows(): boolean
     {
         return true;
     }
@@ -58,7 +58,7 @@ export class MockAllowGuards extends AbstractGuards
 
 export class MockAllowGuards2 extends AbstractGuards
 {
-    public get allows(): boolean
+    public override get allows(): boolean
     {
         return true;
     }
@@ -66,7 +66,7 @@ export class MockAllowGuards2 extends AbstractGuards
 
 export class MockNotAllowGuards extends AbstractGuards
 {
-    public get allows(): boolean
+    public override get allows(): boolean
     {
         return false;
     }

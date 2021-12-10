@@ -294,7 +294,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return null;
     }
 
-    public dispose()
+    public override dispose()
     {
         this.clear();
 

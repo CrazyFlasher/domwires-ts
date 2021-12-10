@@ -1,10 +1,10 @@
-import {HierarchyObjectContainer} from "../../../src/com/domwires/core/mvc/hierarchy/IHierarchyObjectContainer";
+import {HierarchyObjectContainer} from "../../../src";
 
 export class MockHierarchyObjectContainer extends HierarchyObjectContainer
 {
     private value: boolean;
 
-    public dispose()
+    public override dispose()
     {
         this.value = true;
 

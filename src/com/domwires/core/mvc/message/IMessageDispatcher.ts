@@ -290,7 +290,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         }
     }
 
-    public dispose()
+    public override dispose()
     {
         this.removeAllMessageListeners();
 

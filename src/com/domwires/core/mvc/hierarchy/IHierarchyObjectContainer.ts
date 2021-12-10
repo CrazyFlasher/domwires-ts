@@ -29,7 +29,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
     private _childrenList: IHierarchyObject[] = [];
     private _childrenListImmutable: IHierarchyObjectImmutable[] = [];
 
-    public dispose()
+    public override dispose()
     {
         this.removeAll(true);
 
@@ -123,7 +123,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return 'dispatchMessageToChildren' in object;
     }
 
-    public onMessageBubbled(message: IMessage): boolean
+    public override onMessageBubbled(message: IMessage): boolean
     {
         this.handleMessage(message);
 

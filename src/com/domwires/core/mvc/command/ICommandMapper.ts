@@ -181,7 +181,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         }
     }
 
-    public dispose()
+    public override dispose()
     {
         this.clear();
 

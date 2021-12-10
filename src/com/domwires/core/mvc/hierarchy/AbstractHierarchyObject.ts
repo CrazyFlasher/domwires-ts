@@ -6,7 +6,7 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
 {
     private _parent: IHierarchyObjectContainer;
 
-    public dispose()
+    public override dispose()
     {
         this._parent = null;
 
