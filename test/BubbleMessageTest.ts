@@ -3,7 +3,7 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
-import {AppFactory, IAppFactory} from "../src";
+import {Factory, IFactory} from "../src";
 import {AbstractModel} from "../src";
 import {AbstractContext} from "../src";
 import {ModelContainer} from "../src";
@@ -45,12 +45,12 @@ describe('BubbleMessageTest', function (this: Suite)
     let mc4: ModelContainer<any>;
     let v1: AbstractMediator<any>;
 
-    let factory: IAppFactory;
+    let factory: IFactory;
 
     beforeEach(() =>
     {
-        factory = new AppFactory();
-        factory.mapToValue("IAppFactory", factory);
+        factory = new Factory();
+        factory.mapToValue("IFactory", factory);
 
         c1 = factory.instantiateValueUnmapped(MockContext1);
         c2 = factory.instantiateValueUnmapped(MockContext1);

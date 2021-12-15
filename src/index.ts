@@ -2,7 +2,7 @@ export * from "./com/domwires/core/Global";
 export * from "./com/domwires/core/Enum";
 export * from "./com/domwires/core/common/IDisposable";
 export * from "./com/domwires/core/common/AbstractDisposable";
-export * from "./com/domwires/core/factory/IAppFactory";
+export * from "./com/domwires/core/factory/IFactory";
 export * from "./com/domwires/core/mvc/command/ICommand";
 export * from "./com/domwires/core/mvc/command/ICommandMapper";
 export * from "./com/domwires/core/mvc/command/AbstractCommand";

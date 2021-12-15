@@ -13,9 +13,9 @@ Flexible and extensible MVC framework for projects written in [TypeScript](https
 * Possibility to use many implementations for interface easily
 * Fast communication among components
   using [IMessageDispatcher](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/com/domwires/core/mvc/message/IMessageDispatcher.ts)
-* Object instantiation with dependencies injections using [IAppFactory](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/com/domwires/core/factory/IAppFactory.ts) which is based on [InversifyJS](https://github.com/inversify/InversifyJS)
+* Object instantiation with dependencies injections using [IFactory](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/com/domwires/core/factory/IFactory.ts) which is based on [InversifyJS](https://github.com/inversify/InversifyJS)
 * Possibility to specify dependencies in config and pass it
-  to [IAppFactory](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/com/domwires/core/factory/IAppFactory.ts)
+  to [IFactory](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/com/domwires/core/factory/IFactory.ts)
 * Easy object pooling management
 * Custom message bus (event bus) for easy and strict communication among objects
 
@@ -61,14 +61,14 @@ and can map received messages (from model and mediators) to commands.
 ##### Creating context with default configuration
 
 ```ts
-const factory: IAppFactory = new AppFactory();
+const factory: IFactory = new Factory();
 const context: MockContext1 = factory.getInstance(MockContext1);
 ```
 
 ##### Creating context with default configuration and mapping IContext interface to implementation
 
 ```ts
-const factory: IAppFactory = new AppFactory();
+const factory: IFactory = new Factory();
 factory.mapToType("IContext", MockContext1);
 
 const context: IContext = factory.getInstance("IContext");
@@ -77,7 +77,7 @@ const context: IContext = factory.getInstance("IContext");
 ##### Creating context with custom configuration
 
 ```ts
-const factory: IAppFactory = new AppFactory();
+const factory: IFactory = new Factory();
 factory.mapToType("IContext", MockContext1);
 
 const config: ContextConfig = {
@@ -189,7 +189,7 @@ export class UIMediator extends AbstractMediator implements IUIMediator
 ##### Map 1 type to another
 
 ```ts
-const factory: IAppFactory = new AppFactory();
+const factory: IFactory = new Factory();
 factory.mapToType("IMyObj", MyObj);
 
 //Will return new instance of MyObj
@@ -199,7 +199,7 @@ const obj: IMyObj = factory.getInstance("IMyObj");
 ##### Map type to value
 
 ```ts
-const factory: IAppFactory = new AppFactory();
+const factory: IFactory = new Factory();
 factory.mapToType("IMyObj", MyObj);
 
 //Will return new instance of MyObj
@@ -259,7 +259,7 @@ expect(m.array[1]).equals("sjava");
 ##### Default value of interface
 
 If no mapping is
-specified, [IAppFactory](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/com/domwires/core/factory/IAppFactory.ts)
+specified, [IFactory](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/com/domwires/core/factory/IFactory.ts)
 will try to find default implementation on the interface.
 
 Default implementation should be defined via `setDefaultImplementation` method in global scope.
@@ -268,7 +268,7 @@ Default implementation should be defined via `setDefaultImplementation` method i
 // this can be done only once for each key
 setDefaultImplementation("IMyObj", MyObj);
 
-const factory: IAppFactory = new AppFactory();
+const factory: IFactory = new Factory();
 
 //Will try to return instance of MyObj class 
 const obj: IMyObj = factory.getInstance("IMyObj");
@@ -451,7 +451,7 @@ In above example command won’t be executed, if `this.appModel.currentState !==
 
 #### 6. Object pooling
 
-[IAppFactory](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/com/domwires/core/factory/IAppFactory.ts) has
+[IFactory](https://github.com/CrazyFlasher/domwires-ts/blob/main/src/com/domwires/core/factory/IFactory.ts) has
 API to work with object pools.
 
 ##### Register pool
@@ -475,7 +475,7 @@ export class AppContext extends AbstractContext implements IContext
 }
 ```
 
-There are other helpful methods to work with pool in IAppFactory
+There are other helpful methods to work with pool in IFactory
 
 #### 7. Handling multiple implementations of one interface
 
@@ -549,7 +549,7 @@ export class AppContext extends AbstractContext implements IContext
         this.map(UIMediatorMessage.UPDATE_APP_STATE, UpdateAppStateCommand)
             .addGuards(CurrentStateIsDisabledGuards);
 
-        const mediatorFactory: IAppFactory = new AppFactory();
+        const mediatorFactory: IFactory = new Factory();
 
         // mutable interface will be available in commands
         this.factory.mapToValue("IAppModel", appModel);

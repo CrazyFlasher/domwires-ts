@@ -7,7 +7,7 @@ import {Class, setDefaultImplementation} from "../../Global";
 import {IGuards} from "./IGuards";
 import {inject, optional, postConstruct} from "inversify";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
-import {IAppFactory} from "../../factory/IAppFactory";
+import {IFactory} from "../../factory/IFactory";
 import ArrayUtils from "../../utils/ArrayUtils";
 
 export type CommandMapperConfig = {
@@ -165,8 +165,8 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
     @inject("CommandMapperConfig") @optional()
     private config: CommandMapperConfig;
 
-    @inject("IAppFactory")
-    private factory: IAppFactory;
+    @inject("IFactory")
+    private factory: IFactory;
 
     private commandMap: CommandMap = new CommandMap();
 

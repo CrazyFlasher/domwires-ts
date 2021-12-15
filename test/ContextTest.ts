@@ -2,7 +2,7 @@
 
 import "reflect-metadata";
 import {Suite} from "mocha";
-import {AppFactory, IAppFactory} from "../src";
+import {Factory, IFactory} from "../src";
 import {IContext} from "../src";
 import {expect} from "chai";
 import {MockContext1, MockContext2, MockContext3, MockContext5, MockContext7, MockContext8} from "./mock/MockContext";
@@ -18,14 +18,14 @@ import "../src/com/domwires/core/mvc/command/ICommandMapper";
 
 describe('ContextTest', function (this: Suite)
 {
-    let f: IAppFactory;
+    let f: IFactory;
     let c: IContext<any>;
 
     beforeEach(() =>
     {
-        f = new AppFactory();
+        f = new Factory();
         f.mapToType("IContext", MockContext1);
-        f.mapToValue("IAppFactory", f);
+        f.mapToValue("IFactory", f);
 
         const config:ContextConfig = {
             forwardMessageFromMediatorsToMediators: true,
@@ -92,8 +92,8 @@ describe('ContextTest', function (this: Suite)
 
     it('testMapToInterface', () =>
     {
-        const factory: IAppFactory = new AppFactory();
-        factory.mapToValue("IAppFactory", factory);
+        const factory: IFactory = new Factory();
+        factory.mapToValue("IFactory", factory);
         factory.mapToValue("Class<ICommand>", MockCommand10);
         const c: MockContext7 = factory.getInstance(MockContext7);
         c.ready();

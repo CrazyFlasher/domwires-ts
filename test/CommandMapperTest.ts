@@ -1,8 +1,8 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
-import {AppFactory, IAppFactory} from "../src/com/domwires/core/factory/IAppFactory";
-import {CommandMapperConfig, ICommandMapper} from "../src/com/domwires/core/mvc/command/ICommandMapper";
+import {Factory, IFactory} from "../src";
+import {CommandMapperConfig, ICommandMapper} from "../src";
 import {MockMessageType} from "./mock/MockMessageType";
 import {
     MockCommand0,
@@ -29,20 +29,20 @@ import {
     MockValuesNotSingletonGuards
 } from "./mock/MockGuards";
 import "../src/com/domwires/core/mvc/command/ICommandMapper";
-import {Enum} from "../src/com/domwires/core/Enum";
+import {Enum} from "../src";
 import {MockModel2} from "./mock/MockModels";
-import {Class, logger} from "../src/com/domwires/core/Global";
-import {ICommand} from "../src/com/domwires/core/mvc/command/ICommand";
+import {Class, logger} from "../src";
+import {ICommand} from "../src";
 
 describe('CommandMapperTest', function (this: Suite)
 {
-    let factory: IAppFactory;
+    let factory: IFactory;
     let commandMapper: ICommandMapper;
 
     beforeEach(() =>
     {
-        factory = new AppFactory();
-        factory.mapToValue("IAppFactory", factory);
+        factory = new Factory();
+        factory.mapToValue("IFactory", factory);
 
         commandMapper = factory.instantiateValueUnmapped("ICommandMapper");
     });
@@ -424,8 +424,8 @@ describe('CommandMapperTest', function (this: Suite)
         {
             const timeStarted = new Date().getTime();
 
-            const f: IAppFactory = new AppFactory();
-            f.mapToValue("IAppFactory", f);
+            const f: IFactory = new Factory();
+            f.mapToValue("IFactory", f);
             f.mapToValue("CommandMapperConfig", config);
 
             const cm: ICommandMapper = f.instantiateValueUnmapped("ICommandMapper");

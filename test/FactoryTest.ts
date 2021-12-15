@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
-import {AppFactory, IAppFactory, MappingConfigDictionary} from "../src";
+import {Factory, IFactory, MappingConfigDictionary} from "../src";
 import {expect} from "chai";
 import {
     IMockObject3,
@@ -20,13 +20,13 @@ import {
 import {MockCommand1} from "./mock/MockCommands";
 import {ISuperCoolModel} from "./mock/MockModels";
 
-describe('AppFactoryTest', function (this: Suite)
+describe('FactoryTest', function (this: Suite)
 {
-    let factory: IAppFactory;
+    let factory: IFactory;
 
     beforeEach(() =>
     {
-        factory = new AppFactory();
+        factory = new Factory();
     });
 
     afterEach(() =>
@@ -47,21 +47,21 @@ describe('AppFactoryTest', function (this: Suite)
     it('testAutoRemap', () =>
     {
         // will remap only once
-        factory.mapToValue("IAppFactory", factory);
-        factory.mapToValue("IAppFactory", factory);
-        factory.mapToValue("IAppFactory", factory);
-        factory.mapToValue("IAppFactory", factory);
-        factory.mapToValue("IAppFactory", factory);
-        factory.mapToValue("IAppFactory", factory);
-        factory.mapToValue("IAppFactory", factory);
-        factory.mapToValue("IAppFactory", factory);
-        factory.mapToValue("IAppFactory", factory);
-        factory.mapToValue("IAppFactory", factory);
-        factory.mapToValue("IAppFactory", factory);
-        factory.mapToValue("IAppFactory", factory);
-        factory.mapToValue("IAppFactory", factory);
+        factory.mapToValue("IFactory", factory);
+        factory.mapToValue("IFactory", factory);
+        factory.mapToValue("IFactory", factory);
+        factory.mapToValue("IFactory", factory);
+        factory.mapToValue("IFactory", factory);
+        factory.mapToValue("IFactory", factory);
+        factory.mapToValue("IFactory", factory);
+        factory.mapToValue("IFactory", factory);
+        factory.mapToValue("IFactory", factory);
+        factory.mapToValue("IFactory", factory);
+        factory.mapToValue("IFactory", factory);
+        factory.mapToValue("IFactory", factory);
+        factory.mapToValue("IFactory", factory);
 
-        const f = factory.getInstance("IAppFactory");
+        const f = factory.getInstance("IFactory");
 
         expect(f).equals(factory);
     });

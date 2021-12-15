@@ -104,10 +104,10 @@ class PoolModel
     private _capacity: number;
 
     private currentIndex = 0;
-    private factory: IAppFactory;
+    private factory: IFactory;
     private readonly isBusyFlagGetterName: string;
 
-    public constructor(factory: AppFactory, capacity: number, isBusyFlagGetterName: string)
+    public constructor(factory: Factory, capacity: number, isBusyFlagGetterName: string)
     {
         this.factory = factory;
         this._capacity = capacity;
@@ -215,7 +215,7 @@ class PoolModel
     }
 }
 
-export interface IAppFactoryImmutable extends IDisposableImmutable
+export interface IFactoryImmutable extends IDisposableImmutable
 {
     getInstance<T>(type: Type<T>, name?: string, ignorePool?: boolean): T;
 
@@ -234,39 +234,39 @@ export interface IAppFactoryImmutable extends IDisposableImmutable
     getPoolBusyInstanceCount<T>(type: Type<T>): number;
 }
 
-export interface IAppFactory extends IAppFactoryImmutable, IDisposable
+export interface IFactory extends IFactoryImmutable, IDisposable
 {
-    mapToType<T>(type: Type<T>, to: Class<T>, name?: string): IAppFactory;
+    mapToType<T>(type: Type<T>, to: Class<T>, name?: string): IFactory;
 
-    mapToValue<T>(type: Type<T>, to: T, name?: string): IAppFactory;
+    mapToValue<T>(type: Type<T>, to: T, name?: string): IFactory;
 
-    unmapFromType<T>(type: Type<T>, name?: string): IAppFactory;
+    unmapFromType<T>(type: Type<T>, name?: string): IFactory;
 
-    unmapFromValue<T>(type: Type<T>, name?: string): IAppFactory;
+    unmapFromValue<T>(type: Type<T>, name?: string): IFactory;
 
     instantiateValueUnmapped<T>(type: Type<T>): T;
 
-    clear(): IAppFactory;
+    clear(): IFactory;
 
     registerPool<T>(type: Type<T>, capacity?: number, instantiateNow?: boolean,
-                    isBusyFlagGetterName?: string): IAppFactory;
+                    isBusyFlagGetterName?: string): IFactory;
 
-    unregisterPool<T>(type: Type<T>): IAppFactory;
+    unregisterPool<T>(type: Type<T>): IFactory;
 
-    increasePoolCapacity<T>(type: Type<T>, additionalCapacity: number): IAppFactory;
+    increasePoolCapacity<T>(type: Type<T>, additionalCapacity: number): IFactory;
 
-    setSafePool(value: boolean): IAppFactory;
+    setSafePool(value: boolean): IFactory;
 
-    appendMappingConfig(config: Map<string, DependencyVo>): IAppFactory;
+    appendMappingConfig(config: Map<string, DependencyVo>): IFactory;
 
-    mapValueToLazy<T>(type: Type<T>, to: T, name?: string): IAppFactory;
+    mapValueToLazy<T>(type: Type<T>, to: T, name?: string): IFactory;
 
-    mergeIntoLazy(): IAppFactory;
+    mergeIntoLazy(): IFactory;
 
-    clearLazy(): IAppFactory;
+    clearLazy(): IFactory;
 }
 
-export class AppFactory extends AbstractDisposable implements IAppFactory
+export class Factory extends AbstractDisposable implements IFactory
 {
     private injector: Container = new Container();
 
@@ -303,7 +303,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
     private static getTypeForType<T>(type: Type<T>): string
     {
-        return "__$" + AppFactory.getTypeName(type) + "$__";
+        return "__$" + Factory.getTypeName(type) + "$__";
     }
 
     private map<T>(type: Type<T>, to: T | Class<T>, name: string, map: Map<any, MappingData[]>, unmapMethod: (type: Type<T>, name?: string) => void): boolean
@@ -315,11 +315,11 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         {
             if (mappedToTypeOrValueList)
             {
-                const currentMapping = AppFactory.includesName(mappedToTypeOrValueList, name);
+                const currentMapping = Factory.includesName(mappedToTypeOrValueList, name);
 
                 if (currentMapping)
                 {
-                    const typeName = AppFactory.getTypeName(type);
+                    const typeName = Factory.getTypeName(type);
                     const toName = to.constructor.name;
 
                     if (currentMapping.typeOrValue === to)
@@ -363,16 +363,16 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return mapOrRemap;
     }
 
-    private unmap<T>(type: Type<T>, name: string, map: Map<any, MappingData[]>, mapMethod: (type: Type<T>, to: Class<T>, name?: string) => IAppFactory)
+    private unmap<T>(type: Type<T>, name: string, map: Map<any, MappingData[]>, mapMethod: (type: Type<T>, to: Class<T>, name?: string) => IFactory)
     {
         const mappingList = map.get(type);
         if (mappingList)
         {
-            const mapping: MappingData = AppFactory.includesName(mappingList, name);
+            const mapping: MappingData = Factory.includesName(mappingList, name);
             if (mapping)
             {
                 ArrayUtils.remove(mappingList, mapping);
-                this.injector.unbind(map === this.typeMap ? AppFactory.getTypeForType(type) : type);
+                this.injector.unbind(map === this.typeMap ? Factory.getTypeForType(type) : type);
 
                 if (mappingList.length)
                 {
@@ -401,17 +401,17 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
         if (this._safePool && this.getAllPoolItemsAreBusy(type))
         {
-            logger.warn("All pool items are busy for class '" + AppFactory.getTypeName(type) + "'. Extending pool...");
+            logger.warn("All pool items are busy for class '" + Factory.getTypeName(type) + "'. Extending pool...");
 
             this.increasePoolCapacity(type, 1);
 
-            logger.info("Pool capacity for '" + AppFactory.getTypeName(type) + "' increased!");
+            logger.info("Pool capacity for '" + Factory.getTypeName(type) + "' increased!");
         }
 
         return poolModel.get(type, createNewIfNeeded);
     }
 
-    private clearPools(): IAppFactory
+    private clearPools(): IFactory
     {
         this.poolModelMap.forEach((value) => value.dispose());
 
@@ -424,7 +424,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
     {
         if (!this.poolModelMap.has(type))
         {
-            throw new Error("Pool '" + AppFactory.getTypeName(type) + "' is not registered! Call registerPool.");
+            throw new Error("Pool '" + Factory.getTypeName(type) + "' is not registered! Call registerPool.");
         }
     }
 
@@ -433,13 +433,13 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return typeof type === "string" ? type : type.name;
     }
 
-    public mapToType<T>(type: Type<T>, to: Class<T>, name?: string): IAppFactory
+    public mapToType<T>(type: Type<T>, to: Class<T>, name?: string): IFactory
     {
         const mapSuccess: boolean = this.map(type, to, name, this.typeMap, this.unmapFromType.bind(this));
 
         if (mapSuccess)
         {
-            const bs = this.injector.bind(AppFactory.getTypeForType(type)).to(to);
+            const bs = this.injector.bind(Factory.getTypeForType(type)).to(to);
 
             if (name)
             {
@@ -450,7 +450,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return this;
     }
 
-    public mapToValue<T>(type: Type<T>, to: T, name?: string,): IAppFactory
+    public mapToValue<T>(type: Type<T>, to: T, name?: string,): IFactory
     {
         const mapSuccess: boolean = this.map(type, to, name, this.valueMap, this.unmapFromValue.bind(this));
 
@@ -469,7 +469,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
     public instantiateValueUnmapped<T>(type: Type<T>): T
     {
-        const mappingData: MappingData = AppFactory.includesName(this.valueMap.get(type));
+        const mappingData: MappingData = Factory.includesName(this.valueMap.get(type));
 
         if (mappingData)
         {
@@ -514,7 +514,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
         if (!hasValue)
         {
-            resolvedType = AppFactory.getTypeForType(type);
+            resolvedType = Factory.getTypeForType(type);
         }
 
         return name ? this.injector.getNamed(resolvedType, name) : this.injector.get(resolvedType);
@@ -522,15 +522,15 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
     public hasTypeMapping<T>(type: Type<T>, name?: string): boolean
     {
-        return AppFactory.includesName(this.typeMap.get(type), name) != null;
+        return Factory.includesName(this.typeMap.get(type), name) != null;
     }
 
     public hasValueMapping<T>(type: Type<T>, name?: string): boolean
     {
-        return AppFactory.includesName(this.valueMap.get(type), name) != null;
+        return Factory.includesName(this.valueMap.get(type), name) != null;
     }
 
-    public unmapFromType<T>(type: Type<T>, name?: string): IAppFactory
+    public unmapFromType<T>(type: Type<T>, name?: string): IFactory
     {
         if (this.hasTypeMapping(type, name))
         {
@@ -540,7 +540,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return this;
     }
 
-    public unmapFromValue<T>(type: Type<T>, name?: string): IAppFactory
+    public unmapFromValue<T>(type: Type<T>, name?: string): IFactory
     {
         if (this.hasValueMapping(type, name))
         {
@@ -550,7 +550,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return this;
     }
 
-    public clear(): IAppFactory
+    public clear(): IFactory
     {
         this.injector.unbindAll();
         this.typeMap.clear();
@@ -561,7 +561,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return this;
     }
 
-    public mapValueToLazy<T>(type: Type<T>, to: T, name?: string): IAppFactory
+    public mapValueToLazy<T>(type: Type<T>, to: T, name?: string): IFactory
     {
         const bs = lazyContainer.bind(type).toConstantValue(to);
 
@@ -573,14 +573,14 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return this;
     }
 
-    public mergeIntoLazy(): IAppFactory
+    public mergeIntoLazy(): IFactory
     {
         mergeIntoLazyOne(this.injector);
 
         return this;
     }
 
-    public clearLazy(): IAppFactory
+    public clearLazy(): IFactory
     {
         clearLazyOne();
 
@@ -620,7 +620,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return this.poolModelMap.has(type);
     }
 
-    public increasePoolCapacity<T>(type: Type<T>, additionalCapacity: number): IAppFactory
+    public increasePoolCapacity<T>(type: Type<T>, additionalCapacity: number): IFactory
     {
         this.checkPoolHasType(type);
 
@@ -629,7 +629,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return this;
     }
 
-    public registerPool<T>(type: Type<T>, capacity = 5, instantiateNow?: boolean, isBusyFlagGetterName?: string): IAppFactory
+    public registerPool<T>(type: Type<T>, capacity = 5, instantiateNow?: boolean, isBusyFlagGetterName?: string): IFactory
     {
         if (capacity === 0)
         {
@@ -638,7 +638,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
 
         if (this.poolModelMap.has(type))
         {
-            logger.warn("Pool '" + AppFactory.getTypeName(type) + "' already registered! Call unregisterPool before.");
+            logger.warn("Pool '" + Factory.getTypeName(type) + "' already registered! Call unregisterPool before.");
         }
         else
         {
@@ -656,14 +656,14 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return this;
     }
 
-    public setSafePool(value: boolean): IAppFactory
+    public setSafePool(value: boolean): IFactory
     {
         this._safePool = value;
 
         return this;
     }
 
-    public appendMappingConfig(config: Map<string, DependencyVo>): IAppFactory
+    public appendMappingConfig(config: Map<string, DependencyVo>): IFactory
     {
         let name: string;
         let d: DependencyVo;
@@ -711,7 +711,7 @@ export class AppFactory extends AbstractDisposable implements IAppFactory
         return this;
     }
 
-    public unregisterPool<T>(type: Type<T>): IAppFactory
+    public unregisterPool<T>(type: Type<T>): IFactory
     {
         if (this.poolModelMap.has(type))
         {

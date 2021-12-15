@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 
 import {inject, optional, postConstruct} from "inversify";
-import {AppFactory, IAppFactory} from "../../factory/IAppFactory";
+import {Factory, IFactory} from "../../factory/IFactory";
 import {HierarchyObjectContainer, IHierarchyObjectContainer} from "../hierarchy/IHierarchyObjectContainer";
 import {IContext} from "./IContext";
 import {IModelContainer} from "../model/IModelContainer";
@@ -24,8 +24,8 @@ export type ContextConfig = {
 
 export abstract class AbstractContext<MessageDataType> extends HierarchyObjectContainer<MessageDataType> implements IContext<MessageDataType>
 {
-    @inject("IAppFactory") @optional()
-    protected factory: IAppFactory;
+    @inject("IFactory") @optional()
+    protected factory: IFactory;
 
     @inject("ContextConfig") @optional()
     protected config: ContextConfig;
@@ -50,8 +50,8 @@ export abstract class AbstractContext<MessageDataType> extends HierarchyObjectCo
 
         if (this.factory == null)
         {
-            this.factory = new AppFactory();
-            this.factory.mapToValue("IAppFactory", this.factory);
+            this.factory = new Factory();
+            this.factory.mapToValue("IFactory", this.factory);
         }
 
         this.modelContainer = this.factory.instantiateValueUnmapped("IModelContainer");
