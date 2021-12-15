@@ -119,7 +119,7 @@ export class MappingConfigList<T>
     }
 }
 
-class CommandMap<T = any> extends Map<Enum, MappingConfig<T>[]>
+class CommandMap extends Map<Enum, MappingConfig<any>[]>
 {
 
 }

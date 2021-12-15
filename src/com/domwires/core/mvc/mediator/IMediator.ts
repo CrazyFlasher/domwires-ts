@@ -2,12 +2,12 @@ import {IHierarchyObject, IHierarchyObjectImmutable} from "../hierarchy/IHierarc
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-export interface IMediatorImmutable extends IHierarchyObjectImmutable
+export interface IMediatorImmutable<MessageDataType> extends IHierarchyObjectImmutable<MessageDataType>
 {
 
 }
 
-export interface IMediator extends IMediatorImmutable, IHierarchyObject
+export interface IMediator<MessageDataType> extends IMediatorImmutable<MessageDataType>, IHierarchyObject<MessageDataType>
 {
     isIMediator(): void;
 }

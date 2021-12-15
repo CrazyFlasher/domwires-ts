@@ -6,50 +6,50 @@ import ArrayUtils from "../../utils/ArrayUtils";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
 import {logger, setDefaultImplementation} from "../../Global";
 
-export interface IMessageDispatcherImmutable extends IDisposableImmutable
+export interface IMessageDispatcherImmutable<MessageDataType> extends IDisposableImmutable
 {
     hasMessageListener(type: Enum): boolean;
 
-    addMessageListener<T>(type: Enum, listener: (message?: IMessage<T>) => void, priority?: number): void;
+    addMessageListener(type: Enum, listener: (message?: IMessage<MessageDataType>) => void, priority?: number): void;
 
-    removeMessageListener<T>(type: Enum, listener: (message?: IMessage<T>) => void): void;
+    removeMessageListener(type: Enum, listener: (message?: IMessage<MessageDataType>) => void): void;
 
-    onMessageBubbled(message: IMessage): boolean;
+    onMessageBubbled(message: IMessage<MessageDataType>): boolean;
 }
 
-export interface IMessageDispatcher extends IMessageDispatcherImmutable, IDisposable
+export interface IMessageDispatcher<MessageDataType> extends IMessageDispatcherImmutable<MessageDataType>, IDisposable
 {
-    handleMessage(message: IMessage): IMessageDispatcher;
+    handleMessage(message: IMessage<MessageDataType>): IMessageDispatcher<MessageDataType>;
 
-    removeAllMessageListeners(): IMessageDispatcher;
+    removeAllMessageListeners(): IMessageDispatcher<MessageDataType>;
 
-    dispatchMessage<T>(type: Enum, data?: T, bubbles?: boolean): IMessageDispatcher;
+    dispatchMessage(type: Enum, data?: MessageDataType, bubbles?: boolean): IMessageDispatcher<MessageDataType>;
 }
 
-export interface IMessage<T = any>
+export interface IMessage<MessageDataType>
 {
     get type(): Enum;
 
-    get data(): T;
+    get data(): MessageDataType;
 
-    get initialTarget(): IMessageDispatcherImmutable;
+    get initialTarget(): IMessageDispatcherImmutable<MessageDataType>;
 
-    get currentTarget(): IMessageDispatcherImmutable;
+    get currentTarget(): IMessageDispatcherImmutable<MessageDataType>;
 
-    get previousTarget(): IMessageDispatcherImmutable;
+    get previousTarget(): IMessageDispatcherImmutable<MessageDataType>;
 }
 
-class Message<T = any> implements IMessage
+class Message<MessageDataType> implements IMessage<MessageDataType>
 {
     private _type: Enum;
-    private _data: T;
+    private _data: MessageDataType;
     private _bubbles: boolean;
 
-    private _initialTarget: IMessageDispatcherImmutable;
-    private _previousTarget: IMessageDispatcherImmutable;
-    private _currentTarget: IMessageDispatcherImmutable;
+    private _initialTarget: IMessageDispatcherImmutable<MessageDataType>;
+    private _previousTarget: IMessageDispatcherImmutable<MessageDataType>;
+    private _currentTarget: IMessageDispatcherImmutable<MessageDataType>;
 
-    public setCurrentTarget(value: IMessageDispatcherImmutable): IMessageDispatcherImmutable
+    public setCurrentTarget(value: IMessageDispatcherImmutable<MessageDataType>): IMessageDispatcherImmutable<MessageDataType>
     {
         this._previousTarget = this._currentTarget;
 
@@ -68,32 +68,32 @@ class Message<T = any> implements IMessage
         this._bubbles = value;
     }
 
-    public get currentTarget(): IMessageDispatcherImmutable
+    public get currentTarget(): IMessageDispatcherImmutable<MessageDataType>
     {
         return this._currentTarget;
     }
 
-    public get data(): T
+    public get data(): MessageDataType
     {
         return this._data;
     }
 
-    public set data(value: T)
+    public set data(value: MessageDataType)
     {
         this._data = value;
     }
 
-    public get previousTarget(): IMessageDispatcherImmutable
+    public get previousTarget(): IMessageDispatcherImmutable<MessageDataType>
     {
         return this._previousTarget;
     }
 
-    public get initialTarget(): IMessageDispatcherImmutable
+    public get initialTarget(): IMessageDispatcherImmutable<MessageDataType>
     {
         return this._initialTarget;
     }
 
-    public set initialTarget(value: IMessageDispatcherImmutable)
+    public set initialTarget(value: IMessageDispatcherImmutable<MessageDataType>)
     {
         this._initialTarget = value;
     }
@@ -109,37 +109,37 @@ class Message<T = any> implements IMessage
     }
 }
 
-export class MessageDispatcher extends AbstractDisposable implements IMessageDispatcher
+export class MessageDispatcher<MessageDataType> extends AbstractDisposable implements IMessageDispatcher<MessageDataType>
 {
-    private _messageMap: Map<Enum, Listener[]>;
-    private _message: Message;
+    private _messageMap: Map<Enum, Listener<MessageDataType>[]>;
+    private _message: Message<MessageDataType>;
 
     private isBubbling: boolean;
 
-    public addMessageListener<T>(type: Enum, listener: (message?: IMessage<T>) => void, priority?: number): void
+    public addMessageListener(type: Enum, listener: (message?: IMessage<MessageDataType>) => void, priority?: number): void
     {
         if (!this._messageMap)
         {
-            this._messageMap = new Map<Enum, Listener[]>();
+            this._messageMap = new Map<Enum, Listener<MessageDataType>[]>();
         }
 
-        let messageMapForType: Listener[] = this._messageMap.get(type);
+        let messageMapForType: Listener<MessageDataType>[] = this._messageMap.get(type);
         if (!messageMapForType)
         {
-            messageMapForType = [new Listener(listener, this, priority)];
+            messageMapForType = [new Listener<MessageDataType>(listener, this, priority)];
 
             this._messageMap.set(type, messageMapForType);
         }
         else if (MessageDispatcher.getListenerWithPriority(messageMapForType, listener) == null)
         {
-            messageMapForType.push(new Listener(listener, this, priority));
+            messageMapForType.push(new Listener<MessageDataType>(listener, this, priority));
             MessageDispatcher.sortOnPriority(messageMapForType);
         }
     }
 
-    private static sortOnPriority(messageMapForType: Listener[]): void
+    private static sortOnPriority<MessageDataType>(messageMapForType: Listener<MessageDataType>[]): void
     {
-        messageMapForType.sort((e1: Listener, e2: Listener) =>
+        messageMapForType.sort((e1: Listener<MessageDataType>, e2: Listener<MessageDataType>) =>
         {
             if (e1.priority < e2.priority) return 1;
             if (e1.priority > e2.priority) return -1;
@@ -147,7 +147,8 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         });
     }
 
-    private static getListenerWithPriority<T>(messageMapForType: Listener[], listener: (message?: IMessage<T>) => void): Listener
+    private static getListenerWithPriority<MessageDataType>(messageMapForType: Listener<MessageDataType>[],
+                                                            listener: (message?: IMessage<MessageDataType>) => void): Listener<MessageDataType>
     {
         for (const l of messageMapForType)
         {
@@ -160,7 +161,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return null;
     }
 
-    public dispatchMessage<T>(type: Enum, data?: T, bubbles = true): IMessageDispatcher
+    public dispatchMessage(type: Enum, data?: MessageDataType, bubbles = true): IMessageDispatcher<MessageDataType>
     {
         if (this.isBubbling)
         {
@@ -182,12 +183,12 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return this;
     }
 
-    private bubbleUpMessage<T>(message: Message<T>): void
+    private bubbleUpMessage(message: Message<MessageDataType>): void
     {
         if (message.bubbles)
         {
             this.isBubbling = true;
-            let currentTarget: IMessageDispatcherImmutable = message.initialTarget;
+            let currentTarget: IMessageDispatcherImmutable<MessageDataType> = message.initialTarget;
             let bubbleUp: boolean;
 
             while (currentTarget && Reflect.get(currentTarget, "_parent"))
@@ -214,16 +215,16 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
     }
 
     /* eslint-disable @typescript-eslint/no-unused-vars */
-    public onMessageBubbled(message: IMessage): boolean
+    public onMessageBubbled(message: IMessage<MessageDataType>): boolean
     {
         return false;
     }
 
-    private getMessage<T>(type: Enum, data: T, bubbles: boolean, forceReturnNew = false): Message
+    private getMessage(type: Enum, data: MessageDataType, bubbles: boolean, forceReturnNew = false): Message<MessageDataType>
     {
         if (!this._message || forceReturnNew)
         {
-            this._message = new Message<T>();
+            this._message = new Message<MessageDataType>();
         }
 
         this._message.type = type;
@@ -233,15 +234,15 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return this._message;
     }
 
-    public handleMessage(message: IMessage): IMessageDispatcher
+    public handleMessage(message: IMessage<MessageDataType>): IMessageDispatcher<MessageDataType>
     {
         if (this._messageMap != null)
         {
-            const messageMapForType: Listener[] = this._messageMap.get(message.type);
+            const messageMapForType: Listener<MessageDataType>[] = this._messageMap.get(message.type);
 
             if (messageMapForType != null)
             {
-                messageMapForType.forEach((listener: Listener) => listener.bindedFunc(message));
+                messageMapForType.forEach((listener: Listener<MessageDataType>) => listener.bindedFunc(message));
             }
         }
 
@@ -258,11 +259,11 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return false;
     }
 
-    public removeAllMessageListeners(): IMessageDispatcher
+    public removeAllMessageListeners(): IMessageDispatcher<MessageDataType>
     {
         if (this._messageMap != null)
         {
-            this._messageMap.forEach((v: Listener[]) => ArrayUtils.clear(v));
+            this._messageMap.forEach((v: Listener<MessageDataType>[]) => ArrayUtils.clear(v));
 
             this._messageMap = null;
         }
@@ -270,13 +271,13 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return this;
     }
 
-    public removeMessageListener<T>(type: Enum, listener: (message?: IMessage<T>) => void): void
+    public removeMessageListener(type: Enum, listener: (message?: IMessage<MessageDataType>) => void): void
     {
         if (this._messageMap != null)
         {
             if (this._messageMap.get(type) != null)
             {
-                const l: Listener = MessageDispatcher.getListenerWithPriority(this._messageMap.get(type), listener);
+                const l: Listener<MessageDataType> = MessageDispatcher.getListenerWithPriority(this._messageMap.get(type), listener);
                 if (l != null)
                 {
                     ArrayUtils.remove(this._messageMap.get(type), l);
@@ -306,13 +307,14 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
     }
 }
 
-class Listener<T = any>
+class Listener<MessageDataType>
 {
-    private readonly _func: (message?: IMessage) => void;
+    private readonly _func: (message?: IMessage<MessageDataType>) => void;
     private readonly _priority: number;
-    private readonly _bindedFunc: (message?: IMessage) => void;
+    private readonly _bindedFunc: (message?: IMessage<MessageDataType>) => void;
 
-    public constructor(func: (message?: IMessage) => void, bind: T, priority?: number)
+    public constructor(func: (message?: IMessage<MessageDataType>) => void, bind: IMessageDispatcherImmutable<MessageDataType>,
+                       priority?: number)
     {
         if (priority == null) priority = 0;
 
@@ -326,12 +328,12 @@ class Listener<T = any>
         return this._priority;
     }
 
-    public get func(): (message?: IMessage) => void
+    public get func(): (message?: IMessage<MessageDataType>) => void
     {
         return this._func;
     }
 
-    public get bindedFunc(): (message?: IMessage) => void
+    public get bindedFunc(): (message?: IMessage<MessageDataType>) => void
     {
         return this._bindedFunc;
     }

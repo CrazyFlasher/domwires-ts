@@ -1,4 +1,4 @@
-import {AbstractDisposable} from "../../../src/com/domwires/core/common/AbstractDisposable";
+import {AbstractDisposable} from "../../../src";
 
 export class MockDisposable extends AbstractDisposable
 {

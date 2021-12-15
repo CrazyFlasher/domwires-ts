@@ -1,4 +1,4 @@
-import {Enum} from "../../src/com/domwires/core/Enum";
+import {Enum} from "../../src";
 
 export class MockEnum extends Enum
 {

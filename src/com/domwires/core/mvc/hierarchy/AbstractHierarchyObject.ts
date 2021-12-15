@@ -2,9 +2,9 @@ import {IHierarchyObject} from "./IHierarchyObject";
 import {IHierarchyObjectContainer, IHierarchyObjectContainerImmutable} from "./IHierarchyObjectContainer";
 import {MessageDispatcher} from "../message/IMessageDispatcher";
 
-export abstract class AbstractHierarchyObject extends MessageDispatcher implements IHierarchyObject
+export abstract class AbstractHierarchyObject<MessageDataType> extends MessageDispatcher<MessageDataType> implements IHierarchyObject<MessageDataType>
 {
-    private _parent: IHierarchyObjectContainer;
+    private _parent: IHierarchyObjectContainer<MessageDataType>;
 
     public override dispose()
     {
@@ -13,17 +13,17 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
         super.dispose();
     }
 
-    public get parent(): IHierarchyObjectContainer
+    public get parent(): IHierarchyObjectContainer<MessageDataType>
     {
         return this._parent;
     }
 
-    public get parentImmutable(): IHierarchyObjectContainerImmutable
+    public get parentImmutable(): IHierarchyObjectContainerImmutable<MessageDataType>
     {
         return this.parent;
     }
 
-    public setParent(value: IHierarchyObjectContainer): IHierarchyObject
+    public setParent(value: IHierarchyObjectContainer<MessageDataType>): IHierarchyObject<MessageDataType>
     {
         const hasParent: boolean = this._parent != null;
 

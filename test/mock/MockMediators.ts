@@ -1,13 +1,15 @@
-import {AbstractMediator} from "../../src/com/domwires/core/mvc/mediator/AbstractMediator";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import {AbstractMediator} from "../../src";
 import {MockMessageType} from "./MockMessageType";
 import {postConstruct} from "inversify";
 
-export class MockMediator1 extends AbstractMediator
+export class MockMediator1<MessageDataType = any> extends AbstractMediator<MessageDataType>
 {
 
 }
 
-export class MockMediator2 extends AbstractMediator
+export class MockMediator2<MessageDataType = any> extends AbstractMediator<MessageDataType>
 {
     public dispatch(): void
     {
@@ -15,7 +17,7 @@ export class MockMediator2 extends AbstractMediator
     }
 }
 
-export class MockMediator3 extends AbstractMediator
+export class MockMediator3<MessageDataType = any> extends AbstractMediator<MessageDataType>
 {
     @postConstruct()
     private init(): void
@@ -35,7 +37,7 @@ export class MockMediator3 extends AbstractMediator
 
 }
 
-export class MockMediator4 extends AbstractMediator
+export class MockMediator4<MessageDataType = any> extends AbstractMediator<MessageDataType>
 {
     public static val = 0;
 

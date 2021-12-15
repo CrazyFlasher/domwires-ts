@@ -1,14 +1,14 @@
 import {IHierarchyObjectContainer, IHierarchyObjectContainerImmutable} from "./IHierarchyObjectContainer";
 import {IMessageDispatcher, IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
 
-export interface IHierarchyObjectImmutable extends IMessageDispatcherImmutable
+export interface IHierarchyObjectImmutable<MessageDataType> extends IMessageDispatcherImmutable<MessageDataType>
 {
-    get parentImmutable(): IHierarchyObjectContainerImmutable;
+    get parentImmutable(): IHierarchyObjectContainerImmutable<MessageDataType>;
 }
 
-export interface IHierarchyObject extends IHierarchyObjectImmutable, IMessageDispatcher
+export interface IHierarchyObject<MessageDataType> extends IHierarchyObjectImmutable<MessageDataType>, IMessageDispatcher<MessageDataType>
 {
-    setParent(value: IHierarchyObjectContainer): IHierarchyObject;
+    setParent(value: IHierarchyObjectContainer<MessageDataType>): IHierarchyObject<MessageDataType>;
 
-    get parent(): IHierarchyObjectContainer;
+    get parent(): IHierarchyObjectContainer<MessageDataType>;
 }

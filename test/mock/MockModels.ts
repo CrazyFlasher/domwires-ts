@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {AbstractModel} from "../../src/com/domwires/core/mvc/model/AbstractModel";
+import {AbstractModel} from "../../src";
 import {MockMessageType, MockMessageType2} from "./MockMessageType";
 import {inject, injectable, named} from "inversify";
-import {definableFromString, setDefaultImplementation} from "../../src/com/domwires/core/Global";
+import {definableFromString, setDefaultImplementation} from "../../src";
 
 export type MockTypeDef = {
     readonly a: string;
     readonly b: number;
 };
 
-export class MockModel0 extends AbstractModel
+export class MockModel0<MessageDataType = any> extends AbstractModel<MessageDataType>
 {
     @inject("number")
     private n1: number;
@@ -19,22 +19,22 @@ export class MockModel0 extends AbstractModel
     private n2: number;
 }
 
-export class MockModel1 extends AbstractModel
+export class MockModel1<MessageDataType = any> extends AbstractModel<MessageDataType>
 {
 
 }
 
-export class MockModel2 extends AbstractModel
-{
-    public testVar = 0;
-}
-
-export class MockModel3 extends AbstractModel
+export class MockModel2<MessageDataType = any> extends AbstractModel<MessageDataType>
 {
     public testVar = 0;
 }
 
-export class MockModel4 extends AbstractModel
+export class MockModel3<MessageDataType = any> extends AbstractModel<MessageDataType>
+{
+    public testVar = 0;
+}
+
+export class MockModel4<MessageDataType = any> extends AbstractModel<MessageDataType>
 {
     private _testVar = 0;
 
@@ -51,7 +51,7 @@ export class MockModel4 extends AbstractModel
     }
 }
 
-export class MockModel5 extends AbstractModel
+export class MockModel5<MessageDataType = any> extends AbstractModel<MessageDataType>
 {
     public testVar: number;
 
@@ -61,7 +61,7 @@ export class MockModel5 extends AbstractModel
     }
 }
 
-export class MockModel6 extends AbstractModel
+export class MockModel6<MessageDataType = any> extends AbstractModel<MessageDataType>
 {
     public v = 0;
 
@@ -73,7 +73,7 @@ export class MockModel6 extends AbstractModel
     }
 }
 
-export class MockModel7 extends AbstractModel
+export class MockModel7<MessageDataType = any> extends AbstractModel<MessageDataType>
 {
     @inject("MockTypeDef")
     private td: MockTypeDef;
@@ -121,7 +121,7 @@ export class Default implements IDefault
     }
 }
 
-export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
+export class SuperCoolModel<MessageDataType = any> extends AbstractModel<MessageDataType> implements ISuperCoolModel
 {
     @inject("boolean") @named("myBool")
     public _myBool = true;

@@ -2,9 +2,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {inject, injectable, named, postConstruct} from "inversify";
-import {IDisposable} from "../../src/com/domwires/core/common/IDisposable";
-import {AbstractDisposable} from "../../src/com/domwires/core/common/AbstractDisposable";
-import {setDefaultImplementation} from "../../src/com/domwires/core/Global";
+import {IDisposable} from "../../src";
+import {AbstractDisposable} from "../../src";
+import {setDefaultImplementation} from "../../src";
 
 @injectable()
 export class MockBusyPoolObject

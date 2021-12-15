@@ -1,12 +1,12 @@
 import 'reflect-metadata';
-import {ICommand} from "../../src/com/domwires/core/mvc/command/ICommand";
-import {AbstractCommand} from "../../src/com/domwires/core/mvc/command/AbstractCommand";
+import {ICommand} from "../../src";
+import {AbstractCommand} from "../../src";
 import {inject, named, optional} from "inversify";
 import {MockObj1} from "./MockObjects";
-import {Enum} from "../../src/com/domwires/core/Enum";
+import {Enum} from "../../src";
 import {MockModel2, MockModel3, MockModel4, MockModel6} from "./MockModels";
-import {setDefaultImplementation} from "../../src/com/domwires/core/Global";
-import {lazyInject, lazyInjectNamed} from "../../src/com/domwires/core/factory/IAppFactory";
+import {setDefaultImplementation} from "../../src";
+import {lazyInject, lazyInjectNamed} from "../../src";
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
 

@@ -9,34 +9,34 @@ import {
 import ArrayUtils from "../../utils/ArrayUtils";
 import {setDefaultImplementation} from "../../Global";
 
-export interface IModelContainerImmutable extends IModelImmutable, IHierarchyObjectContainerImmutable
+export interface IModelContainerImmutable<MessageDataType> extends IModelImmutable<MessageDataType>, IHierarchyObjectContainerImmutable<MessageDataType>
 {
     get numModels(): number;
 
-    get modelListImmutable(): ReadonlyArray<IModelImmutable>;
+    get modelListImmutable(): ReadonlyArray<IModelImmutable<MessageDataType>>;
 
-    containsModel(model: IModelImmutable): boolean;
+    containsModel(model: IModelImmutable<MessageDataType>): boolean;
 }
 
-export interface IModelContainer extends IModelContainerImmutable, IModel, IHierarchyObjectContainer
+export interface IModelContainer<MessageDataType> extends IModelContainerImmutable<MessageDataType>, IModel<MessageDataType>, IHierarchyObjectContainer<MessageDataType>
 {
     isIModelContainer(): void;
 
-    addModel(model: IModel): IModelContainer;
+    addModel(model: IModel<MessageDataType>): IModelContainer<MessageDataType>;
 
-    removeModel(model: IModel, dispose?: boolean): IModelContainer;
+    removeModel(model: IModel<MessageDataType>, dispose?: boolean): IModelContainer<MessageDataType>;
 
-    removeAllModels(dispose?: boolean): IModelContainer;
+    removeAllModels(dispose?: boolean): IModelContainer<MessageDataType>;
 
-    get modelList(): IModel[];
+    get modelList(): IModel<MessageDataType>[];
 }
 
-export class ModelContainer extends HierarchyObjectContainer implements IModelContainer
+export class ModelContainer<MessageDataType> extends HierarchyObjectContainer<MessageDataType> implements IModelContainer<MessageDataType>
 {
-    private _modelList: IModel[] = [];
-    private _modelListImmutable: IModelImmutable[] = [];
+    private _modelList: IModel<MessageDataType>[] = [];
+    private _modelListImmutable: IModelImmutable<MessageDataType>[] = [];
 
-    public addModel(model: IModel): IModelContainer
+    public addModel(model: IModel<MessageDataType>): IModelContainer<MessageDataType>
     {
         const success: boolean = this.add(model);
 
@@ -49,7 +49,7 @@ export class ModelContainer extends HierarchyObjectContainer implements IModelCo
         return this;
     }
 
-    public removeModel(model: IModel, dispose = false): IModelContainer
+    public removeModel(model: IModel<MessageDataType>, dispose = false): IModelContainer<MessageDataType>
     {
         const success: boolean = this.remove(model, dispose);
 
@@ -62,7 +62,7 @@ export class ModelContainer extends HierarchyObjectContainer implements IModelCo
         return this;
     }
 
-    public removeAllModels(dispose = false): IModelContainer
+    public removeAllModels(dispose = false): IModelContainer<MessageDataType>
     {
         this.removeAll(dispose);
 
@@ -77,19 +77,19 @@ export class ModelContainer extends HierarchyObjectContainer implements IModelCo
         return (this.children != null) ? this.children.length : 0;
     }
 
-    public containsModel(model: IModelImmutable): boolean
+    public containsModel(model: IModelImmutable<MessageDataType>): boolean
     {
         return this.contains(model);
     }
 
     // better to return copy, but in sake of performance, we do that way.
-    public get modelList(): IModel[]
+    public get modelList(): IModel<MessageDataType>[]
     {
         return this._modelList;
     }
 
     // better to return copy, but in sake of performance, we do that way.
-    public get modelListImmutable(): ReadonlyArray<IModelImmutable>
+    public get modelListImmutable(): ReadonlyArray<IModelImmutable<MessageDataType>>
     {
         return this._modelListImmutable;
     }

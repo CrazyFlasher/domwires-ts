@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import "reflect-metadata";
 import {Suite} from "mocha";
 import {AppFactory, IAppFactory} from "../src";
@@ -17,7 +19,7 @@ import "../src/com/domwires/core/mvc/command/ICommandMapper";
 describe('ContextTest', function (this: Suite)
 {
     let f: IAppFactory;
-    let c: IContext;
+    let c: IContext<any>;
 
     beforeEach(() =>
     {

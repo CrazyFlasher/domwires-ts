@@ -1,16 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
 import {MockHierarchyObject} from "./mock/mvc/MockHierarchyObject";
-import {IHierarchyObject} from "../src/com/domwires/core/mvc/hierarchy/IHierarchyObject";
+import {IHierarchyObject} from "../src";
 import {
     HierarchyObjectContainer,
     IHierarchyObjectContainer
-} from "../src/com/domwires/core/mvc/hierarchy/IHierarchyObjectContainer";
+} from "../src";
 
 describe('HierarchyObjectTest', function (this: Suite)
 {
-    let ho: IHierarchyObject;
+    let ho: IHierarchyObject<any>;
 
     beforeEach(() =>
     {
@@ -39,15 +41,15 @@ describe('HierarchyObjectTest', function (this: Suite)
     {
         expect(ho.parent).not.exist;
 
-        const hoc: IHierarchyObjectContainer = addToContainer(ho);
+        const hoc: IHierarchyObjectContainer<any> = addToContainer(ho);
 
         expect(ho.parent).equals(hoc);
     });
 });
 
-export function addToContainer(ho: IHierarchyObject): IHierarchyObjectContainer
+export function addToContainer(ho: IHierarchyObject<any>): IHierarchyObjectContainer<any>
 {
-    const hoc: IHierarchyObjectContainer = new HierarchyObjectContainer();
+    const hoc: IHierarchyObjectContainer<any> = new HierarchyObjectContainer();
     hoc.add(ho);
 
     return hoc;

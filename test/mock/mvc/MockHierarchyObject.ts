@@ -1,6 +1,8 @@
-import {AbstractHierarchyObject} from "../../../src/com/domwires/core/mvc/hierarchy/AbstractHierarchyObject";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-export class MockHierarchyObject extends AbstractHierarchyObject
+import {AbstractHierarchyObject} from "../../../src";
+
+export class MockHierarchyObject<MessageDataType = any> extends AbstractHierarchyObject<MessageDataType>
 {
     public constructor()
     {

@@ -1,22 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
-import {
-    IMessage,
-    IMessageDispatcher,
-    IMessageDispatcherImmutable,
-    MessageDispatcher
-} from "../src/com/domwires/core/mvc/message/IMessageDispatcher";
+import {Enum, IMessage, IMessageDispatcher, IMessageDispatcherImmutable, MessageDispatcher} from "../src";
 import {MockMessageType} from "./mock/MockMessageType";
-import {Enum} from "../src/com/domwires/core/Enum";
 
 describe('MessageDispatcherTest', function (this: Suite)
 {
-    /* eslint-disable @typescript-eslint/no-empty-function */
+    let d: IMessageDispatcher<DataType>;
 
-    let d: IMessageDispatcher;
-
-    beforeEach(() => d = new MessageDispatcher());
+    beforeEach(() => d = new MessageDispatcher<DataType>());
     afterEach(() =>
     {
         if (!d.isDisposed)
@@ -27,14 +22,12 @@ describe('MessageDispatcherTest', function (this: Suite)
 
     it('testDispatchMessage', () =>
     {
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-
         let gotMessage = false;
         let gotMessageType: Enum = MockMessageType.GOODBYE;
-        let gotMessageTarget: IMessageDispatcherImmutable = null;
+        let gotMessageTarget: IMessageDispatcherImmutable<DataType> = null;
         const gotMessageData: any = {};
 
-        d.addMessageListener(MockMessageType.HELLO, (m?: IMessage) =>
+        d.addMessageListener(MockMessageType.HELLO, (m?: IMessage<DataType>) =>
         {
             gotMessage = true;
             gotMessageType = m.type;
@@ -187,3 +180,7 @@ describe('MessageDispatcherTest', function (this: Suite)
         d.dispatchMessage(MockMessageType.HELLO);
     });
 });
+
+type DataType = {
+    readonly prop: string;
+};

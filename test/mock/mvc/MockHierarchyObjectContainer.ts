@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {HierarchyObjectContainer} from "../../../src";
 
-export class MockHierarchyObjectContainer extends HierarchyObjectContainer
+export class MockHierarchyObjectContainer<MessageDataType = any> extends HierarchyObjectContainer<MessageDataType>
 {
     private value: boolean;
 
