@@ -12,7 +12,7 @@ import {
 
 describe('HierarchyObjectTest', function (this: Suite)
 {
-    let ho: IHierarchyObject<any>;
+    let ho: IHierarchyObject;
 
     beforeEach(() =>
     {
@@ -41,15 +41,15 @@ describe('HierarchyObjectTest', function (this: Suite)
     {
         expect(ho.parent).not.exist;
 
-        const hoc: IHierarchyObjectContainer<any> = addToContainer(ho);
+        const hoc: IHierarchyObjectContainer = addToContainer(ho);
 
         expect(ho.parent).equals(hoc);
     });
 });
 
-export function addToContainer(ho: IHierarchyObject<any>): IHierarchyObjectContainer<any>
+export function addToContainer(ho: IHierarchyObject): IHierarchyObjectContainer
 {
-    const hoc: IHierarchyObjectContainer<any> = new HierarchyObjectContainer();
+    const hoc: IHierarchyObjectContainer = new HierarchyObjectContainer();
     hoc.add(ho);
 
     return hoc;

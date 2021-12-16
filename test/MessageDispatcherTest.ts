@@ -9,9 +9,9 @@ import {MockMessageType} from "./mock/MockMessageType";
 
 describe('MessageDispatcherTest', function (this: Suite)
 {
-    let d: IMessageDispatcher<DataType>;
+    let d: IMessageDispatcher;
 
-    beforeEach(() => d = new MessageDispatcher<DataType>());
+    beforeEach(() => d = new MessageDispatcher());
     afterEach(() =>
     {
         if (!d.isDisposed)
@@ -24,10 +24,10 @@ describe('MessageDispatcherTest', function (this: Suite)
     {
         let gotMessage = false;
         let gotMessageType: Enum = MockMessageType.GOODBYE;
-        let gotMessageTarget: IMessageDispatcherImmutable<DataType> = null;
+        let gotMessageTarget: IMessageDispatcherImmutable = null;
         const gotMessageData: any = {};
 
-        d.addMessageListener(MockMessageType.HELLO, (m?: IMessage<DataType>) =>
+        d.addMessageListener(MockMessageType.HELLO, (m?: IMessage) =>
         {
             gotMessage = true;
             gotMessageType = m.type;

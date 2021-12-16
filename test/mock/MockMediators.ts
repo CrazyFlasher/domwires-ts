@@ -4,12 +4,12 @@ import {AbstractMediator} from "../../src";
 import {MockMessageType} from "./MockMessageType";
 import {postConstruct} from "inversify";
 
-export class MockMediator1<MessageDataType = any> extends AbstractMediator<MessageDataType>
+export class MockMediator1 extends AbstractMediator
 {
 
 }
 
-export class MockMediator2<MessageDataType = any> extends AbstractMediator<MessageDataType>
+export class MockMediator2 extends AbstractMediator
 {
     public dispatch(): void
     {
@@ -17,7 +17,7 @@ export class MockMediator2<MessageDataType = any> extends AbstractMediator<Messa
     }
 }
 
-export class MockMediator3<MessageDataType = any> extends AbstractMediator<MessageDataType>
+export class MockMediator3 extends AbstractMediator
 {
     @postConstruct()
     private init(): void
@@ -37,7 +37,7 @@ export class MockMediator3<MessageDataType = any> extends AbstractMediator<Messa
 
 }
 
-export class MockMediator4<MessageDataType = any> extends AbstractMediator<MessageDataType>
+export class MockMediator4 extends AbstractMediator
 {
     public static val = 0;
 

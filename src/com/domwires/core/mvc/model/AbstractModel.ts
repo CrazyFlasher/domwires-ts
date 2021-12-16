@@ -3,7 +3,7 @@
 import {AbstractHierarchyObject} from "../hierarchy/AbstractHierarchyObject";
 import {IModel} from "./IModel";
 
-export abstract class AbstractModel<MessageDataType> extends AbstractHierarchyObject<MessageDataType> implements IModel<MessageDataType>
+export abstract class AbstractModel extends AbstractHierarchyObject implements IModel
 {
     public isIModel(): void {}
 }

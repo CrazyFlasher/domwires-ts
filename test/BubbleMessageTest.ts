@@ -34,16 +34,16 @@ import {IMessage} from "../src";
 
 describe('BubbleMessageTest', function (this: Suite)
 {
-    let m1: AbstractModel<any>;
-    let c1: AbstractContext<any>;
-    let c2: AbstractContext<any>;
-    let c3: AbstractContext<any>;
-    let c4: AbstractContext<any>;
-    let mc1: ModelContainer<any>;
-    let mc2: ModelContainer<any>;
-    let mc3: ModelContainer<any>;
-    let mc4: ModelContainer<any>;
-    let v1: AbstractMediator<any>;
+    let m1: AbstractModel;
+    let c1: AbstractContext;
+    let c2: AbstractContext;
+    let c3: AbstractContext;
+    let c4: AbstractContext;
+    let mc1: ModelContainer;
+    let mc2: ModelContainer;
+    let mc3: ModelContainer;
+    let mc4: ModelContainer;
+    let v1: AbstractMediator;
 
     let factory: IFactory;
 
@@ -84,7 +84,7 @@ describe('BubbleMessageTest', function (this: Suite)
     {
         let bubbledEventType: Enum;
 
-        const successFunc: (message: IMessage<any>) => void = (message: IMessage<any>) =>
+        const successFunc: (message: IMessage) => void = (message: IMessage) =>
         {
             // message came from bottom to top
             bubbledEventType = message.type;
@@ -112,16 +112,16 @@ describe('BubbleMessageTest', function (this: Suite)
             /* eslint-disable @typescript-eslint/no-empty-function */
         };
 
-        const c1: IContext<any> = factory.instantiateValueUnmapped(MockContext1);
-        const c2: IContext<any> = factory.instantiateValueUnmapped(MockContext1);
-        const c3: IContext<any> = factory.instantiateValueUnmapped(MockContext1);
-        const c4: IContext<any> = factory.instantiateValueUnmapped(MockContext1);
-        const c5: IContext<any> = factory.instantiateValueUnmapped(MockContext1);
-        const c6: IContext<any> = factory.instantiateValueUnmapped(MockContext1);
-        const c7: IContext<any> = factory.instantiateValueUnmapped(MockContext1);
-        const c8: IContext<any> = factory.instantiateValueUnmapped(MockContext1);
-        const c9: IContext<any> = factory.instantiateValueUnmapped(MockContext1);
-        const c10: IContext<any> = factory.instantiateValueUnmapped(MockContext1);
+        const c1: IContext = factory.instantiateValueUnmapped(MockContext1);
+        const c2: IContext = factory.instantiateValueUnmapped(MockContext1);
+        const c3: IContext = factory.instantiateValueUnmapped(MockContext1);
+        const c4: IContext = factory.instantiateValueUnmapped(MockContext1);
+        const c5: IContext = factory.instantiateValueUnmapped(MockContext1);
+        const c6: IContext = factory.instantiateValueUnmapped(MockContext1);
+        const c7: IContext = factory.instantiateValueUnmapped(MockContext1);
+        const c8: IContext = factory.instantiateValueUnmapped(MockContext1);
+        const c9: IContext = factory.instantiateValueUnmapped(MockContext1);
+        const c10: IContext = factory.instantiateValueUnmapped(MockContext1);
 
         c1.addModel(
             c2.addModel(

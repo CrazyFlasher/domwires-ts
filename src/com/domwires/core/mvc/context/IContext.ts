@@ -3,14 +3,14 @@ import {IMediatorContainer, IMediatorContainerImmutable} from "../mediator/IMedi
 import {ICommandMapper, ICommandMapperImmutable} from "../command/ICommandMapper";
 import {IMessage} from "../message/IMessageDispatcher";
 
-export interface IContextImmutable<MessageDataType> extends IModelContainerImmutable<MessageDataType>, IMediatorContainerImmutable<MessageDataType>, ICommandMapperImmutable
+export interface IContextImmutable extends IModelContainerImmutable, IMediatorContainerImmutable, ICommandMapperImmutable
 {
     isIContext(): void;
 }
 
-export interface IContext<MessageDataType> extends IContextImmutable<MessageDataType>, IModelContainer<MessageDataType>, IMediatorContainer<MessageDataType>, ICommandMapper
+export interface IContext extends IContextImmutable, IModelContainer, IMediatorContainer, ICommandMapper
 {
-    dispatchMessageToMediators(message: IMessage<MessageDataType>): IContext<MessageDataType>;
+    dispatchMessageToMediators(message: IMessage): IContext;
 
-    dispatchMessageToModels(message: IMessage<MessageDataType>): IContext<MessageDataType>;
+    dispatchMessageToModels(message: IMessage): IContext;
 }

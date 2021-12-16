@@ -3,7 +3,7 @@
 import {AbstractHierarchyObject} from "../hierarchy/AbstractHierarchyObject";
 import {IMediator} from "./IMediator";
 
-export abstract class AbstractMediator<MessageDataType> extends AbstractHierarchyObject<MessageDataType> implements IMediator<MessageDataType>
+export abstract class AbstractMediator extends AbstractHierarchyObject implements IMediator
 {
     public isIMediator(): void {}
 }

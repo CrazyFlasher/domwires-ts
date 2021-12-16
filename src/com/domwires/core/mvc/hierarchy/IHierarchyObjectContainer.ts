@@ -4,30 +4,30 @@ import {AbstractHierarchyObject} from "./AbstractHierarchyObject";
 import ArrayUtils from "../../utils/ArrayUtils";
 import {setDefaultImplementation} from "../../Global";
 
-export interface IHierarchyObjectContainerImmutable<MessageDataType> extends IHierarchyObjectImmutable<MessageDataType>
+export interface IHierarchyObjectContainerImmutable extends IHierarchyObjectImmutable
 {
-    get childrenImmutable(): ReadonlyArray<IHierarchyObjectImmutable<MessageDataType>>;
+    get childrenImmutable(): ReadonlyArray<IHierarchyObjectImmutable>;
 
-    contains(child: IHierarchyObjectImmutable<MessageDataType>): boolean;
+    contains(child: IHierarchyObjectImmutable): boolean;
 }
 
-export interface IHierarchyObjectContainer<MessageDataType> extends IHierarchyObjectContainerImmutable<MessageDataType>, IHierarchyObject<MessageDataType>
+export interface IHierarchyObjectContainer extends IHierarchyObjectContainerImmutable, IHierarchyObject
 {
-    get children(): ReadonlyArray<IHierarchyObject<MessageDataType>>;
+    get children(): ReadonlyArray<IHierarchyObject>;
 
-    add(child: IHierarchyObject<MessageDataType>, index?: number): boolean;
+    add(child: IHierarchyObject, index?: number): boolean;
 
-    remove(child: IHierarchyObject<MessageDataType>, dispose?: boolean): boolean;
+    remove(child: IHierarchyObject, dispose?: boolean): boolean;
 
-    removeAll(dispose?: boolean): IHierarchyObjectContainer<MessageDataType>;
+    removeAll(dispose?: boolean): IHierarchyObjectContainer;
 
-    dispatchMessageToChildren(message: IMessage<MessageDataType>): IHierarchyObjectContainer<MessageDataType>;
+    dispatchMessageToChildren(message: IMessage): IHierarchyObjectContainer;
 }
 
-export class HierarchyObjectContainer<MessageDataType> extends AbstractHierarchyObject<MessageDataType> implements IHierarchyObjectContainer<MessageDataType>
+export class HierarchyObjectContainer extends AbstractHierarchyObject implements IHierarchyObjectContainer
 {
-    private _childrenList: IHierarchyObject<MessageDataType>[] = [];
-    private _childrenListImmutable: IHierarchyObjectImmutable<MessageDataType>[] = [];
+    private _childrenList: IHierarchyObject[] = [];
+    private _childrenListImmutable: IHierarchyObjectImmutable[] = [];
 
     public override dispose()
     {
@@ -39,7 +39,7 @@ export class HierarchyObjectContainer<MessageDataType> extends AbstractHierarchy
         super.dispose();
     }
 
-    public add(child: IHierarchyObject<MessageDataType>, index?: number): boolean
+    public add(child: IHierarchyObject, index?: number): boolean
     {
         let success = false;
 
@@ -83,22 +83,22 @@ export class HierarchyObjectContainer<MessageDataType> extends AbstractHierarchy
         return success;
     }
 
-    public get children(): ReadonlyArray<IHierarchyObject<MessageDataType>>
+    public get children(): ReadonlyArray<IHierarchyObject>
     {
         return this._childrenList;
     }
 
-    public get childrenImmutable(): ReadonlyArray<IHierarchyObjectImmutable<MessageDataType>>
+    public get childrenImmutable(): ReadonlyArray<IHierarchyObjectImmutable>
     {
         return this._childrenListImmutable;
     }
 
-    public contains(child: IHierarchyObjectImmutable<MessageDataType>): boolean
+    public contains(child: IHierarchyObjectImmutable): boolean
     {
         return this._childrenListImmutable !== null && this._childrenListImmutable.indexOf(child) !== -1;
     }
 
-    public dispatchMessageToChildren(message: IMessage<MessageDataType>): IHierarchyObjectContainer<MessageDataType>
+    public dispatchMessageToChildren(message: IMessage): IHierarchyObjectContainer
     {
         for (const child of this._childrenList)
         {
@@ -106,7 +106,7 @@ export class HierarchyObjectContainer<MessageDataType> extends AbstractHierarchy
             {
                 if (HierarchyObjectContainer.instanceOfIHierarchyObjectContainer(child))
                 {
-                    (child as IHierarchyObjectContainer<MessageDataType>).dispatchMessageToChildren(message);
+                    child.dispatchMessageToChildren(message);
                 }
                 else
                 {
@@ -118,19 +118,19 @@ export class HierarchyObjectContainer<MessageDataType> extends AbstractHierarchy
         return this;
     }
 
-    private static instanceOfIHierarchyObjectContainer<MessageDataType>(object: IHierarchyObject<MessageDataType>): object is IHierarchyObjectContainer<MessageDataType>
+    private static instanceOfIHierarchyObjectContainer(object: IHierarchyObject): object is IHierarchyObjectContainer
     {
         return 'dispatchMessageToChildren' in object;
     }
 
-    public override onMessageBubbled(message: IMessage<MessageDataType>): boolean
+    public override onMessageBubbled(message: IMessage): boolean
     {
         this.handleMessage(message);
 
         return true;
     }
 
-    public remove(child: IHierarchyObject<MessageDataType>, dispose?: boolean): boolean
+    public remove(child: IHierarchyObject, dispose?: boolean): boolean
     {
         let success = false;
 
@@ -154,7 +154,7 @@ export class HierarchyObjectContainer<MessageDataType> extends AbstractHierarchy
         return success;
     }
 
-    public removeAll(dispose?: boolean): IHierarchyObjectContainer<MessageDataType>
+    public removeAll(dispose?: boolean): IHierarchyObjectContainer
     {
         if (this._childrenList !== null)
         {

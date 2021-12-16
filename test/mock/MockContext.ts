@@ -7,9 +7,9 @@ import {MockCommand10, MockCommand11, MockCommand12, MockCommand16} from "./Mock
 import {MockMediator2, MockMediator3, MockMediator4} from "./MockMediators";
 import {inject, postConstruct} from "inversify";
 
-export class MockContext1<MessageDataType = any> extends AbstractContext<MessageDataType>
+export class MockContext1 extends AbstractContext
 {
-    public override onMessageBubbled(message: IMessage<MessageDataType>): boolean
+    public override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
@@ -18,7 +18,7 @@ export class MockContext1<MessageDataType = any> extends AbstractContext<Message
     }
 }
 
-export class MockContext2<MessageDataType = any> extends AbstractContext<MessageDataType>
+export class MockContext2 extends AbstractContext
 {
     private testModel: MockModel2;
 
@@ -40,7 +40,7 @@ export class MockContext2<MessageDataType = any> extends AbstractContext<Message
     }
 }
 
-export class MockContext3<MessageDataType = any> extends AbstractContext<MessageDataType>
+export class MockContext3 extends AbstractContext
 {
     private testMediator: MockMediator2;
     private testModel2: MockModel3;
@@ -70,7 +70,7 @@ export class MockContext3<MessageDataType = any> extends AbstractContext<Message
         this.testMediator.dispatch();
     }
 
-    public override onMessageBubbled(message: IMessage<MessageDataType>): boolean
+    public override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
@@ -79,7 +79,7 @@ export class MockContext3<MessageDataType = any> extends AbstractContext<Message
     }
 }
 
-export class MockContext4<MessageDataType = any> extends AbstractContext<MessageDataType>
+export class MockContext4 extends AbstractContext
 {
     private testMediator: MockMediator2;
     private testModel2: MockModel3;
@@ -109,7 +109,7 @@ export class MockContext4<MessageDataType = any> extends AbstractContext<Message
         this.testMediator.dispatch();
     }
 
-    public override onMessageBubbled(message: IMessage<MessageDataType>): boolean
+    public override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
@@ -118,7 +118,7 @@ export class MockContext4<MessageDataType = any> extends AbstractContext<Message
     }
 }
 
-export class MockContext5<MessageDataType = any> extends AbstractContext<MessageDataType>
+export class MockContext5 extends AbstractContext
 {
     private v: MockMediator3;
     private m: MockModel4;
@@ -155,7 +155,7 @@ export class MockContext5<MessageDataType = any> extends AbstractContext<Message
     }
 }
 
-export class MockContext6<MessageDataType = any> extends AbstractContext<MessageDataType>
+export class MockContext6 extends AbstractContext
 {
     @postConstruct()
     public override init(): void
@@ -167,7 +167,7 @@ export class MockContext6<MessageDataType = any> extends AbstractContext<Message
     }
 }
 
-export class MockContext7<MessageDataType = any> extends AbstractContext<MessageDataType>
+export class MockContext7 extends AbstractContext
 {
     @inject("Class<ICommand>")
     private commandImpl: Class<ICommand>;
@@ -200,7 +200,7 @@ export class MockContext7<MessageDataType = any> extends AbstractContext<Message
         this.testMediator.dispatch();
     }
 
-    public override onMessageBubbled(message: IMessage<MessageDataType>): boolean
+    public override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
@@ -209,7 +209,7 @@ export class MockContext7<MessageDataType = any> extends AbstractContext<Message
     }
 }
 
-export class MockContext8<MessageDataType = any> extends AbstractContext<MessageDataType>
+export class MockContext8 extends AbstractContext
 {
     public testModel: MockModel6;
 

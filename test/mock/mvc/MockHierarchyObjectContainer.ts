@@ -2,7 +2,7 @@
 
 import {HierarchyObjectContainer} from "../../../src";
 
-export class MockHierarchyObjectContainer<MessageDataType = any> extends HierarchyObjectContainer<MessageDataType>
+export class MockHierarchyObjectContainer extends HierarchyObjectContainer
 {
     private value: boolean;
 

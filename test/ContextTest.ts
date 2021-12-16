@@ -19,7 +19,7 @@ import "../src/com/domwires/core/mvc/command/ICommandMapper";
 describe('ContextTest', function (this: Suite)
 {
     let f: IFactory;
-    let c: IContext<any>;
+    let c: IContext;
 
     beforeEach(() =>
     {

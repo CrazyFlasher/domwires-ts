@@ -22,7 +22,7 @@ export type ContextConfig = {
     readonly forwardMessageFromModelsToModels: boolean;
 };
 
-export abstract class AbstractContext<MessageDataType> extends HierarchyObjectContainer<MessageDataType> implements IContext<MessageDataType>
+export abstract class AbstractContext extends HierarchyObjectContainer implements IContext
 {
     @inject("IFactory") @optional()
     protected factory: IFactory;
@@ -30,8 +30,8 @@ export abstract class AbstractContext<MessageDataType> extends HierarchyObjectCo
     @inject("ContextConfig") @optional()
     protected config: ContextConfig;
 
-    protected modelContainer: IModelContainer<MessageDataType>;
-    protected mediatorContainer: IMediatorContainer<MessageDataType>;
+    protected modelContainer: IModelContainer;
+    protected mediatorContainer: IMediatorContainer;
 
     protected commandMapper: ICommandMapper;
 
@@ -63,7 +63,7 @@ export abstract class AbstractContext<MessageDataType> extends HierarchyObjectCo
         this.commandMapper = this.factory.instantiateValueUnmapped("ICommandMapper");
     }
 
-    public addModel(model: IModel<MessageDataType>): IModelContainer<MessageDataType>
+    public addModel(model: IModel): IModelContainer
     {
         this.checkIfDisposed();
 
@@ -73,7 +73,7 @@ export abstract class AbstractContext<MessageDataType> extends HierarchyObjectCo
         return this;
     }
 
-    public removeModel(model: IModel<MessageDataType>, dispose = false): IModelContainer<MessageDataType>
+    public removeModel(model: IModel, dispose = false): IModelContainer
     {
         this.checkIfDisposed();
 
@@ -82,7 +82,7 @@ export abstract class AbstractContext<MessageDataType> extends HierarchyObjectCo
         return this;
     }
 
-    public removeAllModels(dispose = false): IModelContainer<MessageDataType>
+    public removeAllModels(dispose = false): IModelContainer
     {
         this.checkIfDisposed();
 
@@ -98,28 +98,28 @@ export abstract class AbstractContext<MessageDataType> extends HierarchyObjectCo
         return this.modelContainer.numModels;
     }
 
-    public containsModel(model: IModelImmutable<MessageDataType>): boolean
+    public containsModel(model: IModelImmutable): boolean
     {
         this.checkIfDisposed();
 
         return this.modelContainer.containsModel(model);
     }
 
-    public get modelList(): IModel<MessageDataType>[]
+    public get modelList(): IModel[]
     {
         this.checkIfDisposed();
 
         return this.modelContainer.modelList;
     }
 
-    public get modelListImmutable(): ReadonlyArray<IModelImmutable<MessageDataType>>
+    public get modelListImmutable(): ReadonlyArray<IModelImmutable>
     {
         this.checkIfDisposed();
 
         return this.modelContainer.modelListImmutable;
     }
 
-    public addMediator(mediator: IMediator<MessageDataType>): IMediatorContainer<MessageDataType>
+    public addMediator(mediator: IMediator): IMediatorContainer
     {
         this.checkIfDisposed();
 
@@ -129,7 +129,7 @@ export abstract class AbstractContext<MessageDataType> extends HierarchyObjectCo
         return this;
     }
 
-    public removeMediator(mediator: IMediator<MessageDataType>, dispose?: boolean): IMediatorContainer<MessageDataType>
+    public removeMediator(mediator: IMediator, dispose?: boolean): IMediatorContainer
     {
         this.checkIfDisposed();
 
@@ -138,7 +138,7 @@ export abstract class AbstractContext<MessageDataType> extends HierarchyObjectCo
         return this;
     }
 
-    public removeAllMediators(dispose?: boolean): IMediatorContainer<MessageDataType>
+    public removeAllMediators(dispose?: boolean): IMediatorContainer
     {
         this.checkIfDisposed();
 
@@ -154,21 +154,21 @@ export abstract class AbstractContext<MessageDataType> extends HierarchyObjectCo
         return this.mediatorContainer.numMediators;
     }
 
-    public containsMediator(mediator: IMediatorImmutable<MessageDataType>): boolean
+    public containsMediator(mediator: IMediatorImmutable): boolean
     {
         this.checkIfDisposed();
 
         return this.mediatorContainer.containsMediator(mediator);
     }
 
-    public get mediatorList(): IMediator<MessageDataType>[]
+    public get mediatorList(): IMediator[]
     {
         this.checkIfDisposed();
 
         return this.mediatorContainer.mediatorList;
     }
 
-    public get mediatorListImmutable(): ReadonlyArray<IMediatorImmutable<MessageDataType>>
+    public get mediatorListImmutable(): ReadonlyArray<IMediatorImmutable>
     {
         this.checkIfDisposed();
 
@@ -191,14 +191,14 @@ export abstract class AbstractContext<MessageDataType> extends HierarchyObjectCo
         this.commandMapper = null;
     }
 
-    public override onMessageBubbled(message: IMessage<MessageDataType>): boolean
+    public override onMessageBubbled(message: IMessage): boolean
     {
         super.onMessageBubbled(message);
 
         return false;
     }
 
-    public override handleMessage(message: IMessage<MessageDataType>): IMessageDispatcher<MessageDataType>
+    public override handleMessage(message: IMessage): IMessageDispatcher
     {
         super.handleMessage(message);
 
@@ -230,7 +230,7 @@ export abstract class AbstractContext<MessageDataType> extends HierarchyObjectCo
         return this;
     }
 
-    public override dispatchMessageToChildren(message: IMessage<MessageDataType>): IHierarchyObjectContainer<MessageDataType>
+    public override dispatchMessageToChildren(message: IMessage): IHierarchyObjectContainer
     {
         super.dispatchMessageToChildren(message);
 
@@ -285,7 +285,7 @@ export abstract class AbstractContext<MessageDataType> extends HierarchyObjectCo
         this.commandMapper.tryToExecuteCommand(messageType, messageData);
     }
 
-    public dispatchMessageToMediators(message: IMessage<MessageDataType>): IContext<MessageDataType>
+    public dispatchMessageToMediators(message: IMessage): IContext
     {
         this.checkIfDisposed();
 
@@ -294,7 +294,7 @@ export abstract class AbstractContext<MessageDataType> extends HierarchyObjectCo
         return this;
     }
 
-    public dispatchMessageToModels(message: IMessage<MessageDataType>): IContext<MessageDataType>
+    public dispatchMessageToModels(message: IMessage): IContext
     {
         this.checkIfDisposed();
 

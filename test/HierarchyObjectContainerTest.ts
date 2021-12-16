@@ -14,7 +14,7 @@ import {IHierarchyObject} from "../src";
 
 describe('HierarchyObjectContainerTest', function (this: Suite)
 {
-    let hoc: IHierarchyObjectContainer<any>;
+    let hoc: IHierarchyObjectContainer;
 
     beforeEach(() =>
     {
@@ -55,8 +55,8 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
 
     it('testDisposeWithAllChildren', () =>
     {
-        const ho_1: IHierarchyObject<any> = new MockHierarchyObject();
-        const ho_2: IHierarchyObject<any> = new MockHierarchyObject();
+        const ho_1: IHierarchyObject = new MockHierarchyObject();
+        const ho_2: IHierarchyObject = new MockHierarchyObject();
         hoc.add(ho_1);
         hoc.add(ho_2);
         hoc.dispose();
@@ -72,8 +72,8 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
 
     it('testDispose', () =>
     {
-        const ho_1: IHierarchyObject<any> = new MockHierarchyObject();
-        const ho_2: IHierarchyObject<any> = new MockHierarchyObject();
+        const ho_1: IHierarchyObject = new MockHierarchyObject();
+        const ho_2: IHierarchyObject = new MockHierarchyObject();
         hoc.add(ho_1);
         hoc.add(ho_2);
         hoc.dispose();
@@ -86,8 +86,8 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
 
     it('testRemove', () =>
     {
-        const ho_1: IHierarchyObject<any> = new MockHierarchyObject();
-        const ho_2: IHierarchyObject<any> = new MockHierarchyObject();
+        const ho_1: IHierarchyObject = new MockHierarchyObject();
+        const ho_2: IHierarchyObject = new MockHierarchyObject();
         hoc.add(ho_1);
         hoc.add(ho_2);
 
@@ -142,13 +142,13 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
 
     it('testChangeParent', () =>
     {
-        const ho_1: IHierarchyObject<any> = new MockHierarchyObject();
+        const ho_1: IHierarchyObject = new MockHierarchyObject();
         hoc.add(ho_1);
 
         expect(ho_1.parent).equals(hoc);
         expect(hoc.children.length).equals(1);
 
-        const hoc_2: IHierarchyObjectContainer<any> = new HierarchyObjectContainer();
+        const hoc_2: IHierarchyObjectContainer = new HierarchyObjectContainer();
         hoc_2.add(ho_1);
 
         expect(ho_1.parent).equals(hoc_2);
@@ -157,9 +157,9 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
 
     it('testAddAt', () =>
     {
-        const ho_1: IHierarchyObject<any> = new MockHierarchyObject();
-        const ho_2: IHierarchyObject<any> = new MockHierarchyObject();
-        const ho_3: IHierarchyObject<any> = new MockHierarchyObject();
+        const ho_1: IHierarchyObject = new MockHierarchyObject();
+        const ho_2: IHierarchyObject = new MockHierarchyObject();
+        const ho_3: IHierarchyObject = new MockHierarchyObject();
 
         hoc.add(ho_1);
         hoc.add(ho_2);
@@ -182,7 +182,7 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
 
     it('testAddAtParent', () =>
     {
-        const ho_1: IHierarchyObject<any> = new MockHierarchyObject();
+        const ho_1: IHierarchyObject = new MockHierarchyObject();
         hoc.add(ho_1, 0);
         expect(ho_1.parent).equals(hoc);
     });

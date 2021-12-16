@@ -2,7 +2,7 @@
 
 import {AbstractHierarchyObject} from "../../../src";
 
-export class MockHierarchyObject<MessageDataType = any> extends AbstractHierarchyObject<MessageDataType>
+export class MockHierarchyObject extends AbstractHierarchyObject
 {
     public constructor()
     {

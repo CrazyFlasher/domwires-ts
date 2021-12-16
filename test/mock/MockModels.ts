@@ -10,7 +10,7 @@ export type MockTypeDef = {
     readonly b: number;
 };
 
-export class MockModel0<MessageDataType = any> extends AbstractModel<MessageDataType>
+export class MockModel0 extends AbstractModel
 {
     @inject("number")
     private n1: number;
@@ -19,22 +19,22 @@ export class MockModel0<MessageDataType = any> extends AbstractModel<MessageData
     private n2: number;
 }
 
-export class MockModel1<MessageDataType = any> extends AbstractModel<MessageDataType>
+export class MockModel1 extends AbstractModel
 {
 
 }
 
-export class MockModel2<MessageDataType = any> extends AbstractModel<MessageDataType>
-{
-    public testVar = 0;
-}
-
-export class MockModel3<MessageDataType = any> extends AbstractModel<MessageDataType>
+export class MockModel2 extends AbstractModel
 {
     public testVar = 0;
 }
 
-export class MockModel4<MessageDataType = any> extends AbstractModel<MessageDataType>
+export class MockModel3 extends AbstractModel
+{
+    public testVar = 0;
+}
+
+export class MockModel4 extends AbstractModel
 {
     private _testVar = 0;
 
@@ -51,7 +51,7 @@ export class MockModel4<MessageDataType = any> extends AbstractModel<MessageData
     }
 }
 
-export class MockModel5<MessageDataType = any> extends AbstractModel<MessageDataType>
+export class MockModel5 extends AbstractModel
 {
     public testVar: number;
 
@@ -61,7 +61,7 @@ export class MockModel5<MessageDataType = any> extends AbstractModel<MessageData
     }
 }
 
-export class MockModel6<MessageDataType = any> extends AbstractModel<MessageDataType>
+export class MockModel6 extends AbstractModel
 {
     public v = 0;
 
@@ -73,7 +73,7 @@ export class MockModel6<MessageDataType = any> extends AbstractModel<MessageData
     }
 }
 
-export class MockModel7<MessageDataType = any> extends AbstractModel<MessageDataType>
+export class MockModel7 extends AbstractModel
 {
     @inject("MockTypeDef")
     private td: MockTypeDef;
@@ -121,7 +121,7 @@ export class Default implements IDefault
     }
 }
 
-export class SuperCoolModel<MessageDataType = any> extends AbstractModel<MessageDataType> implements ISuperCoolModel
+export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
 {
     @inject("boolean") @named("myBool")
     public _myBool = true;

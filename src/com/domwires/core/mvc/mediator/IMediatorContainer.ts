@@ -9,34 +9,34 @@ import {
 import ArrayUtils from "../../utils/ArrayUtils";
 import {setDefaultImplementation} from "../../Global";
 
-export interface IMediatorContainerImmutable<MessageDataType> extends IMediatorImmutable<MessageDataType>, IHierarchyObjectContainerImmutable<MessageDataType>
+export interface IMediatorContainerImmutable extends IMediatorImmutable, IHierarchyObjectContainerImmutable
 {
     get numMediators(): number;
 
-    get mediatorListImmutable(): ReadonlyArray<IMediatorImmutable<MessageDataType>>;
+    get mediatorListImmutable(): ReadonlyArray<IMediatorImmutable>;
 
-    containsMediator(mediator: IMediatorImmutable<MessageDataType>): boolean;
+    containsMediator(mediator: IMediatorImmutable): boolean;
 }
 
-export interface IMediatorContainer<MessageDataType> extends IMediatorContainerImmutable<MessageDataType>, IMediator<MessageDataType>, IHierarchyObjectContainer<MessageDataType>
+export interface IMediatorContainer extends IMediatorContainerImmutable, IMediator, IHierarchyObjectContainer
 {
     isIMediatorContainer(): void;
 
-    addMediator(mediator: IMediator<MessageDataType>): IMediatorContainer<MessageDataType>;
+    addMediator(mediator: IMediator): IMediatorContainer;
 
-    removeMediator(mediator: IMediator<MessageDataType>, dispose?: boolean): IMediatorContainer<MessageDataType>;
+    removeMediator(mediator: IMediator, dispose?: boolean): IMediatorContainer;
 
-    removeAllMediators(dispose?: boolean): IMediatorContainer<MessageDataType>;
+    removeAllMediators(dispose?: boolean): IMediatorContainer;
 
-    get mediatorList(): IMediator<MessageDataType>[];
+    get mediatorList(): IMediator[];
 }
 
-export class MediatorContainer<MessageDataType> extends HierarchyObjectContainer<MessageDataType> implements IMediatorContainer<MessageDataType>
+export class MediatorContainer extends HierarchyObjectContainer implements IMediatorContainer
 {
-    private _mediatorList: IMediator<MessageDataType>[] = [];
-    private _mediatorListImmutable: IMediatorImmutable<MessageDataType>[] = [];
+    private _mediatorList: IMediator[] = [];
+    private _mediatorListImmutable: IMediatorImmutable[] = [];
 
-    public addMediator(mediator: IMediator<MessageDataType>): IMediatorContainer<MessageDataType>
+    public addMediator(mediator: IMediator): IMediatorContainer
     {
         const success: boolean = this.add(mediator);
 
@@ -49,7 +49,7 @@ export class MediatorContainer<MessageDataType> extends HierarchyObjectContainer
         return this;
     }
 
-    public removeMediator(mediator: IMediator<MessageDataType>, dispose = false): IMediatorContainer<MessageDataType>
+    public removeMediator(mediator: IMediator, dispose = false): IMediatorContainer
     {
         const success: boolean = this.remove(mediator, dispose);
 
@@ -62,7 +62,7 @@ export class MediatorContainer<MessageDataType> extends HierarchyObjectContainer
         return this;
     }
 
-    public removeAllMediators(dispose = false): IMediatorContainer<MessageDataType>
+    public removeAllMediators(dispose = false): IMediatorContainer
     {
         this.removeAll(dispose);
 
@@ -77,19 +77,19 @@ export class MediatorContainer<MessageDataType> extends HierarchyObjectContainer
         return (this.children != null) ? this.children.length : 0;
     }
 
-    public containsMediator(mediator: IMediatorImmutable<MessageDataType>): boolean
+    public containsMediator(mediator: IMediatorImmutable): boolean
     {
         return this.contains(mediator);
     }
 
     // better to return copy, but in sake of performance, we do that way.
-    public get mediatorList(): IMediator<MessageDataType>[]
+    public get mediatorList(): IMediator[]
     {
         return this._mediatorList;
     }
 
     // better to return copy, but in sake of performance, we do that way.
-    public get mediatorListImmutable(): ReadonlyArray<IMediatorImmutable<MessageDataType>>
+    public get mediatorListImmutable(): ReadonlyArray<IMediatorImmutable>
     {
         return this._mediatorListImmutable;
     }
