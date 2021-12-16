@@ -21,7 +21,7 @@ export interface IHierarchyObjectContainer extends IHierarchyObjectContainerImmu
 
     removeAll(dispose?: boolean): IHierarchyObjectContainer;
 
-    dispatchMessageToChildren(message: IMessage): IHierarchyObjectContainer;
+    dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType): IHierarchyObjectContainer;
 }
 
 export class HierarchyObjectContainer extends AbstractHierarchyObject implements IHierarchyObjectContainer
@@ -98,7 +98,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return this._childrenListImmutable !== null && this._childrenListImmutable.indexOf(child) !== -1;
     }
 
-    public dispatchMessageToChildren(message: IMessage): IHierarchyObjectContainer
+    public dispatchMessageToChildren<DataType>(message: IMessage, data:DataType): IHierarchyObjectContainer
     {
         for (const child of this._childrenList)
         {
@@ -106,11 +106,11 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
             {
                 if (HierarchyObjectContainer.instanceOfIHierarchyObjectContainer(child))
                 {
-                    child.dispatchMessageToChildren(message);
+                    child.dispatchMessageToChildren(message, data);
                 }
                 else
                 {
-                    child.handleMessage(message);
+                    child.handleMessage(message, data);
                 }
             }
         }
@@ -123,9 +123,9 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return 'dispatchMessageToChildren' in object;
     }
 
-    public override onMessageBubbled(message: IMessage): boolean
+    public override onMessageBubbled<DataType>(message: IMessage, data?: DataType): boolean
     {
-        this.handleMessage(message);
+        this.handleMessage(message, data);
 
         return true;
     }

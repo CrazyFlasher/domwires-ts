@@ -191,18 +191,18 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         this.commandMapper = null;
     }
 
-    public override onMessageBubbled(message: IMessage): boolean
+    public override onMessageBubbled<DataType>(message: IMessage, data?: DataType): boolean
     {
-        super.onMessageBubbled(message);
+        super.onMessageBubbled(message, data);
 
         return false;
     }
 
-    public override handleMessage(message: IMessage): IMessageDispatcher
+    public override handleMessage<DataType>(message: IMessage, data?: DataType): IMessageDispatcher
     {
-        super.handleMessage(message);
+        super.handleMessage(message, data);
 
-        this.tryToExecuteCommand(message.type, message.data);
+        this.tryToExecuteCommand(message.type, data);
 
         if (instanceOf(message.initialTarget, "IModel"))
         {
@@ -230,11 +230,11 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this;
     }
 
-    public override dispatchMessageToChildren(message: IMessage): IHierarchyObjectContainer
+    public override dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType): IHierarchyObjectContainer
     {
-        super.dispatchMessageToChildren(message);
+        super.dispatchMessageToChildren(message, data);
 
-        this.tryToExecuteCommand(message.type, message.data);
+        this.tryToExecuteCommand(message.type, data);
 
         return this;
     }

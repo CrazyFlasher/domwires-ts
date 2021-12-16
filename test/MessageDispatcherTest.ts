@@ -4,8 +4,8 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
-import {Enum, IMessage, IMessageDispatcher, IMessageDispatcherImmutable, MessageDispatcher} from "../src";
-import {MockMessageType} from "./mock/MockMessageType";
+import {Enum, IMessageDispatcher, IMessageDispatcherImmutable, MessageDispatcher} from "../src";
+import {MockMessageDataType1, MockMessageType} from "./mock/MockMessageType";
 
 describe('MessageDispatcherTest', function (this: Suite)
 {
@@ -23,16 +23,16 @@ describe('MessageDispatcherTest', function (this: Suite)
     it('testDispatchMessage', () =>
     {
         let gotMessage = false;
-        let gotMessageType: Enum = MockMessageType.GOODBYE;
-        let gotMessageTarget: IMessageDispatcherImmutable = null;
-        const gotMessageData: any = {};
+        let gotMessageType: Enum;
+        let gotMessageTarget: IMessageDispatcherImmutable;
+        let gotMessageData: MockMessageDataType1;
 
-        d.addMessageListener(MockMessageType.HELLO, (m?: IMessage) =>
+        d.addMessageListener(MockMessageType.HELLO, (m?, data?) =>
         {
             gotMessage = true;
             gotMessageType = m.type;
             gotMessageTarget = m.initialTarget;
-            gotMessageData.prop = m.data.prop;
+            gotMessageData = data;
         });
 
         d.dispatchMessage(MockMessageType.HELLO, {prop: "prop1"});
@@ -180,7 +180,3 @@ describe('MessageDispatcherTest', function (this: Suite)
         d.dispatchMessage(MockMessageType.HELLO);
     });
 });
-
-type DataType = {
-    readonly prop: string;
-};

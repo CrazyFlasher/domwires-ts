@@ -91,18 +91,18 @@ describe('BubbleMessageTest', function (this: Suite)
         };
 
         // top element
-        c1.addMessageListener(MockMessageType.HELLO, successFunc);
+        c1.addMessageListener(MockMessageType.GOODBYE, successFunc);
 
         // bottom element
-        m1.dispatchMessage(MockMessageType.HELLO, {name: "Anton"}, true);
+        m1.dispatchMessage(MockMessageType.GOODBYE, {name: "Anton"}, true);
 
-        expect(bubbledEventType).equals(MockMessageType.HELLO);
+        expect(bubbledEventType).equals(MockMessageType.GOODBYE);
 
         bubbledEventType = null;
 
-        v1.dispatchMessage(MockMessageType.HELLO, {name: "Anton"}, true);
+        v1.dispatchMessage(MockMessageType.GOODBYE, {name: "Anton"}, true);
 
-        expect(bubbledEventType).equals(MockMessageType.HELLO);
+        expect(bubbledEventType).equals(MockMessageType.GOODBYE);
     });
 
     it('testBubblingFromBottomToTopPerf', () =>
@@ -140,19 +140,19 @@ describe('BubbleMessageTest', function (this: Suite)
         for (let i = 0; i < 100000; i++)
         {
             // top element
-            c1.addMessageListener(MockMessageType.HELLO, successFunc);
-            c2.addMessageListener(MockMessageType.HELLO, successFunc);
-            c3.addMessageListener(MockMessageType.HELLO, successFunc);
-            c4.addMessageListener(MockMessageType.HELLO, successFunc);
-            c5.addMessageListener(MockMessageType.HELLO, successFunc);
-            c6.addMessageListener(MockMessageType.HELLO, successFunc);
-            c7.addMessageListener(MockMessageType.HELLO, successFunc);
-            c8.addMessageListener(MockMessageType.HELLO, successFunc);
-            c9.addMessageListener(MockMessageType.HELLO, successFunc);
-            c10.addMessageListener(MockMessageType.HELLO, successFunc);
+            c1.addMessageListener(MockMessageType.GOODBYE, successFunc);
+            c2.addMessageListener(MockMessageType.GOODBYE, successFunc);
+            c3.addMessageListener(MockMessageType.GOODBYE, successFunc);
+            c4.addMessageListener(MockMessageType.GOODBYE, successFunc);
+            c5.addMessageListener(MockMessageType.GOODBYE, successFunc);
+            c6.addMessageListener(MockMessageType.GOODBYE, successFunc);
+            c7.addMessageListener(MockMessageType.GOODBYE, successFunc);
+            c8.addMessageListener(MockMessageType.GOODBYE, successFunc);
+            c9.addMessageListener(MockMessageType.GOODBYE, successFunc);
+            c10.addMessageListener(MockMessageType.GOODBYE, successFunc);
 
             // bottom element
-            c10.dispatchMessage(MockMessageType.HELLO, {name: "Anton"}, false);
+            c10.dispatchMessage(MockMessageType.GOODBYE, {name: "Anton"}, false);
         }
 
         const timePassed: number = new Date().getTime() - time;

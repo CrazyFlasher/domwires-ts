@@ -100,13 +100,13 @@ export class MockModel extends AbstractModel
     @postConstruct()
     private init(): void
     {
-        this.dispatchMessage(MockMessageType.HELLO);
+        this.dispatchMessage(MockMessageType.HELLO, "hi!");
     }
 }
 
-export class MockMessageType extends Enum
+export class MockMessageType<string> extends MessageType<T>
 {
-    public static readonly HELLO: MockMessageType = new MockMessageType("HELLO");
+    public static readonly HELLO: MessageType<string> = new MockMessageType<string>("HELLO");
 }
 ```
 

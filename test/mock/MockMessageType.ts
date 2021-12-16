@@ -1,17 +1,23 @@
-import {Enum} from "../../src";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-export class MockMessageType extends Enum
+import {MessageType} from "../../src";
+
+export type MockMessageDataType1 = {
+    readonly prop: string;
+};
+
+export type MockMessageDataType2 = {
+    readonly name: string;
+};
+
+export class MockMessageType<T = any> extends MessageType<T>
 {
-    public static readonly HELLO:MockMessageType = new MockMessageType("HELLO");
-    public static readonly GOODBYE:MockMessageType = new MockMessageType("GOODBYE");
-    public static readonly SHALOM:MockMessageType = new MockMessageType("SHALOM");
-    public static readonly PREVED:MockMessageType = new MockMessageType("PREVED");
+    public static readonly HELLO: MessageType<MockMessageDataType1> = new MockMessageType<MockMessageDataType1>("HELLO");
+    public static readonly GOODBYE: MessageType<MockMessageDataType2> = new MockMessageType<MockMessageDataType2>("GOODBYE");
+    public static readonly SHALOM: MessageType<any> = new MockMessageType("SHALOM");
 }
 
-export class MockMessageType2 extends Enum
+export class MockMessageType2 extends MessageType<any>
 {
-    public static readonly HELLO:MockMessageType = new MockMessageType("HELLO");
-    public static readonly GOODBYE:MockMessageType = new MockMessageType("GOODBYE");
-    public static readonly SHALOM:MockMessageType = new MockMessageType("SHALOM");
-    public static readonly PREVED:MockMessageType = new MockMessageType("PREVED");
+    public static readonly HELLO: MessageType<any> = new MockMessageType("HELLO");
 }
