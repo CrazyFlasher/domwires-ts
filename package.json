@@ -1,16 +1,16 @@
 {
   "name": "domwires",
-  "version": "0.9.16",
+  "version": "0.9.17",
   "description": "Flexible and extensible MVC framework",
   "repository": {
     "type": "git",
     "url": "https://github.com/CrazyFlasher/domwires-ts"
   },
   "license": "MIT",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "/dist"
+    "dist/"
   ],
   "dependencies": {
     "inversify": "5.1.1",
