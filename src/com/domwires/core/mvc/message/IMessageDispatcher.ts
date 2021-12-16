@@ -6,19 +6,13 @@ import ArrayUtils from "../../utils/ArrayUtils";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
 import {logger, setDefaultImplementation} from "../../Global";
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-export class MessageType<DataType> extends Enum
-{
-
-}
-
 export interface IMessageDispatcherImmutable extends IDisposableImmutable
 {
-    hasMessageListener<DataType>(type: MessageType<DataType>): boolean;
+    hasMessageListener<DataType>(type: Enum<DataType>): boolean;
 
-    addMessageListener<DataType>(type: MessageType<DataType>, listener: (message?: IMessage, data?: DataType) => void, priority?: number): void;
+    addMessageListener<DataType>(type: Enum<DataType>, listener: (message?: IMessage, data?: DataType) => void, priority?: number): void;
 
-    removeMessageListener<DataType>(type: MessageType<DataType>, listener: (message?: IMessage, data?: DataType) => void): void;
+    removeMessageListener<DataType>(type: Enum<DataType>, listener: (message?: IMessage, data?: DataType) => void): void;
 
     onMessageBubbled<DataType>(message: IMessage, data?: DataType): boolean;
 }
@@ -29,7 +23,7 @@ export interface IMessageDispatcher extends IMessageDispatcherImmutable, IDispos
 
     removeAllMessageListeners(): IMessageDispatcher;
 
-    dispatchMessage<DataType>(type: MessageType<DataType>, data?: DataType, bubbles?: boolean): IMessageDispatcher;
+    dispatchMessage<DataType>(type: Enum<DataType>, data?: DataType, bubbles?: boolean): IMessageDispatcher;
 }
 
 export interface IMessage
@@ -109,7 +103,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
 
     private isBubbling: boolean;
 
-    public addMessageListener<DataType>(type: MessageType<DataType>, listener: (message?: IMessage, data?: DataType) => void, priority?: number): void
+    public addMessageListener<DataType>(type: Enum<DataType>, listener: (message?: IMessage, data?: DataType) => void, priority?: number): void
     {
         if (!this._messageMap)
         {
@@ -154,7 +148,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return null;
     }
 
-    public dispatchMessage<DataType>(type: MessageType<DataType>, data?: DataType, bubbles = true): IMessageDispatcher
+    public dispatchMessage<DataType>(type: Enum<DataType>, data?: DataType, bubbles = true): IMessageDispatcher
     {
         if (this.isBubbling)
         {
@@ -213,7 +207,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return false;
     }
 
-    private getMessage<DataType>(type: MessageType<DataType>, bubbles: boolean, forceReturnNew = false): Message
+    private getMessage<DataType>(type: Enum<DataType>, bubbles: boolean, forceReturnNew = false): Message
     {
         if (!this._message || forceReturnNew)
         {
@@ -241,7 +235,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return this;
     }
 
-    public hasMessageListener<DataType>(type: MessageType<DataType>): boolean
+    public hasMessageListener<DataType>(type: Enum<DataType>): boolean
     {
         if (this._messageMap != null)
         {
@@ -263,7 +257,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return this;
     }
 
-    public removeMessageListener<DataType>(type: MessageType<DataType>, listener: (message?: IMessage, data?: DataType) => void): void
+    public removeMessageListener<DataType>(type: Enum<DataType>, listener: (message?: IMessage, data?: DataType) => void): void
     {
         if (this._messageMap != null)
         {

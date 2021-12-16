@@ -104,9 +104,9 @@ export class MockModel extends AbstractModel
     }
 }
 
-export class MockMessageType<string> extends MessageType<T>
+export class MockMessageType extends Enum
 {
-    public static readonly HELLO: MessageType<string> = new MockMessageType<string>("HELLO");
+    public static readonly HELLO: MockMessageType = new MockMessageType();
 }
 ```
 
