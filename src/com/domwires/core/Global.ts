@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {Logger} from "tslog";
+import {logger} from "./log";
 
 export type Class<T> = new(...args: T[]) => T;
 
 export type Type<T = any> = string | Class<T>;
-
-export const logger: Logger = new Logger();
 
 const defaultImplMap: Map<string | Class<any>, Class<any>> = new Map<string | Class<any>, Class<any>>();
 

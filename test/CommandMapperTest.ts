@@ -31,8 +31,9 @@ import {
 import "../src/com/domwires/core/mvc/command/ICommandMapper";
 import {Enum} from "../src";
 import {MockModel2} from "./mock/MockModels";
-import {Class, logger} from "../src";
+import {Class} from "../src";
 import {ICommand} from "../src";
+import {logger} from "../src";
 
 describe('CommandMapperTest', function (this: Suite)
 {

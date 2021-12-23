@@ -4,7 +4,8 @@ import {IDisposable, IDisposableImmutable} from "../../common/IDisposable";
 import {Enum} from "../../Enum";
 import ArrayUtils from "../../utils/ArrayUtils";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
-import {logger, setDefaultImplementation} from "../../Global";
+import {setDefaultImplementation} from "../../Global";
+import {logger} from "../../log";
 
 export interface IMessageDispatcherImmutable extends IDisposableImmutable
 {

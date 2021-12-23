@@ -17,8 +17,8 @@ import "../src/com/domwires/core/mvc/command/ICommandMapper";
 import {Enum} from "../src";
 import {MockMessageType} from "./mock/MockMessageType";
 import {IContext} from "../src";
-import {logger} from "../src";
 import {IMessage} from "../src";
+import {logger} from "../src";
 
 /**
  *            c1
