@@ -7,7 +7,7 @@ import {IDisposable, IDisposableImmutable} from "../common/IDisposable";
 import {AbstractDisposable} from "../common/AbstractDisposable";
 import {Class, getClassFromString, getDefaultImplementation, Type} from "../Global";
 import {getBindingDictionary} from "inversify/lib/planning/planner";
-import {logger} from "../log";
+import {log} from "../log";
 
 const lazyContainer: Container = new Container();
 
@@ -46,7 +46,7 @@ export class DependencyVo
     {
         if (json.implementation == null)
         {
-            logger.warn("'implementation' is not set in json!");
+            log.warn("'implementation' is not set in json!");
         }
         else
         {
@@ -333,11 +333,11 @@ export class Factory extends AbstractDisposable implements IFactory
                     {
                         if (!name)
                         {
-                            logger.warn(typeName + " is already mapped to " + toName + ". Remapping...");
+                            log.warn(typeName + " is already mapped to " + toName + ". Remapping...");
                         }
                         else
                         {
-                            logger.warn(typeName + " is already mapped to " + toName + " with name \"" + name + "\". Remapping...");
+                            log.warn(typeName + " is already mapped to " + toName + " with name \"" + name + "\". Remapping...");
                         }
 
                         unmapMethod(type, name);
@@ -402,11 +402,11 @@ export class Factory extends AbstractDisposable implements IFactory
 
         if (this._safePool && this.getAllPoolItemsAreBusy(type))
         {
-            logger.warn("All pool items are busy for class '" + Factory.getTypeName(type) + "'. Extending pool...");
+            log.warn("All pool items are busy for class '" + Factory.getTypeName(type) + "'. Extending pool...");
 
             this.increasePoolCapacity(type, 1);
 
-            logger.info("Pool capacity for '" + Factory.getTypeName(type) + "' increased!");
+            log.info("Pool capacity for '" + Factory.getTypeName(type) + "' increased!");
         }
 
         return poolModel.get(type, createNewIfNeeded);
@@ -507,7 +507,7 @@ export class Factory extends AbstractDisposable implements IFactory
 
             if (defaultImpl)
             {
-                logger.info("Mapping to default implementation '" + defaultImpl.name + "'.");
+                log.info("Mapping to default implementation '" + defaultImpl.name + "'.");
 
                 this.mapToType(type, defaultImpl);
             }
@@ -639,7 +639,7 @@ export class Factory extends AbstractDisposable implements IFactory
 
         if (this.poolModelMap.has(type))
         {
-            logger.warn("Pool '" + Factory.getTypeName(type) + "' already registered! Call unregisterPool before.");
+            log.warn("Pool '" + Factory.getTypeName(type) + "' already registered! Call unregisterPool before.");
         }
         else
         {
@@ -697,7 +697,7 @@ export class Factory extends AbstractDisposable implements IFactory
             {
                 if (d.implementation != null)
                 {
-                    logger.info("Mapping '" + interfaceDefinition + "' to '" + d.implementation + "'");
+                    log.info("Mapping '" + interfaceDefinition + "' to '" + d.implementation + "'");
 
                     this.mapToType(interfaceDefinition, getClassFromString(d.implementation), name);
                 }

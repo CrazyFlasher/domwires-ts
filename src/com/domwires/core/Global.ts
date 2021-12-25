@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {logger} from "./log";
+import {log} from "./log";
 
 export type Class<T> = new(...args: T[]) => T;
 
@@ -10,7 +10,7 @@ const defaultImplMap: Map<string | Class<any>, Class<any>> = new Map<string | Cl
 
 export function definableFromString<T>(clazz: Class<T>): void
 {
-    logger.info("Manually defined classes: ", clazz.name);
+    log.info("Manually defined classes: " + clazz.name);
     (global as any)[clazz.name] = clazz;
 }
 
@@ -50,3 +50,5 @@ export function instanceOf<T>(object: T, typeName?: string, methodName?: string)
 
     return methodName in object;
 }
+
+log.setDefaultLevel("trace");

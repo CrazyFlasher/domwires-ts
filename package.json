@@ -1,6 +1,6 @@
 {
   "name": "domwires",
-  "version": "0.9.22",
+  "version": "0.9.23",
   "description": "Flexible and extensible MVC framework",
   "repository": {
     "type": "git",
@@ -14,14 +14,15 @@
     "dist/"
   ],
   "dependencies": {
+    "@types/node": "16.9.6",
     "inversify": "5.1.1",
     "inversify-inject-decorators": "3.1.0",
+    "loglevel": "^1.8.0",
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {
     "@types/chai": "4.2.22",
     "@types/mocha": "9.0.0",
-    "@types/node": "16.9.6",
     "@typescript-eslint/eslint-plugin": "5.0.0",
     "@typescript-eslint/parser": "5.0.0",
     "chai": "4.3.4",

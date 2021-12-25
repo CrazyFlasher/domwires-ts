@@ -33,7 +33,7 @@ import {Enum} from "../src";
 import {MockModel2} from "./mock/MockModels";
 import {Class} from "../src";
 import {ICommand} from "../src";
-import {logger} from "../src";
+import {log} from "../src";
 
 describe('CommandMapperTest', function (this: Suite)
 {
@@ -448,8 +448,8 @@ describe('CommandMapperTest', function (this: Suite)
         const timePassedForSingletonCommands = executeCommands({singletonCommands: true}, MockCommand18);
         const timePassedForNotSingletonCommands = executeCommands({singletonCommands: false}, MockCommand18NotLazy);
 
-        logger.info("Time passed for singleton commands: ", timePassedForSingletonCommands);
-        logger.info("Time passed for NOT singleton commands: ", timePassedForNotSingletonCommands);
+        log.info("Time passed for singleton commands: ", timePassedForSingletonCommands);
+        log.info("Time passed for NOT singleton commands: ", timePassedForNotSingletonCommands);
 
         expect(timePassedForNotSingletonCommands < timePassedForNotSingletonCommands);
     });

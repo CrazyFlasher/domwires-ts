@@ -18,7 +18,7 @@ import {Enum} from "../src";
 import {MockMessageType} from "./mock/MockMessageType";
 import {IContext} from "../src";
 import {IMessage} from "../src";
-import {logger} from "../src";
+import {log} from "../src";
 
 /**
  *            c1
@@ -156,7 +156,7 @@ describe('BubbleMessageTest', function (this: Suite)
         }
 
         const timePassed: number = new Date().getTime() - time;
-        logger.info("timePassed", timePassed);
+        log.info("timePassed", timePassed);
         expect(timePassed < 500).true;
     });
 
