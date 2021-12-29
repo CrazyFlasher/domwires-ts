@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
-import {Factory, IFactory, MappingConfigDictionary} from "../src";
+import {Factory, IFactory, Logger, MappingConfigDictionary} from "../src";
 import {expect} from "chai";
 import {
     IMockObject3,
@@ -26,7 +26,7 @@ describe('FactoryTest', function (this: Suite)
 
     beforeEach(() =>
     {
-        factory = new Factory();
+        factory = new Factory(new Logger());
     });
 
     afterEach(() =>

@@ -2,7 +2,7 @@
 
 import "reflect-metadata";
 import {Suite} from "mocha";
-import {Factory, IFactory} from "../src";
+import {Factory, IFactory, Logger} from "../src";
 import {IContext} from "../src";
 import {expect} from "chai";
 import {MockContext1, MockContext2, MockContext3, MockContext5, MockContext7, MockContext8} from "./mock/MockContext";
@@ -23,7 +23,7 @@ describe('ContextTest', function (this: Suite)
 
     beforeEach(() =>
     {
-        f = new Factory();
+        f = new Factory(new Logger());
         f.mapToType("IContext", MockContext1);
         f.mapToValue("IFactory", f);
 

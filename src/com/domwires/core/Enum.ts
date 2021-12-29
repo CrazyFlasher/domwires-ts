@@ -11,7 +11,7 @@ export abstract class Enum<T = void>
 
     public toString(): string
     {
-        return this._name;
+        return this._name || this.constructor.name;
     }
 
     public get name(): string

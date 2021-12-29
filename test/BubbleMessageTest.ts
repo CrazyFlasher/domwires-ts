@@ -3,22 +3,25 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
-import {Factory, IFactory} from "../src";
-import {AbstractModel} from "../src";
-import {AbstractContext} from "../src";
-import {ModelContainer} from "../src";
-import {AbstractMediator} from "../src";
+import {
+    AbstractContext,
+    AbstractMediator,
+    AbstractModel,
+    Enum,
+    Factory,
+    IContext,
+    IFactory,
+    IMessage,
+    ModelContainer
+} from "../src";
 import {MockContext1} from "./mock/MockContext";
 import {MockModel1} from "./mock/MockModels";
 import {MockMediator1} from "./mock/MockMediators";
 import "../src/com/domwires/core/mvc/model/IModelContainer";
 import "../src/com/domwires/core/mvc/mediator/IMediatorContainer";
 import "../src/com/domwires/core/mvc/command/ICommandMapper";
-import {Enum} from "../src";
 import {MockMessageType} from "./mock/MockMessageType";
-import {IContext} from "../src";
-import {IMessage} from "../src";
-import {log} from "../src";
+import {Logger} from "../src";
 
 /**
  *            c1
@@ -34,6 +37,8 @@ import {log} from "../src";
 
 describe('BubbleMessageTest', function (this: Suite)
 {
+    const logger = new Logger();
+
     let m1: AbstractModel;
     let c1: AbstractContext;
     let c2: AbstractContext;
@@ -49,7 +54,7 @@ describe('BubbleMessageTest', function (this: Suite)
 
     beforeEach(() =>
     {
-        factory = new Factory();
+        factory = new Factory(logger);
         factory.mapToValue("IFactory", factory);
 
         c1 = factory.instantiateValueUnmapped(MockContext1);
@@ -156,7 +161,7 @@ describe('BubbleMessageTest', function (this: Suite)
         }
 
         const timePassed: number = new Date().getTime() - time;
-        log.info("timePassed", timePassed);
+        logger.info("timePassed", timePassed);
         expect(timePassed < 500).true;
     });
 

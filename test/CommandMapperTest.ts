@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
-import {Factory, IFactory} from "../src";
+import {Factory, IFactory, Logger} from "../src";
 import {CommandMapperConfig, ICommandMapper} from "../src";
 import {MockMessageType} from "./mock/MockMessageType";
 import {
@@ -33,16 +33,16 @@ import {Enum} from "../src";
 import {MockModel2} from "./mock/MockModels";
 import {Class} from "../src";
 import {ICommand} from "../src";
-import {log} from "../src";
 
 describe('CommandMapperTest', function (this: Suite)
 {
     let factory: IFactory;
     let commandMapper: ICommandMapper;
+    const logger = new Logger();
 
     beforeEach(() =>
     {
-        factory = new Factory();
+        factory = new Factory(logger);
         factory.mapToValue("IFactory", factory);
 
         commandMapper = factory.instantiateValueUnmapped("ICommandMapper");
@@ -448,8 +448,8 @@ describe('CommandMapperTest', function (this: Suite)
         const timePassedForSingletonCommands = executeCommands({singletonCommands: true}, MockCommand18);
         const timePassedForNotSingletonCommands = executeCommands({singletonCommands: false}, MockCommand18NotLazy);
 
-        log.info("Time passed for singleton commands: ", timePassedForSingletonCommands);
-        log.info("Time passed for NOT singleton commands: ", timePassedForNotSingletonCommands);
+        logger.info("Time passed for singleton commands: ", timePassedForSingletonCommands);
+        logger.info("Time passed for NOT singleton commands: ", timePassedForNotSingletonCommands);
 
         expect(timePassedForNotSingletonCommands < timePassedForNotSingletonCommands);
     });

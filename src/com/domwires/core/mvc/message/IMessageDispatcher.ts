@@ -5,7 +5,6 @@ import {Enum} from "../../Enum";
 import ArrayUtils from "../../utils/ArrayUtils";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
 import {setDefaultImplementation} from "../../Global";
-import {log} from "../../log";
 
 export interface IMessageDispatcherImmutable extends IDisposableImmutable
 {
@@ -153,7 +152,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
     {
         if (this.isBubbling)
         {
-            log.warn("WARNING: You try to dispatch '" + type.toString() + "' while '" + this._message.type.toString() +
+            this.warn("WARNING: You try to dispatch '" + type + "' while '" + this._message.type +
                 "' is bubbling. Making new instance of IMessage");
         }
 

@@ -21,4 +21,4 @@ export * from "./com/domwires/core/mvc/model/IModel";
 export * from "./com/domwires/core/mvc/model/AbstractModel";
 export * from "./com/domwires/core/mvc/model/IModelContainer";
 export * from "./com/domwires/core/utils/ArrayUtils";
-export * from "./com/domwires/core/log";
+export * from "./com/domwires/logger/ILogger";

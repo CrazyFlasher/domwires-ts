@@ -1,6 +1,6 @@
 {
   "name": "domwires",
-  "version": "0.9.23",
+  "version": "0.9.24",
   "description": "Flexible and extensible MVC framework",
   "repository": {
     "type": "git",
@@ -17,7 +17,6 @@
     "@types/node": "16.9.6",
     "inversify": "5.1.1",
     "inversify-inject-decorators": "3.1.0",
-    "loglevel": "^1.8.0",
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {
