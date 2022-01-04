@@ -1,13 +1,12 @@
 {
   "name": "domwires",
-  "version": "0.9.24",
+  "version": "0.9.25",
   "description": "Flexible and extensible MVC framework",
   "repository": {
     "type": "git",
     "url": "https://github.com/CrazyFlasher/domwires-ts"
   },
   "license": "MIT",
-  "type": "commonjs",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
