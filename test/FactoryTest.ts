@@ -18,7 +18,7 @@ import {
     MockPool4
 } from "./mock/MockObjects";
 import {MockCommand1} from "./mock/MockCommands";
-import {ISuperCoolModel} from "./mock/MockModels";
+import {ISuperCoolModel, MockModel0} from "./mock/MockModels";
 
 describe('FactoryTest', function (this: Suite)
 {
@@ -34,15 +34,15 @@ describe('FactoryTest', function (this: Suite)
         factory.dispose();
     });
 
-    // InversifyJS issue:
-    // https://github.com/inversify/InversifyJS/issues/1385
-    /* it('testInjectWithNameAndNoName', () =>
+    it('testInjectWithNameAndNoName', () =>
     {
         factory.mapToValue("number", 5);
         factory.mapToValue("number", 7, "n2");
 
-        expect(factory.getInstance(MockModel0)).not.throw();
-    }); */
+        expect(function (): void {
+            factory.getInstance(MockModel0);
+        }).not.throw();
+    });
 
     it('testAutoRemap', () =>
     {
@@ -440,9 +440,9 @@ describe('FactoryTest', function (this: Suite)
             value: false
         };
 
-        // json["number"] = {
-        //     value: 5
-        // };
+        json["number"] = {
+            value: 5
+        };
 
         json["any$obj"] = {
             value: {
@@ -467,7 +467,7 @@ describe('FactoryTest', function (this: Suite)
         const m: ISuperCoolModel = factory.getInstance("ISuperCoolModel");
         expect(m.getCoolValue).equals(5);
         expect(m.getMyBool).equals(false);
-        // expect(m.value).equals(5);
+        expect(m.value).equals(5);
         expect(m.def.result).equals(123);
         expect(m.object.firstName).equals("nikita");
         expect(m.object.lastName).equals("dzigurda");

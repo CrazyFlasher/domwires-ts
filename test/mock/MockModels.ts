@@ -103,7 +103,7 @@ export interface ISuperCoolModel
 
     get getCoolValue(): number;
 
-    // get value(): number;
+    get value(): number;
 
     get def(): IDefault;
 
@@ -129,8 +129,8 @@ export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
     @inject("number") @named("coolValue")
     public _coolValue: number;
 
-    // @inject("number")
-    // public _value: number;
+    @inject("number")
+    public _value: number;
 
     @inject("IDefault") @named("def")
     public _def: IDefault;
@@ -151,10 +151,10 @@ export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
         return this._coolValue;
     }
 
-    // get value(): number
-    // {
-    //     return this._value;
-    // }
+    get value(): number
+    {
+        return this._value;
+    }
 
     public get def(): IDefault
     {

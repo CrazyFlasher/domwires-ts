@@ -476,6 +476,9 @@ export class Factory extends AbstractDisposable implements IFactory
             if (name)
             {
                 bs.whenTargetNamed(name);
+            } else
+            {
+                bs.whenTargetIsDefault();
             }
         }
 
