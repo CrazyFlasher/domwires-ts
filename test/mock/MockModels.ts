@@ -151,7 +151,7 @@ export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
         return this._coolValue;
     }
 
-    get value(): number
+    public get value(): number
     {
         return this._value;
     }
