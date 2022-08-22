@@ -10,6 +10,10 @@ export interface ILoggerImmutable extends IDisposableImmutable
 
 export interface ILogger extends ILoggerImmutable, IDisposable
 {
+    setStackLineIndex(value: number): void;
+
+    get stackLineIndex(): number;
+
     info(...args: unknown[]): ILogger;
 
     warn(...args: unknown[]): ILogger;
@@ -25,6 +29,8 @@ export interface ILogger extends ILoggerImmutable, IDisposable
 
 export class Logger extends AbstractDisposable implements ILogger
 {
+    private _stackLineIndex = 3;
+
     private get t(): string
     {
         const date = new Date();
@@ -33,30 +39,40 @@ export class Logger extends AbstractDisposable implements ILogger
             date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "]";
     }
 
+    public override setStackLineIndex(value: number): void
+    {
+        this._stackLineIndex = value;
+    }
+
+    public override get stackLineIndex(): number
+    {
+        return this._stackLineIndex;
+    }
+
     public override trace(...args: unknown[]): ILogger
     {
-        console.trace(this.t, ...args);
+        console.trace(this.caller + " " + this.t, ...args);
 
         return this;
     }
 
     public override warn(...args: unknown[]): ILogger
     {
-        console.warn(this.t, ...args);
+        console.warn(this.caller + " " + this.t, ...args);
 
         return this;
     }
 
     public override debug(...args: unknown[]): ILogger
     {
-        console.debug(this.t, ...args);
+        console.debug(this.caller + " " + this.t, ...args);
 
         return this;
     }
 
     public override error(...args: unknown[]): ILogger
     {
-        console.error(this.t, ...args);
+        console.error(this.caller + " " + this.t, ...args);
 
         return this;
     }
@@ -68,8 +84,29 @@ export class Logger extends AbstractDisposable implements ILogger
 
     public override info(...args: unknown[]): ILogger
     {
-        console.info(this.t, ...args);
+        console.info(this.caller + " " + this.t, ...args);
 
         return this;
     }
+
+    private get caller(): string
+    {
+        try
+        {
+            throw new Error();
+        } catch (e)
+        {
+            if (!e.stack) return "";
+
+            const arr = e.stack.split("\n");
+            let result = arr.length > this._stackLineIndex ? arr[this._stackLineIndex] : "";
+            if (result.length > 4)
+            {
+                result = result.split("(")[1].split(")")[0];
+            }
+
+            return result;
+        }
+    }
+
 }

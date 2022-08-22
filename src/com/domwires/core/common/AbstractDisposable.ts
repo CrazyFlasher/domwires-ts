@@ -27,43 +27,63 @@ export abstract class AbstractDisposable implements IDisposable, ILogger
 
     public debug(...args: unknown[]): ILogger
     {
-        if (this.logger) this.logger.debug(...args);
+        if (this.logger) this.callLogger(this.logger.debug.bind(this.logger), ...args);
 
         return this;
     }
 
     public error(...args: unknown[]): ILogger
     {
-        if (this.logger) this.logger.error(...args);
+        if (this.logger) this.callLogger(this.logger.error.bind(this.logger), ...args);
 
         return this;
     }
 
     public fatal(...args: unknown[]): ILogger
     {
-        if (this.logger) this.logger.fatal(...args);
+        if (this.logger) this.callLogger(this.logger.fatal.bind(this.logger), ...args);
 
         return this;
     }
 
     public info(...args: unknown[]): ILogger
     {
-        if (this.logger) this.logger.info(...args);
+        if (this.logger) this.callLogger(this.logger.info.bind(this.logger), ...args);
 
         return this;
     }
 
     public trace(...args: unknown[]): ILogger
     {
-        if (this.logger) this.logger.trace(...args);
+        if (this.logger) this.callLogger(this.logger.trace.bind(this.logger), ...args);
 
         return this;
     }
 
     public warn(...args: unknown[]): ILogger
     {
-        if (this.logger) this.logger.warn(...args);
+        if (this.logger) this.callLogger(this.logger.warn.bind(this.logger), ...args);
 
         return this;
+    }
+
+    private callLogger(method: (...args: unknown[]) => void, ...args: unknown[]): void
+    {
+        if (!this.logger) return;
+
+        const currentStackLineIndex = this.stackLineIndex;
+        this.setStackLineIndex(5);
+        method(...args);
+        this.setStackLineIndex(currentStackLineIndex);
+    }
+
+    public setStackLineIndex(value: number): void
+    {
+        if (this.logger) this.logger.setStackLineIndex(value);
+    }
+
+    public get stackLineIndex(): number
+    {
+        return this.logger ? this.logger.stackLineIndex : 0;
     }
 }
