@@ -33,8 +33,8 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
     {
         this.removeAll(true);
 
-        this._childrenList = null;
-        this._childrenListImmutable = null;
+        // this._childrenList = null;
+        // this._childrenListImmutable = null;
 
         super.dispose();
     }
@@ -95,7 +95,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
 
     public contains(child: IHierarchyObjectImmutable): boolean
     {
-        return this._childrenListImmutable !== null && this._childrenListImmutable.indexOf(child) !== -1;
+        return this._childrenListImmutable && this._childrenListImmutable.indexOf(child) !== -1;
     }
 
     public dispatchMessageToChildren<DataType>(message: IMessage, data:DataType): IHierarchyObjectContainer
@@ -145,7 +145,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
             }
             else
             {
-                child.setParent(null);
+                child.setParent(undefined);
             }
 
             success = true;
@@ -156,7 +156,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
 
     public removeAll(dispose?: boolean): IHierarchyObjectContainer
     {
-        if (this._childrenList !== null)
+        if (this._childrenList)
         {
             for (const child of this._childrenList)
             {
@@ -166,7 +166,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
                 }
                 else
                 {
-                    child.setParent(null);
+                    child.setParent(undefined);
                 }
             }
 
@@ -177,4 +177,4 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
     }
 }
 
-setDefaultImplementation("IHierarchyObjectContainer", HierarchyObjectContainer);
+setDefaultImplementation<IHierarchyObjectContainer>("IHierarchyObjectContainer", HierarchyObjectContainer);

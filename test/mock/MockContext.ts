@@ -20,16 +20,16 @@ export class MockContext1 extends AbstractContext
 
 export class MockContext2 extends AbstractContext
 {
-    private testModel: MockModel2;
+    private testModel!: MockModel2;
 
     protected override init(): void
     {
         super.init();
 
-        this.testModel = this.factory.instantiateValueUnmapped(MockModel2);
+        this.testModel = this.factory.instantiateValueUnmapped<MockModel2>(MockModel2);
         this.addModel(this.testModel);
 
-        this.factory.mapToValue(MockModel2, this.testModel);
+        this.factory.mapToValue<MockModel2>(MockModel2, this.testModel);
 
         this.map(MockMessageType.HELLO, MockCommand10);
     }
@@ -42,20 +42,20 @@ export class MockContext2 extends AbstractContext
 
 export class MockContext3 extends AbstractContext
 {
-    private testMediator: MockMediator2;
-    private testModel2: MockModel3;
+    private testMediator!: MockMediator2;
+    private testModel2!: MockModel3;
 
     protected override init(): void
     {
         super.init();
 
-        this.testMediator = this.factory.instantiateValueUnmapped(MockMediator2);
+        this.testMediator = this.factory.instantiateValueUnmapped<MockMediator2>(MockMediator2);
         this.addMediator(this.testMediator);
 
-        this.testModel2 = this.factory.instantiateValueUnmapped(MockModel3);
+        this.testModel2 = this.factory.instantiateValueUnmapped<MockModel3>(MockModel3);
         this.addModel(this.testModel2);
 
-        this.factory.mapToValue(MockModel3, this.testModel2);
+        this.factory.mapToValue<MockModel3>(MockModel3, this.testModel2);
 
         this.map(MockMessageType.HELLO, MockCommand11);
     }
@@ -81,20 +81,20 @@ export class MockContext3 extends AbstractContext
 
 export class MockContext4 extends AbstractContext
 {
-    private testMediator: MockMediator2;
-    private testModel2: MockModel3;
+    private testMediator!: MockMediator2;
+    private testModel2!: MockModel3;
 
     protected override init(): void
     {
         super.init();
 
-        this.testMediator = this.factory.instantiateValueUnmapped(MockMediator2);
+        this.testMediator = this.factory.instantiateValueUnmapped<MockMediator2>(MockMediator2);
         this.addMediator(this.testMediator);
 
-        this.testModel2 = this.factory.instantiateValueUnmapped(MockModel3);
+        this.testModel2 = this.factory.instantiateValueUnmapped<MockModel3>(MockModel3);
         this.addModel(this.testModel2);
 
-        this.factory.mapToValue(MockModel3, this.testModel2);
+        this.factory.mapToValue<MockModel3>(MockModel3, this.testModel2);
 
         this.map(MockMessageType.HELLO, MockCommand11);
     }
@@ -120,8 +120,8 @@ export class MockContext4 extends AbstractContext
 
 export class MockContext5 extends AbstractContext
 {
-    private v: MockMediator3;
-    private m: MockModel4;
+    private v!: MockMediator3;
+    private m!: MockModel4;
 
     protected override init(): void
     {
@@ -134,14 +134,14 @@ export class MockContext5 extends AbstractContext
 
         super.init();
 
-        this.v = this.factory.instantiateValueUnmapped(MockMediator3);
+        this.v = this.factory.instantiateValueUnmapped<MockMediator3>(MockMediator3);
         this.addMediator(this.v);
 
-        this.m = this.factory.instantiateValueUnmapped(MockModel4);
-        this.factory.mapToValue(MockModel4, this.m);
+        this.m = this.factory.instantiateValueUnmapped<MockModel4>(MockModel4);
+        this.factory.mapToValue<MockModel4>(MockModel4, this.m);
         this.addModel(this.m);
 
-        const c: MockContext6 = this.factory.instantiateValueUnmapped(MockContext6);
+        const c: MockContext6 = this.factory.instantiateValueUnmapped<MockContext6>(MockContext6);
         this.addModel(c);
 
         this.map(MockMessageType.HELLO, MockCommand12);
@@ -162,7 +162,7 @@ export class MockContext6 extends AbstractContext
     {
         super.init();
 
-        const m: MockMediator4 = this.factory.instantiateValueUnmapped(MockMediator4);
+        const m: MockMediator4 = this.factory.instantiateValueUnmapped<MockMediator4>(MockMediator4);
         this.addMediator(m);
     }
 }
@@ -170,22 +170,22 @@ export class MockContext6 extends AbstractContext
 export class MockContext7 extends AbstractContext
 {
     @inject("Class<ICommand>")
-    private commandImpl: Class<ICommand>;
+    private commandImpl!: Class<ICommand>;
 
-    private testMediator: MockMediator2;
-    private testModel: MockModel2;
+    private testMediator!: MockMediator2;
+    private testModel!: MockModel2;
 
     public override init(): void
     {
         super.init();
 
-        this.testMediator = this.factory.instantiateValueUnmapped(MockMediator2);
+        this.testMediator = this.factory.instantiateValueUnmapped<MockMediator2>(MockMediator2);
         this.addMediator(this.testMediator);
 
-        this.testModel = this.factory.instantiateValueUnmapped(MockModel2);
+        this.testModel = this.factory.instantiateValueUnmapped<MockModel2>(MockModel2);
         this.addModel(this.testModel);
 
-        this.factory.mapToValue(MockModel2, this.testModel);
+        this.factory.mapToValue<MockModel2>(MockModel2, this.testModel);
 
         this.map(MockMessageType.HELLO, this.commandImpl);
     }
@@ -211,7 +211,7 @@ export class MockContext7 extends AbstractContext
 
 export class MockContext8 extends AbstractContext
 {
-    public testModel: MockModel6;
+    public testModel!: MockModel6;
 
     public override init(): void
     {
@@ -219,9 +219,9 @@ export class MockContext8 extends AbstractContext
 
         this.map(MockMessageType.HELLO, MockCommand16);
 
-        this.testModel = this.factory.getInstance(MockModel6);
+        this.testModel = this.factory.getInstance<MockModel6>(MockModel6);
 
-        this.factory.mapToValue(MockModel6, this.testModel);
+        this.factory.mapToValue<MockModel6>(MockModel6, this.testModel);
 
         this.addModel(this.testModel);
     }

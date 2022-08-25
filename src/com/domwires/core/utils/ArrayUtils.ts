@@ -6,7 +6,7 @@ export default class ArrayUtils
      */
     public static clear<T>(array: T[]): void
     {
-        if (array == null) throw new Error("Array is null!");
+        if (!array) throw new Error("Array does not exist!!");
 
         array.length = 0;
     }
@@ -19,7 +19,7 @@ export default class ArrayUtils
      */
     public static isLast<T>(array: ReadonlyArray<T>, element: T): boolean
     {
-        if (array == null) throw new Error("Array is null!");
+        if (!array) throw new Error("Array does not exist!!");
 
         return array.length !== 0 && array.lastIndexOf(element) === array.length - 1;
     }
@@ -32,7 +32,7 @@ export default class ArrayUtils
      */
     public static contains<T>(array: ReadonlyArray<T>, element: T): boolean
     {
-        if (array == null) throw new Error("Array is null!");
+        if (!array) throw new Error("Array does not exist!!");
 
         return array.length !== 0 && array.indexOf(element) !== -1;
     }
@@ -44,7 +44,7 @@ export default class ArrayUtils
      */
     public static remove<T>(array: T[], element: T): void
     {
-        if (array == null) throw new Error("Array is null!");
+        if (!array) throw new Error("Array does not exist!!");
         const index = array.indexOf(element);
         if (index !== -1)
         {

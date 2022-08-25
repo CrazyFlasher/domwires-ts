@@ -57,16 +57,16 @@ describe('BubbleMessageTest', function (this: Suite)
         factory = new Factory(logger);
         factory.mapToValue("IFactory", factory);
 
-        c1 = factory.instantiateValueUnmapped(MockContext1);
-        c2 = factory.instantiateValueUnmapped(MockContext1);
-        c3 = factory.instantiateValueUnmapped(MockContext1);
-        c4 = factory.instantiateValueUnmapped(MockContext1);
-        mc1 = factory.instantiateValueUnmapped(ModelContainer);
-        mc2 = factory.instantiateValueUnmapped(ModelContainer);
-        mc3 = factory.instantiateValueUnmapped(ModelContainer);
-        mc4 = factory.instantiateValueUnmapped(ModelContainer);
-        m1 = factory.instantiateValueUnmapped(MockModel1);
-        v1 = factory.instantiateValueUnmapped(MockMediator1);
+        c1 = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
+        c2 = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
+        c3 = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
+        c4 = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
+        mc1 = factory.instantiateValueUnmapped<ModelContainer>(ModelContainer);
+        mc2 = factory.instantiateValueUnmapped<ModelContainer>(ModelContainer);
+        mc3 = factory.instantiateValueUnmapped<ModelContainer>(ModelContainer);
+        mc4 = factory.instantiateValueUnmapped<ModelContainer>(ModelContainer);
+        m1 = factory.instantiateValueUnmapped<MockModel1>(MockModel1);
+        v1 = factory.instantiateValueUnmapped<MockMediator1>(MockMediator1);
 
         mc2.addModel(m1);
         mc1.addModel(mc2);
@@ -87,12 +87,15 @@ describe('BubbleMessageTest', function (this: Suite)
 
     it('testBubblingFromBottomToTop', () =>
     {
-        let bubbledEventType: Enum;
+        let bubbledEventType: Enum | undefined = undefined;
 
-        const successFunc: (message: IMessage) => void = (message: IMessage) =>
+        const successFunc: (message?: IMessage) => void = (message?: IMessage) =>
         {
             // message came from bottom to top
-            bubbledEventType = message.type;
+            if (message)
+            {
+                bubbledEventType = message.type;
+            }
         };
 
         // top element
@@ -103,7 +106,7 @@ describe('BubbleMessageTest', function (this: Suite)
 
         expect(bubbledEventType).equals(MockMessageType.GOODBYE);
 
-        bubbledEventType = null;
+        bubbledEventType = undefined;
 
         v1.dispatchMessage(MockMessageType.GOODBYE, {name: "Anton"}, true);
 
@@ -117,16 +120,16 @@ describe('BubbleMessageTest', function (this: Suite)
             /* eslint-disable @typescript-eslint/no-empty-function */
         };
 
-        const c1: IContext = factory.instantiateValueUnmapped(MockContext1);
-        const c2: IContext = factory.instantiateValueUnmapped(MockContext1);
-        const c3: IContext = factory.instantiateValueUnmapped(MockContext1);
-        const c4: IContext = factory.instantiateValueUnmapped(MockContext1);
-        const c5: IContext = factory.instantiateValueUnmapped(MockContext1);
-        const c6: IContext = factory.instantiateValueUnmapped(MockContext1);
-        const c7: IContext = factory.instantiateValueUnmapped(MockContext1);
-        const c8: IContext = factory.instantiateValueUnmapped(MockContext1);
-        const c9: IContext = factory.instantiateValueUnmapped(MockContext1);
-        const c10: IContext = factory.instantiateValueUnmapped(MockContext1);
+        const c1: IContext = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
+        const c2: IContext = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
+        const c3: IContext = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
+        const c4: IContext = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
+        const c5: IContext = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
+        const c6: IContext = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
+        const c7: IContext = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
+        const c8: IContext = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
+        const c9: IContext = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
+        const c10: IContext = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
 
         c1.addModel(
             c2.addModel(

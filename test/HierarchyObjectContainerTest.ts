@@ -65,9 +65,9 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
         expect(hoc.isDisposed).true;
         expect(hoc.isDisposed).true;
 
-        expect(ho_1.parent).null;
-        expect(ho_2.parent).null;
-        expect(hoc.children).null;
+        expect(ho_1.parent).undefined;
+        expect(ho_2.parent).undefined;
+        // expect(hoc.children).undefined;
     });
 
     it('testDispose', () =>
@@ -79,7 +79,7 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
         hoc.dispose();
 
         expect(hoc.isDisposed).true;
-        expect(hoc.children).not.exist;
+        expect(hoc.children.length).equals(0);
         expect(ho_1.isDisposed).true;
         expect(ho_2.isDisposed).true;
     });

@@ -38,7 +38,7 @@ export function setDefaultImplementation<T>(key: string | Class<T>, value: Class
     defaultImplMap.set(key, value);
 }
 
-export function getDefaultImplementation(key: string | Class<any>): Class<any>
+export function getDefaultImplementation(key: string | Class<any>): Class<any> | undefined
 {
     return typeof key === "string" ? defaultImplMap.get(key) : key;
 }
@@ -50,5 +50,10 @@ export function instanceOf<T>(object: T, typeName?: string, methodName?: string)
         return 'is' + typeName in object;
     }
 
-    return methodName in object;
+    if (methodName)
+    {
+        return methodName in object;
+    }
+
+    throw new Error("typeName and/or methodName should be specified!");
 }

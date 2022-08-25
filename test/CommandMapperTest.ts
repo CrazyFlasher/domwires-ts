@@ -20,7 +20,7 @@ import {
     MockVo,
     MockVo2
 } from "./mock/MockCommands";
-import {MockObj1} from "./mock/MockObjects";
+import {MockObj1} from "./mock/IMockObject";
 import {
     MockAllowGuards,
     MockAllowGuards2,
@@ -60,8 +60,8 @@ describe('CommandMapperTest', function (this: Suite)
         commandMapper.unmap(MockMessageType.GOODBYE, MockCommand1);
         expect(commandMapper.hasMapping(MockMessageType.GOODBYE)).false;
 
-        const m: MockObj1 = factory.instantiateValueUnmapped(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.instantiateValueUnmapped<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
 
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
         expect(m.d).equals(0);
@@ -116,8 +116,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testTryToExecuteCommand', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
 
         commandMapper.map(MockMessageType.HELLO, MockCommand1);
 
@@ -128,8 +128,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testManyEvents1Command', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
 
         commandMapper.map(MockMessageType.GOODBYE, MockCommand1);
         commandMapper.map(MockMessageType.HELLO, MockCommand1);
@@ -148,21 +148,21 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testRemapModel', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
 
         commandMapper.map(MockMessageType.GOODBYE, MockCommand1);
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
 
         expect(m.d).equals(7);
 
-        factory.unmapFromValue(MockObj1);
+        factory.unmapFromValue<MockObj1>(MockObj1);
 
-        const m2: MockObj1 = factory.getInstance(MockObj1);
+        const m2: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
 
         expect(m).not.equals(m2);
 
-        factory.mapToValue(MockObj1, m2);
+        factory.mapToValue<MockObj1>(MockObj1, m2);
 
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
 
@@ -185,8 +185,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testMapOnce', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
         commandMapper.map(MockMessageType.GOODBYE, MockCommand1, null, true);
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
         expect(commandMapper.hasMapping(MockMessageType.GOODBYE)).false;
@@ -194,8 +194,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testMapWithData', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
         commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5});
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
         expect(m.d).equals(5);
@@ -205,8 +205,8 @@ describe('CommandMapperTest', function (this: Suite)
     {
         commandMapper.setMergeMessageDataAndMappingData(true);
 
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
         commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5});
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {a: 1});
         expect(m.d).equals(5);
@@ -214,8 +214,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testMessageDataOverridesMappedData', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
         commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5});
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
         expect(m.d).equals(4);
@@ -223,8 +223,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testAllowGuards', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
         commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5}).addGuards(MockAllowGuards);
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
         expect(m.d).equals(4);
@@ -232,8 +232,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testAllowOppositeGuards', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
         commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {
             olo: 5
         }).addGuardsNot(MockNotAllowGuards);
@@ -243,8 +243,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testNotAllowGuards', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
         commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5}).addGuards(MockNotAllowGuards);
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
         expect(m.d).equals(0);
@@ -252,8 +252,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testNormalAndOppositeGuards', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
 
         commandMapper.map(MockMessageType.GOODBYE, [MockCommand3], {olo: 5})
             .addGuards(MockAllowGuards)
@@ -267,8 +267,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testNotAllowOppositeGuards', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
         commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5}).addGuardsNot(MockAllowGuards);
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
         expect(m.d).equals(0);
@@ -297,8 +297,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testMapWithDataUnmaps', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
         commandMapper.executeCommand(MockCommand4, {olo: "lol"});
         expect(m.s).equals("lol");
         commandMapper.executeCommand(MockCommand4, {olo: "puk"});
@@ -308,8 +308,8 @@ describe('CommandMapperTest', function (this: Suite)
     it('testExecuteWithVoGettersAsData', () =>
     {
         // Expecting no errors
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
         const vo: MockVo2 = new MockVo2();
         vo.olo = "test";
         commandMapper.executeCommand(MockCommand5, vo);
@@ -318,8 +318,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testStopOnExecute', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
         factory.mapToValue("string", "test", "olo");
         commandMapper.map(MockMessageType.GOODBYE, MockCommand4, null, false, true);
         commandMapper.map(MockMessageType.GOODBYE, MockCommand1);
@@ -329,8 +329,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testStopOnExecuteWithBatchMapping', () =>
     {
-        const m: MockObj1 = factory.getInstance(MockObj1);
-        factory.mapToValue(MockObj1, m);
+        const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, m);
         factory.mapToValue("string", "test", "olo");
         commandMapper.map(MockMessageType.GOODBYE, [MockCommand4, MockCommand1], null, false, true);
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
@@ -368,8 +368,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testCommandIsSingleton1', () =>
     {
-        const model: MockModel2 = factory.getInstance(MockModel2);
-        factory.mapToValue(MockModel2, model);
+        const model: MockModel2 = factory.getInstance<MockModel2>(MockModel2);
+        factory.mapToValue<MockModel2>(MockModel2, model);
 
         commandMapper.executeCommand(MockCommand19);
         commandMapper.executeCommand(MockCommand19);
@@ -380,10 +380,10 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testCommandIsSingleton2', () =>
     {
-        factory.mapToType(MockCommand19, MockCommand19Ex);
+        factory.mapToType<MockCommand19>(MockCommand19, MockCommand19Ex);
 
-        const model: MockModel2 = factory.getInstance(MockModel2);
-        factory.mapToValue(MockModel2, model);
+        const model: MockModel2 = factory.getInstance<MockModel2>(MockModel2);
+        factory.mapToValue<MockModel2>(MockModel2, model);
 
         commandMapper.executeCommand(MockCommand19);
         commandMapper.executeCommand(MockCommand19);
@@ -394,10 +394,10 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testCommandIsSingleton3', () =>
     {
-        factory.mapToType(MockCommand19, MockCommand19Ex);
+        factory.mapToType<MockCommand19>(MockCommand19, MockCommand19Ex);
 
-        const model: MockModel2 = factory.getInstance(MockModel2);
-        factory.mapToValue(MockModel2, model);
+        const model: MockModel2 = factory.getInstance<MockModel2>(MockModel2);
+        factory.mapToValue<MockModel2>(MockModel2, model);
 
         commandMapper.executeCommand(MockCommand19);
 
@@ -409,8 +409,8 @@ describe('CommandMapperTest', function (this: Suite)
         factory.mapToValue("CommandMapperConfig", {singletonCommands: false});
         const cm: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
 
-        const model: MockModel2 = factory.getInstance(MockModel2);
-        factory.mapToValue(MockModel2, model);
+        const model: MockModel2 = factory.getInstance<MockModel2>(MockModel2);
+        factory.mapToValue<MockModel2>(MockModel2, model);
 
         cm.executeCommand(MockCommand19);
         cm.executeCommand(MockCommand19);

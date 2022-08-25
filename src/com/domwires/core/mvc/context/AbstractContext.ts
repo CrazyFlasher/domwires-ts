@@ -25,20 +25,20 @@ export type ContextConfig = {
 export abstract class AbstractContext extends HierarchyObjectContainer implements IContext
 {
     @inject("IFactory") @optional()
-    protected factory: IFactory;
+    protected factory!: IFactory;
 
     @inject("ContextConfig") @optional()
-    protected config: ContextConfig;
+    protected config!: ContextConfig;
 
-    protected modelContainer: IModelContainer;
-    protected mediatorContainer: IMediatorContainer;
+    protected modelContainer!: IModelContainer;
+    protected mediatorContainer!: IMediatorContainer;
 
-    protected commandMapper: ICommandMapper;
+    protected commandMapper!: ICommandMapper;
 
     @postConstruct()
     protected init(): void
     {
-        if (this.config == null)
+        if (!this.config)
         {
             this.config = {
                 forwardMessageFromMediatorsToModels: false,
@@ -48,7 +48,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
             };
         }
 
-        if (this.factory == null)
+        if (!this.factory)
         {
             this.factory = new Factory();
             this.factory.mapToValue("IFactory", this.factory);
@@ -186,9 +186,9 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
 
     private nullifyContainers(): void
     {
-        this.modelContainer = null;
-        this.mediatorContainer = null;
-        this.commandMapper = null;
+        // this.modelContainer = undefined;
+        // this.mediatorContainer = undefined;
+        // this.commandMapper = undefined;
     }
 
     public override onMessageBubbled<DataType>(message: IMessage, data?: DataType): boolean

@@ -96,16 +96,23 @@ export class Logger extends AbstractDisposable implements ILogger
             throw new Error();
         } catch (e)
         {
-            if (!e.stack) return "";
-
-            const arr = e.stack.split("\n");
-            let result = arr.length > this._stackLineIndex ? arr[this._stackLineIndex] : "";
-            if (result.length > 4)
+            if (e instanceof Error)
             {
-                result = result.split("(")[1].split(")")[0];
+                const stack = (e as Error).stack;
+
+                if (!stack) return "";
+
+                const arr = stack.split("\n");
+                let result = arr.length > this._stackLineIndex ? arr[this._stackLineIndex] : "";
+                if (result.length > 4)
+                {
+                    result = result.split("(")[1].split(")")[0];
+                }
+
+                return result;
             }
 
-            return result;
+            return "";
         }
     }
 

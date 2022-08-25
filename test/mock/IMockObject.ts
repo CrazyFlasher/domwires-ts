@@ -9,7 +9,7 @@ import {setDefaultImplementation} from "../../src";
 @injectable()
 export class MockBusyPoolObject
 {
-    private _isBusy: boolean;
+    private _isBusy = false;
 
     public get isBusy(): boolean
     {
@@ -43,10 +43,10 @@ export class MockPool2 implements IMockPool1
 @injectable()
 export class MockPool3 implements IMockPool1
 {
-    public pcTimes: number;
+    public pcTimes = 0;
 
     @inject("number") @named("v")
-    private v: number;
+    private v = 0;
 
     @postConstruct()
     private pc(): void
@@ -64,8 +64,8 @@ export class MockPool3 implements IMockPool1
 @injectable()
 export class MockPool4 implements IMockPool2
 {
-    private _s: string;
-    private _n: number;
+    private _s!: string;
+    private _n!: number;
 
     public get n(): number
     {
@@ -118,7 +118,7 @@ export class MockObject2
     }
 }
 
-export interface MockObjects extends IDisposable
+export interface IMockObject extends IDisposable
 {
     get n(): number;
 
@@ -133,24 +133,24 @@ export interface MockObjects extends IDisposable
     get mo(): MockObject2;
 }
 
-export class MockObject extends AbstractDisposable implements MockObjects
+export class MockObject extends AbstractDisposable implements IMockObject
 {
     @inject("string[]")
-    private _g: string[];
+    private _g!: string[];
 
     @inject("number") @named("coolNumber")
-    private _n: number;
+    private _n!: number;
 
     @inject("any")
     private _o: any;
 
     @inject("string")
-    private _s: string;
+    private _s!: string;
 
     @inject(MockObject2)
-    private _mo: MockObject2;
+    private _mo!: MockObject2;
 
-    private _pc: boolean;
+    private _pc!: boolean;
 
     @postConstruct()
     private init(): void
@@ -197,7 +197,7 @@ export interface IMockObj1
 export class MockObj1 implements IMockObj1
 {
     private _d = 0;
-    private _s: string;
+    private _s!: string;
 
     public get d(): number
     {
@@ -220,5 +220,5 @@ export class MockObj1 implements IMockObj1
     }
 }
 
-setDefaultImplementation("IMockObject", MockObject);
-setDefaultImplementation("IMockObj1", MockObj1);
+setDefaultImplementation<IMockObject>("IMockObject", MockObject);
+setDefaultImplementation<IMockObj1>("IMockObj1", MockObj1);

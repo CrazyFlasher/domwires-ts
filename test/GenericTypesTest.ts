@@ -14,17 +14,17 @@ describe('GenericTypesTest', function (this: Suite)
 
         md.addMessageListener(MessageType.A, (message, data) =>
         {
-            expect(data.n).equals(123);
+            expect(data && data.n).equals(123);
         });
 
         md.addMessageListener(MessageType.B, (message, data) =>
         {
-            expect(data.s).equals("asd");
+            expect(data && data.s).equals("asd");
         });
 
         md.addMessageListener(MessageType.C, (message, data) =>
         {
-            expect(data.o.value[1]).equals(2);
+            expect(data && data.o.value[1]).equals(2);
         });
 
         md.addMessageListener(MessageType.D, (message, data) =>
@@ -34,7 +34,7 @@ describe('GenericTypesTest', function (this: Suite)
 
         md.addMessageListener(MessageType.E, (message) =>
         {
-            expect(message.type).equals(MessageType.E);
+            expect(message && message.type).equals(MessageType.E);
         });
 
         md.dispatchMessage(MessageType.A, {n: 123});
@@ -54,7 +54,7 @@ describe('GenericTypesTest', function (this: Suite)
 
         ho_1.addMessageListener(MessageType.A, (message, data) =>
         {
-            expect(data.n).equals(123);
+            expect(data && data.n).equals(123);
         });
 
         ho_3.dispatchMessage(MessageType.A, {n: 123});

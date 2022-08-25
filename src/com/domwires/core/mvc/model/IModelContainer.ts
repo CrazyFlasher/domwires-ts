@@ -74,7 +74,7 @@ export class ModelContainer extends HierarchyObjectContainer implements IModelCo
 
     public get numModels(): number
     {
-        return (this.children != null) ? this.children.length : 0;
+        return this.children ? this.children.length : 0;
     }
 
     public containsModel(model: IModelImmutable): boolean
@@ -103,4 +103,4 @@ export class ModelContainer extends HierarchyObjectContainer implements IModelCo
     }
 }
 
-setDefaultImplementation("IModelContainer", ModelContainer);
+setDefaultImplementation<IModelContainer>("IModelContainer", ModelContainer);

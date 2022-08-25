@@ -3,12 +3,12 @@ import {IMessageDispatcher, IMessageDispatcherImmutable} from "../message/IMessa
 
 export interface IHierarchyObjectImmutable extends IMessageDispatcherImmutable
 {
-    get parentImmutable(): IHierarchyObjectContainerImmutable;
+    get parentImmutable(): IHierarchyObjectContainerImmutable | undefined;
 }
 
 export interface IHierarchyObject extends IHierarchyObjectImmutable, IMessageDispatcher
 {
-    setParent(value: IHierarchyObjectContainer): IHierarchyObject;
+    setParent(value: IHierarchyObjectContainer | undefined): IHierarchyObject;
 
-    get parent(): IHierarchyObjectContainer;
+    get parent(): IHierarchyObjectContainer | undefined;
 }

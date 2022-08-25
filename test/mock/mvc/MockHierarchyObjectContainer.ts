@@ -4,7 +4,7 @@ import {HierarchyObjectContainer} from "../../../src";
 
 export class MockHierarchyObjectContainer extends HierarchyObjectContainer
 {
-    private value: boolean;
+    private value!: boolean;
 
     public override dispose()
     {

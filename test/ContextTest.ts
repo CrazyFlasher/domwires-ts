@@ -8,7 +8,7 @@ import {expect} from "chai";
 import {MockContext1, MockContext2, MockContext3, MockContext5, MockContext7, MockContext8} from "./mock/MockContext";
 import {MockMediator1, MockMediator4} from "./mock/MockMediators";
 import {MockCommand10, MockCommand13, MockCommand14, MockCommand15} from "./mock/MockCommands";
-import {MockObj1} from "./mock/MockObjects";
+import {MockObj1} from "./mock/IMockObject";
 import {MockMessageType} from "./mock/MockMessageType";
 import {ContextConfig} from "../src";
 import {MockModel1} from "./mock/MockModels";
@@ -24,8 +24,8 @@ describe('ContextTest', function (this: Suite)
     beforeEach(() =>
     {
         f = new Factory(new Logger());
-        f.mapToType("IContext", MockContext1);
-        f.mapToValue("IFactory", f);
+        f.mapToType<IContext>("IContext", MockContext1);
+        f.mapToValue<IFactory>("IFactory", f);
 
         const config:ContextConfig = {
             forwardMessageFromMediatorsToMediators: true,
@@ -37,8 +37,8 @@ describe('ContextTest', function (this: Suite)
         f.mapToValue("ContextConfig", config);
 
         c = f.getInstance("IContext");
-        c.addModel(f.instantiateValueUnmapped(MockModel1));
-        c.addMediator(f.instantiateValueUnmapped(MockMediator1));
+        c.addModel(f.instantiateValueUnmapped<MockModel1>(MockModel1));
+        c.addMediator(f.instantiateValueUnmapped<MockMediator1>(MockMediator1));
     });
 
     afterEach(() =>
@@ -60,8 +60,8 @@ describe('ContextTest', function (this: Suite)
 
     it('testExecuteCommandFromBubbledMessage', () =>
     {
-        const c1: MockContext2 = f.instantiateValueUnmapped(MockContext2);
-        const c2: MockContext3 = f.instantiateValueUnmapped(MockContext3);
+        const c1: MockContext2 = f.instantiateValueUnmapped<MockContext2>(MockContext2);
+        const c2: MockContext3 = f.instantiateValueUnmapped<MockContext3>(MockContext3);
         c.addModel(c1);
         c.addModel(c2);
 
@@ -72,8 +72,8 @@ describe('ContextTest', function (this: Suite)
 
     it('testBubbledMessageNotRedirectedToContextItCameFrom', () =>
     {
-        const c1: MockContext2 = f.instantiateValueUnmapped(MockContext2);
-        const c2: MockContext3 = f.instantiateValueUnmapped(MockContext3);
+        const c1: MockContext2 = f.instantiateValueUnmapped<MockContext2>(MockContext2);
+        const c2: MockContext3 = f.instantiateValueUnmapped<MockContext3>(MockContext3);
         c.addModel(c1);
         c.addModel(c2);
 
@@ -85,7 +85,7 @@ describe('ContextTest', function (this: Suite)
     it('testMediatorMessageBubbledOnceForChildContext', () =>
     {
         MockMediator4.val = 0;
-        const c: MockContext5 = f.instantiateValueUnmapped(MockContext5);
+        const c: MockContext5 = f.instantiateValueUnmapped<MockContext5>(MockContext5);
         expect(c.getModel().testVar).equals(1);
         expect(MockMediator4.val).equals(1);
     });
@@ -95,11 +95,11 @@ describe('ContextTest', function (this: Suite)
         const factory: IFactory = new Factory();
         factory.mapToValue("IFactory", factory);
         factory.mapToValue("Class<ICommand>", MockCommand10);
-        const c: MockContext7 = factory.getInstance(MockContext7);
+        const c: MockContext7 = factory.getInstance<MockContext7>(MockContext7);
         c.ready();
 
         factory.mapToValue("Class<ICommand>", MockCommand13);
-        const c2: MockContext7 = factory.getInstance(MockContext7);
+        const c2: MockContext7 = factory.getInstance<MockContext7>(MockContext7);
         c2.ready();
 
         expect(c2).not.equals(c);
@@ -109,8 +109,8 @@ describe('ContextTest', function (this: Suite)
 
     it('testStopOnExecute', () =>
     {
-        const m: MockObj1 = f.instantiateValueUnmapped(MockObj1);
-        f.mapToValue(MockObj1, m);
+        const m: MockObj1 = f.instantiateValueUnmapped<MockObj1>(MockObj1);
+        f.mapToValue<MockObj1>(MockObj1, m);
         f.mapToValue("string", "test", "olo");
         c.map(MockMessageType.GOODBYE, MockCommand14, null, false, true);
         c.map(MockMessageType.GOODBYE, MockCommand15);
@@ -120,7 +120,7 @@ describe('ContextTest', function (this: Suite)
 
     it('testCommandMappedToOtherMessageType', () =>
     {
-        const c: MockContext8 = f.getInstance(MockContext8);
+        const c: MockContext8 = f.getInstance<MockContext8>(MockContext8);
 
         expect(c.testModel.v).equals(0);
     });

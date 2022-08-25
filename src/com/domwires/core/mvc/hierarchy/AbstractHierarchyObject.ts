@@ -4,36 +4,36 @@ import {MessageDispatcher} from "../message/IMessageDispatcher";
 
 export abstract class AbstractHierarchyObject extends MessageDispatcher implements IHierarchyObject
 {
-    private _parent: IHierarchyObjectContainer;
+    private _parent: IHierarchyObjectContainer | undefined;
 
     public override dispose()
     {
-        this._parent = null;
+        this._parent = undefined;
 
         super.dispose();
     }
 
-    public get parent(): IHierarchyObjectContainer
+    public get parent(): IHierarchyObjectContainer | undefined
     {
         return this._parent;
     }
 
-    public get parentImmutable(): IHierarchyObjectContainerImmutable
+    public get parentImmutable(): IHierarchyObjectContainerImmutable | undefined
     {
         return this.parent;
     }
 
-    public setParent(value: IHierarchyObjectContainer): IHierarchyObject
+    public setParent(value: IHierarchyObjectContainer | undefined): IHierarchyObject
     {
-        const hasParent: boolean = this._parent != null;
+        const hasParent: boolean = this._parent != undefined;
 
         this._parent = value;
 
-        if (!hasParent && this._parent != null)
+        if (!hasParent && this._parent != undefined)
         {
             this.addedToHierarchy();
         }
-        else if (hasParent && this._parent == null)
+        else if (hasParent && this._parent == undefined)
         {
             this.removedFromHierarchy();
         }

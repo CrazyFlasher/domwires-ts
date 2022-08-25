@@ -38,13 +38,13 @@ type MappingData<T = any> = {
 
 export class DependencyVo
 {
-    private readonly _implementation: string;
+    private readonly _implementation!: string;
     private readonly _value: JSON;
-    private readonly _newInstance: boolean;
+    private readonly _newInstance!: boolean;
 
     public constructor(json: any, logWarnFunc?: (data: string) => void)
     {
-        if (json.implementation == null)
+        if (!json.implementation)
         {
             if (logWarnFunc)
             {
@@ -86,7 +86,7 @@ export class MappingConfigDictionary
 
     public constructor(json: any, logWarnFunc?: (data: string) => void)
     {
-        if (json != null)
+        if (json)
         {
             for (const key of Object.keys(json))
             {
@@ -109,9 +109,9 @@ class PoolModel
 
     private currentIndex = 0;
     private factory: IFactory;
-    private readonly isBusyFlagGetterName: string;
+    private readonly isBusyFlagGetterName: string | undefined;
 
-    public constructor(factory: Factory, capacity: number, isBusyFlagGetterName: string)
+    public constructor(factory: Factory, capacity: number, isBusyFlagGetterName?: string)
     {
         this.factory = factory;
         this._capacity = capacity;
@@ -125,7 +125,7 @@ class PoolModel
         if (this.list.length < this._capacity && createNewIfNeeded)
         {
 
-            instance = this.factory.getInstance(type, null, true);
+            instance = this.factory.getInstance(type, undefined, true);
 
             this.list.push(instance);
         }
@@ -140,7 +140,7 @@ class PoolModel
                 this.currentIndex = 0;
             }
 
-            if (this.isBusyFlagGetterName != null)
+            if (this.isBusyFlagGetterName)
             {
                 if ((instance as any)[this.isBusyFlagGetterName])
                 {
@@ -159,8 +159,8 @@ class PoolModel
 
     public dispose(): void
     {
-        this.list = null;
-        this.factory = null;
+        // this.list = undefined;
+        // this.factory = undefined;
     }
 
     public get capacity(): number
@@ -179,7 +179,7 @@ class PoolModel
         {
             return false;
         }
-        if (this.isBusyFlagGetterName == null)
+        if (!this.isBusyFlagGetterName)
         {
             return false;
         }
@@ -201,7 +201,7 @@ class PoolModel
 
     public get busyItemsCount(): number
     {
-        if (this.isBusyFlagGetterName == null)
+        if (!this.isBusyFlagGetterName)
         {
             return 0;
         }
@@ -277,7 +277,7 @@ export class Factory extends AbstractDisposable implements IFactory
     private typeMap: Map<Type, MappingData[]> = new Map<Type, MappingData[]>();
     private valueMap: Map<Type, MappingData[]> = new Map<Type, MappingData[]>();
 
-    private autoMapAfterUnmap: boolean;
+    private autoMapAfterUnmap = false;
 
     private poolModelMap: Map<Type, PoolModel> = new Map<Type, PoolModel>();
 
@@ -294,9 +294,9 @@ export class Factory extends AbstractDisposable implements IFactory
         }
     }
 
-    private static includesName(list: MappingData[], name?: string): MappingData
+    private static includesName(list?: MappingData[], name?: string): MappingData | undefined
     {
-        if (!list) return null;
+        if (!list) return undefined;
 
         for (const value of list)
         {
@@ -306,7 +306,7 @@ export class Factory extends AbstractDisposable implements IFactory
             }
         }
 
-        return null;
+        return undefined;
     }
 
     public override dispose()
@@ -321,9 +321,9 @@ export class Factory extends AbstractDisposable implements IFactory
         return "__$" + Factory.getTypeName(type) + "$__";
     }
 
-    private map<T>(type: Type<T>, to: T | Class<T>, name: string, map: Map<any, MappingData[]>, unmapMethod: (type: Type<T>, name?: string) => void): boolean
+    private map<T>(type: Type<T>, to: T | Class<T>, name: string | undefined, map: Map<any, MappingData[]>, unmapMethod: (type: Type<T>, name?: string) => void): boolean
     {
-        let mappedToTypeOrValueList: MappingData[] = map.get(type);
+        let mappedToTypeOrValueList = map.get(type);
         let mapOrRemap = true;
 
         if (!this.autoMapAfterUnmap)
@@ -335,7 +335,9 @@ export class Factory extends AbstractDisposable implements IFactory
                 if (currentMapping)
                 {
                     const typeName = Factory.getTypeName(type);
-                    const toName = to.constructor.name;
+
+                    let toName = Factory.getTypeName(to as Class<T>);
+                    if (!toName) toName = (to as Type<T>).constructor.name;
 
                     if (currentMapping.typeOrValue === to)
                     {
@@ -378,12 +380,12 @@ export class Factory extends AbstractDisposable implements IFactory
         return mapOrRemap;
     }
 
-    private unmap<T>(type: Type<T>, name: string, map: Map<any, MappingData[]>, mapMethod: (type: Type<T>, to: Class<T>, name?: string) => IFactory)
+    private unmap<T>(type: Type<T>, name: string | undefined, map: Map<any, MappingData[]>, mapMethod: (type: Type<T>, to: any, name?: string) => IFactory)
     {
         const mappingList = map.get(type);
         if (mappingList)
         {
-            const mapping: MappingData = Factory.includesName(mappingList, name);
+            const mapping = Factory.includesName(mappingList, name);
             if (mapping)
             {
                 ArrayUtils.remove(mappingList, mapping);
@@ -412,7 +414,7 @@ export class Factory extends AbstractDisposable implements IFactory
     {
         this.checkPoolHasType(type);
 
-        const poolModel: PoolModel = this.poolModelMap.get(type);
+        const poolModel = this.poolModelMap.get(type);
 
         if (this._safePool && this.getAllPoolItemsAreBusy(type))
         {
@@ -423,6 +425,9 @@ export class Factory extends AbstractDisposable implements IFactory
             this.info("Pool capacity for '" + Factory.getTypeName(type) + "' increased!");
         }
 
+        // poolModel cannot be undefined here
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         return poolModel.get(type, createNewIfNeeded);
     }
 
@@ -465,7 +470,7 @@ export class Factory extends AbstractDisposable implements IFactory
         return this;
     }
 
-    public mapToValue<T>(type: Type<T>, to: T, name?: string,): IFactory
+    public mapToValue<T>(type: Type<T>, to: T, name?: string): IFactory
     {
         const mapSuccess: boolean = this.map(type, to, name, this.valueMap, this.unmapFromValue.bind(this));
 
@@ -487,7 +492,7 @@ export class Factory extends AbstractDisposable implements IFactory
 
     public instantiateValueUnmapped<T>(type: Type<T>): T
     {
-        const mappingData: MappingData = Factory.includesName(this.valueMap.get(type));
+        const mappingData = Factory.includesName(this.valueMap.get(type));
 
         if (mappingData)
         {
@@ -520,7 +525,7 @@ export class Factory extends AbstractDisposable implements IFactory
 
         if (!hasValue && !hasType)
         {
-            const defaultImpl: Class<T> = getDefaultImplementation(type);
+            const defaultImpl = getDefaultImplementation(type);
 
             if (defaultImpl)
             {
@@ -540,12 +545,12 @@ export class Factory extends AbstractDisposable implements IFactory
 
     public hasTypeMapping<T>(type: Type<T>, name?: string): boolean
     {
-        return Factory.includesName(this.typeMap.get(type), name) != null;
+        return Factory.includesName(this.typeMap.get(type), name) != undefined;
     }
 
     public hasValueMapping<T>(type: Type<T>, name?: string): boolean
     {
-        return Factory.includesName(this.valueMap.get(type), name) != null;
+        return Factory.includesName(this.valueMap.get(type), name) != undefined;
     }
 
     public unmapFromType<T>(type: Type<T>, name?: string): IFactory
@@ -609,6 +614,9 @@ export class Factory extends AbstractDisposable implements IFactory
     {
         this.checkPoolHasType(type);
 
+        // cannot be undefined here
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         return this.poolModelMap.get(type).allItemsAreBusy;
     }
 
@@ -616,6 +624,9 @@ export class Factory extends AbstractDisposable implements IFactory
     {
         this.checkPoolHasType(type);
 
+        // cannot be undefined here
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         return this.poolModelMap.get(type).busyItemsCount;
     }
 
@@ -623,6 +634,9 @@ export class Factory extends AbstractDisposable implements IFactory
     {
         this.checkPoolHasType(type);
 
+        // cannot be undefined here
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         return this.poolModelMap.get(type).capacity;
     }
 
@@ -630,6 +644,9 @@ export class Factory extends AbstractDisposable implements IFactory
     {
         this.checkPoolHasType(type);
 
+        // cannot be undefined here
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         return this.poolModelMap.get(type).instanceCount;
     }
 
@@ -642,6 +659,9 @@ export class Factory extends AbstractDisposable implements IFactory
     {
         this.checkPoolHasType(type);
 
+        // cannot be undefined here
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         this.poolModelMap.get(type).increaseCapacity(additionalCapacity);
 
         return this;
@@ -683,8 +703,8 @@ export class Factory extends AbstractDisposable implements IFactory
 
     public appendMappingConfig(config: Map<string, DependencyVo>): IFactory
     {
-        let name: string;
-        let d: DependencyVo;
+        let name: string | undefined;
+        let d: DependencyVo | undefined;
         let splitted: string[];
 
         for (let interfaceDefinition of config.keys())
@@ -692,36 +712,39 @@ export class Factory extends AbstractDisposable implements IFactory
             name = undefined;
             d = config.get(interfaceDefinition);
 
-            splitted = interfaceDefinition.split("$");
-            if (splitted.length > 1)
+            if (d)
             {
-                name = splitted[1];
-                interfaceDefinition = splitted[0];
-            }
-
-            if (d.value != null)
-            {
-                if (name)
+                splitted = interfaceDefinition.split("$");
+                if (splitted.length > 1)
                 {
-                    this.mapToValue(interfaceDefinition, d.value, name);
+                    name = splitted[1];
+                    interfaceDefinition = splitted[0];
+                }
+
+                if (d.value != undefined)
+                {
+                    if (name)
+                    {
+                        this.mapToValue(interfaceDefinition, d.value, name);
+                    }
+                    else
+                    {
+                        this.mapToValue(interfaceDefinition, d.value);
+                    }
                 }
                 else
                 {
-                    this.mapToValue(interfaceDefinition, d.value);
-                }
-            }
-            else
-            {
-                if (d.implementation != null)
-                {
-                    this.info("Mapping '" + interfaceDefinition + "' to '" + d.implementation + "'");
+                    if (d.implementation)
+                    {
+                        this.info("Mapping '" + interfaceDefinition + "' to '" + d.implementation + "'");
 
-                    this.mapToType(interfaceDefinition, getClassFromString(d.implementation), name);
-                }
+                        this.mapToType(interfaceDefinition, getClassFromString(d.implementation), name);
+                    }
 
-                if (d.newInstance)
-                {
-                    this.mapToValue(interfaceDefinition, this.getInstance(interfaceDefinition), name);
+                    if (d.newInstance)
+                    {
+                        this.mapToValue(interfaceDefinition, this.getInstance(interfaceDefinition), name);
+                    }
                 }
             }
         }
@@ -733,6 +756,9 @@ export class Factory extends AbstractDisposable implements IFactory
     {
         if (this.poolModelMap.has(type))
         {
+            // cannot be undefined here
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             this.poolModelMap.get(type).dispose();
 
             this.poolModelMap.delete(type);

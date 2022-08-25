@@ -13,10 +13,10 @@ export type MockTypeDef = {
 export class MockModel0 extends AbstractModel
 {
     @inject("number")
-    private n1: number;
+    private n1!: number;
 
     @inject("number") @named("n2")
-    private n2: number;
+    private n2!: number;
 }
 
 export class MockModel1 extends AbstractModel
@@ -51,16 +51,6 @@ export class MockModel4 extends AbstractModel
     }
 }
 
-export class MockModel5 extends AbstractModel
-{
-    public testVar: number;
-
-    public dispatch(): void
-    {
-        this.dispatchMessage(MockMessageType.HELLO);
-    }
-}
-
 export class MockModel6 extends AbstractModel
 {
     public v = 0;
@@ -70,25 +60,6 @@ export class MockModel6 extends AbstractModel
         super.addedToHierarchy();
 
         this.dispatchMessage(MockMessageType2.HELLO);
-    }
-}
-
-export class MockModel7 extends AbstractModel
-{
-    @inject("MockTypeDef")
-    private td: MockTypeDef;
-
-    @inject("number")
-    private i: number;
-
-    public getTd(): MockTypeDef
-    {
-        return this.td;
-    }
-
-    public getI(): number
-    {
-        return this.i;
     }
 }
 
@@ -121,25 +92,27 @@ export class Default implements IDefault
     }
 }
 
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+// need to define type for injection from config
 export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
 {
     @inject("boolean") @named("myBool")
-    public _myBool = true;
+    private _myBool: boolean = true;
 
     @inject("number") @named("coolValue")
-    public _coolValue: number;
+    private _coolValue!: number;
 
     @inject("number")
-    public _value: number;
+    private _value!: number;
 
     @inject("IDefault") @named("def")
-    public _def: IDefault;
+    private _def!: IDefault;
 
     @inject("any") @named("obj")
-    public _object: any;
+    private _object!: any;
 
     @inject("string[]")
-    public _array: string[];
+    private _array!: string[];
 
     public get getMyBool(): boolean
     {
@@ -172,7 +145,7 @@ export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
     }
 }
 
-definableFromString(SuperCoolModel);
-definableFromString(Default);
-setDefaultImplementation("ISuperCoolModel", SuperCoolModel);
-setDefaultImplementation("IDefault", Default);
+definableFromString<SuperCoolModel>(SuperCoolModel);
+definableFromString<Default>(Default);
+setDefaultImplementation<ISuperCoolModel>("ISuperCoolModel", SuperCoolModel);
+setDefaultImplementation<IDefault>("IDefault", Default);

@@ -6,7 +6,7 @@ import {ILogger} from "../../logger/ILogger";
 export abstract class AbstractDisposable implements IDisposable, ILogger
 {
     @inject("ILogger") @optional()
-    protected logger: ILogger;
+    protected logger!: ILogger;
 
     private _isDisposed = false;
 

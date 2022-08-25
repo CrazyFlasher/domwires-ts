@@ -7,13 +7,13 @@ import {inject, named} from "inversify";
 export class MockValuesGuards extends AbstractGuards
 {
     @lazyInjectNamed("string", "s")
-    private s:string;
+    private s!:string;
 
     @lazyInjectNamed("number", "n")
-    private n:number;
+    private n!:number;
 
     @lazyInjectNamed("any", "o")
-    private o:any;
+    private o!:any;
 
     public override get allows(): boolean
     {
@@ -30,13 +30,13 @@ export class MockValuesGuards extends AbstractGuards
 export class MockValuesNotSingletonGuards extends AbstractGuards
 {
     @inject("string" ) @named("s")
-    private s:string;
+    private s!:string;
 
     @inject("number" ) @named("n")
-    private n:number;
+    private n!:number;
 
     @inject("any" ) @named("o")
-    private o:any;
+    private o!:any;
 
     public override get allows(): boolean
     {

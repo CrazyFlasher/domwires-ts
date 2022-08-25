@@ -74,7 +74,7 @@ export class MediatorContainer extends HierarchyObjectContainer implements IMedi
 
     public get numMediators(): number
     {
-        return (this.children != null) ? this.children.length : 0;
+        return this.children ? this.children.length : 0;
     }
 
     public containsMediator(mediator: IMediatorImmutable): boolean
@@ -103,4 +103,4 @@ export class MediatorContainer extends HierarchyObjectContainer implements IMedi
     }
 }
 
-setDefaultImplementation("IMediatorContainer", MediatorContainer);
+setDefaultImplementation<IMediatorContainer>("IMediatorContainer", MediatorContainer);

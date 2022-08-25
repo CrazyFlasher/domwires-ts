@@ -25,22 +25,25 @@ describe('MessageDispatcherTest', function (this: Suite)
         let gotMessage = false;
         let gotMessageType: Enum;
         let gotMessageTarget: IMessageDispatcherImmutable;
-        let gotMessageData: MockMessageDataType1;
+        let gotMessageData: MockMessageDataType1 | undefined;
 
         d.addMessageListener(MockMessageType.HELLO, (m?, data?) =>
         {
             gotMessage = true;
-            gotMessageType = m.type;
-            gotMessageTarget = m.initialTarget;
+            if (m)
+            {
+                gotMessageType = m.type;
+                gotMessageTarget = m.initialTarget;
+            }
             gotMessageData = data;
+
+            expect(gotMessage).true;
+            expect(gotMessageType).equals(MockMessageType.HELLO);
+            expect(gotMessageTarget).equals(d);
+            expect(gotMessageData && gotMessageData.prop).equals("prop1");
         });
 
         d.dispatchMessage(MockMessageType.HELLO, {prop: "prop1"});
-
-        expect(gotMessage).true;
-        expect(gotMessageType).equals(MockMessageType.HELLO);
-        expect(gotMessageTarget).equals(d);
-        expect(gotMessageData.prop).equals("prop1");
     });
 
     it('testAddMessageListener', () =>
@@ -126,8 +129,8 @@ describe('MessageDispatcherTest', function (this: Suite)
 
     it('testEveryBodyReceivedMessage', () =>
     {
-        let a: boolean;
-        let b: boolean;
+        let a!: boolean;
+        let b!: boolean;
 
         const listener1: () => void = () => a = true;
         const listener2: () => void = () => b = true;
