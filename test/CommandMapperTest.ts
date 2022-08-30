@@ -1,8 +1,7 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
-import {Factory, IFactory, Logger} from "../src";
-import {CommandMapperConfig, ICommandMapper} from "../src";
+import {Class, CommandMapperConfig, Enum, Factory, ICommand, ICommandMapper, IFactory, Logger} from "../src";
 import {MockMessageType} from "./mock/MockMessageType";
 import {
     MockCommand0,
@@ -16,7 +15,7 @@ import {
     MockCommand3,
     MockCommand4,
     MockCommand5,
-    MockCommand8,
+    MockCommand8, MockNestedCmd,
     MockVo,
     MockVo2
 } from "./mock/MockCommands";
@@ -29,10 +28,7 @@ import {
     MockValuesNotSingletonGuards
 } from "./mock/MockGuards";
 import "../src/com/domwires/core/mvc/command/ICommandMapper";
-import {Enum} from "../src";
 import {MockModel2} from "./mock/MockModels";
-import {Class} from "../src";
-import {ICommand} from "../src";
 
 describe('CommandMapperTest', function (this: Suite)
 {
@@ -452,5 +448,17 @@ describe('CommandMapperTest', function (this: Suite)
         logger.info("Time passed for NOT singleton commands: ", timePassedForNotSingletonCommands);
 
         expect(timePassedForNotSingletonCommands < timePassedForNotSingletonCommands);
+    });
+
+
+    it('testNoMultipleMappingsInLazyInjector', () =>
+    {
+        // Expecting no errors
+        const obj = factory.getInstance<MockObj1>(MockObj1);
+        factory.mapToValue<MockObj1>(MockObj1, obj);
+        factory.mapToValue<ICommandMapper>("ICommandMapper", commandMapper);
+        commandMapper.executeCommand(MockNestedCmd);
+
+        expect(obj.d).equals(7);
     });
 });

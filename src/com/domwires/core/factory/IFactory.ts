@@ -26,6 +26,10 @@ function mergeIntoLazyOne(from: Container): void
     {
         value.forEach((binding) =>
         {
+            if (destination.hasKey(binding.serviceIdentifier))
+            {
+                destination.remove(binding.serviceIdentifier);
+            }
             destination.add(binding.serviceIdentifier, binding.clone());
         });
     });

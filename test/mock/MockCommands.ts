@@ -1,12 +1,17 @@
 import 'reflect-metadata';
-import {ICommand} from "../../src";
-import {AbstractCommand} from "../../src";
+import {
+    AbstractCommand,
+    Enum,
+    ICommand,
+    ICommandMapper,
+    IFactory,
+    lazyInject,
+    lazyInjectNamed,
+    setDefaultImplementation
+} from "../../src";
 import {inject, named, optional} from "inversify";
 import {MockObj1} from "./IMockObject";
-import {Enum} from "../../src";
 import {MockModel2, MockModel3, MockModel4, MockModel6} from "./MockModels";
-import {setDefaultImplementation} from "../../src";
-import {lazyInject, lazyInjectNamed} from "../../src";
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
@@ -264,6 +269,36 @@ export class MockCommand19Ex extends MockCommand19
 
 export interface IMockCommand extends ICommand
 {
+}
+
+export class MockNestedCmd extends AbstractCommand
+{
+    @lazyInject("ICommandMapper")
+    private cm!: ICommandMapper;
+
+    @lazyInject("IFactory")
+    private f!: IFactory;
+
+    @lazyInject(MockObj1)
+    private obj!: MockObj1;
+
+    private executeCount = 0;
+
+    public override execute(): void
+    {
+        if (this.executeCount < 2)
+        {
+            this.obj.d += 7;
+
+            this.executeCount++;
+
+            this.f.unmapFromValue<MockObj1>(MockObj1);
+            const obj = this.f.getInstance<MockObj1>(MockObj1);
+            this.f.mapToValue<MockObj1>(MockObj1, obj);
+
+            this.cm.executeCommand(MockNestedCmd);
+        }
+    }
 }
 
 setDefaultImplementation<IMockCommand>("IMockCommand", MockCommand1);
