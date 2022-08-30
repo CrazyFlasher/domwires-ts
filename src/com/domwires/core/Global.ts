@@ -10,10 +10,10 @@ const logger = new Logger();
 
 const defaultImplMap: Map<string | Class<any>, Class<any>> = new Map<string | Class<any>, Class<any>>();
 
-export function definableFromString<T>(clazz: Class<T>): void
+export function definableFromString<T>(clazz: Class<T>, alias?: string): void
 {
-    logger.info("Manually defined classes: " + clazz.name);
-    (global as any)[clazz.name] = clazz;
+    logger.info("Manually defined classes: " + clazz.name + (alias ? " to alias: " + alias : ""));
+    (global as any)[alias ? alias : clazz.name] = clazz;
 }
 
 export function getClassFromString<T>(value: string): Class<T>
