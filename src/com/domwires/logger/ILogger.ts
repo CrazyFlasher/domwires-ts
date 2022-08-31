@@ -51,7 +51,7 @@ export class Logger extends AbstractDisposable implements ILogger
 
     public override trace(...args: unknown[]): ILogger
     {
-        console.trace(Logger.paintPrefix(Color.TP_ANSI_FG_LIGHT_GRAY, this.caller + " " + this.t),
+        console.trace(Logger.paintPrefix(this.caller, this.t),
             Logger.paintArgs(Color.TP_ANSI_BOLD_ON, ...args));
 
         return this;
@@ -59,7 +59,7 @@ export class Logger extends AbstractDisposable implements ILogger
 
     public override warn(...args: unknown[]): ILogger
     {
-        console.warn(Logger.paintPrefix(Color.TP_ANSI_FG_LIGHT_GRAY, this.caller + " " + this.t),
+        console.warn(Logger.paintPrefix(this.caller, this.t),
             Logger.paintArgs(Color.TP_ANSI_FG_YELLOW, ...args));
 
         return this;
@@ -67,7 +67,7 @@ export class Logger extends AbstractDisposable implements ILogger
 
     public override debug(...args: unknown[]): ILogger
     {
-        console.debug(Logger.paintPrefix(Color.TP_ANSI_FG_LIGHT_GRAY, this.caller + " " + this.t),
+        console.debug(Logger.paintPrefix(this.caller, this.t),
             Logger.paintArgs(Color.TP_ANSI_BG_YELLOW, ...args));
 
         return this;
@@ -75,7 +75,7 @@ export class Logger extends AbstractDisposable implements ILogger
 
     public override error(...args: unknown[]): ILogger
     {
-        console.error(Logger.paintPrefix(Color.TP_ANSI_FG_LIGHT_GRAY, this.caller + " " + this.t),
+        console.error(Logger.paintPrefix(this.caller, this.t),
             Logger.paintArgs(Color.TP_ANSI_FG_RED, ...args));
 
         return this;
@@ -83,7 +83,7 @@ export class Logger extends AbstractDisposable implements ILogger
 
     public override fatal(...args: unknown[]): ILogger
     {
-        console.error(Logger.paintPrefix(Color.TP_ANSI_FG_LIGHT_GRAY, this.caller + " " + this.t),
+        console.error(Logger.paintPrefix(this.caller, this.t),
             Logger.paintArgs(Color.TP_ANSI_BG_RED, ...args));
 
         return this;
@@ -91,7 +91,7 @@ export class Logger extends AbstractDisposable implements ILogger
 
     public override info(...args: unknown[]): ILogger
     {
-        console.info(Logger.paintPrefix(Color.TP_ANSI_FG_LIGHT_GRAY, this.caller + " " + this.t),
+        console.info(Logger.paintPrefix(this.caller, this.t),
             Logger.paintArgs(Color.TP_ANSI_FG_GREEN, ...args));
 
         return this;
@@ -124,9 +124,9 @@ export class Logger extends AbstractDisposable implements ILogger
         }
     }
 
-    private static paintPrefix(color: string, prefix: string): string
+    private static paintPrefix(prefix: string, time: string): string
     {
-        return "\x1b[" + color + "m" + prefix + "\x1b[0m";
+        return "\x1b[" + Color.TP_ANSI_FG_LIGHT_GRAY + "m" + prefix + "\x1b[0m" + " " + "\x1b[" + Color.TP_ANSI_FG_WHITE + "m" + time + "\x1b[0m";
     }
 
     private static paintArgs(color: string, ...args: unknown[]): string
