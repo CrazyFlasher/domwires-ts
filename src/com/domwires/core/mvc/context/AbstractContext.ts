@@ -19,8 +19,10 @@ import {Logger} from "../../../logger/ILogger";
 export type ContextConfig = {
     readonly forwardMessageFromMediatorsToModels: boolean;
     readonly forwardMessageFromMediatorsToMediators: boolean;
+    readonly forwardMessageFromMediatorsToContexts: boolean;
     readonly forwardMessageFromModelsToMediators: boolean;
     readonly forwardMessageFromModelsToModels: boolean;
+    readonly forwardMessageFromModelsToContexts: boolean;
 };
 
 export abstract class AbstractContext extends HierarchyObjectContainer implements IContext
@@ -44,8 +46,10 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
             this.config = {
                 forwardMessageFromMediatorsToModels: false,
                 forwardMessageFromMediatorsToMediators: true,
+                forwardMessageFromMediatorsToContexts: false,
                 forwardMessageFromModelsToMediators: true,
-                forwardMessageFromModelsToModels: false
+                forwardMessageFromModelsToModels: false,
+                forwardMessageFromModelsToContexts: false
             };
         }
 
@@ -209,41 +213,39 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         {
             if (this.config.forwardMessageFromModelsToModels)
             {
-                this.forwardMessageToModels(message, data);
+                this.dispatchMessageToModels(message, data);
             }
             if (this.config.forwardMessageFromModelsToMediators)
             {
-                this.forwardMessageToMediators(message, data);
+                this.dispatchMessageToMediators(message, data);
+            }
+            if (this.config.forwardMessageFromModelsToContexts)
+            {
+                this.dispatchMessageToContexts(message, data);
             }
         }
         else if (instanceOf(message.initialTarget, "IMediator"))
         {
             if (this.config.forwardMessageFromMediatorsToModels)
             {
-                this.forwardMessageToModels(message, data);
+                this.dispatchMessageToModels(message, data);
             }
             if (this.config.forwardMessageFromMediatorsToMediators)
             {
-                this.forwardMessageToMediators(message, data);
+                this.dispatchMessageToMediators(message, data);
+            }
+            if (this.config.forwardMessageFromMediatorsToContexts)
+            {
+                this.dispatchMessageToContexts(message, data);
             }
         }
 
         return this;
     }
 
-    protected forwardMessageToModels<DataType>(message: IMessage, data?: DataType): void
+    public override dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, ofType?: string): IHierarchyObjectContainer
     {
-        this.dispatchMessageToModels(message, data);
-    }
-
-    protected forwardMessageToMediators<DataType>(message: IMessage, data?: DataType): void
-    {
-        this.dispatchMessageToMediators(message, data);
-    }
-
-    public override dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType): IHierarchyObjectContainer
-    {
-        super.dispatchMessageToChildren(message, data);
+        super.dispatchMessageToChildren(message, data, ofType);
 
         this.tryToExecuteCommand(message.type, data);
 
@@ -310,6 +312,15 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         this.checkIfDisposed();
 
         this.modelContainer.dispatchMessageToChildren(message, data);
+
+        return this;
+    }
+
+    public dispatchMessageToContexts<DataType>(message: IMessage, data?: DataType): IContext
+    {
+        this.checkIfDisposed();
+
+        this.modelContainer.dispatchMessageToChildren(message, data, "IContext");
 
         return this;
     }

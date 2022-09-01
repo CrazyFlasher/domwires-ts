@@ -2,7 +2,7 @@ import {IHierarchyObject, IHierarchyObjectImmutable} from "./IHierarchyObject";
 import {IMessage} from "../message/IMessageDispatcher";
 import {AbstractHierarchyObject} from "./AbstractHierarchyObject";
 import ArrayUtils from "../../utils/ArrayUtils";
-import {setDefaultImplementation} from "../../Global";
+import {instanceOf, setDefaultImplementation} from "../../Global";
 
 export interface IHierarchyObjectContainerImmutable extends IHierarchyObjectImmutable
 {
@@ -21,7 +21,7 @@ export interface IHierarchyObjectContainer extends IHierarchyObjectContainerImmu
 
     removeAll(dispose?: boolean): IHierarchyObjectContainer;
 
-    dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType): IHierarchyObjectContainer;
+    dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, ofType?: string): IHierarchyObjectContainer;
 }
 
 export class HierarchyObjectContainer extends AbstractHierarchyObject implements IHierarchyObjectContainer
@@ -98,19 +98,22 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return this._childrenListImmutable && this._childrenListImmutable.indexOf(child) !== -1;
     }
 
-    public dispatchMessageToChildren<DataType>(message: IMessage, data?:DataType): IHierarchyObjectContainer
+    public dispatchMessageToChildren<DataType>(message: IMessage, data?:DataType, ofType?: string): IHierarchyObjectContainer
     {
         for (const child of this._childrenList)
         {
-            if (message.previousTarget !== child)
+            if (!ofType || instanceOf(child, ofType))
             {
-                if (HierarchyObjectContainer.instanceOfIHierarchyObjectContainer(child))
+                if (message.previousTarget !== child)
                 {
-                    child.dispatchMessageToChildren(message, data);
-                }
-                else
-                {
-                    child.handleMessage(message, data);
+                    if (HierarchyObjectContainer.instanceOfIHierarchyObjectContainer(child))
+                    {
+                        child.dispatchMessageToChildren(message, data);
+                    }
+                    else
+                    {
+                        child.handleMessage(message, data);
+                    }
                 }
             }
         }
