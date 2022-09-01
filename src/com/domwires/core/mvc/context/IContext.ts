@@ -10,7 +10,7 @@ export interface IContextImmutable extends IModelContainerImmutable, IMediatorCo
 
 export interface IContext extends IContextImmutable, IModelContainer, IMediatorContainer, ICommandMapper
 {
-    dispatchMessageToMediators(message: IMessage): IContext;
+    dispatchMessageToMediators<DataType>(message: IMessage, data?: DataType): IContext;
 
-    dispatchMessageToModels(message: IMessage): IContext;
+    dispatchMessageToModels<DataType>(message: IMessage, data?: DataType): IContext;
 }

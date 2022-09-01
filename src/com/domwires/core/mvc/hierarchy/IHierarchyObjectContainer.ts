@@ -98,7 +98,7 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return this._childrenListImmutable && this._childrenListImmutable.indexOf(child) !== -1;
     }
 
-    public dispatchMessageToChildren<DataType>(message: IMessage, data:DataType): IHierarchyObjectContainer
+    public dispatchMessageToChildren<DataType>(message: IMessage, data?:DataType): IHierarchyObjectContainer
     {
         for (const child of this._childrenList)
         {

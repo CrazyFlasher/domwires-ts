@@ -209,22 +209,22 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         {
             if (this.config.forwardMessageFromModelsToModels)
             {
-                this.dispatchMessageToModels(message);
+                this.dispatchMessageToModels(message, data);
             }
             if (this.config.forwardMessageFromModelsToMediators)
             {
-                this.dispatchMessageToMediators(message);
+                this.dispatchMessageToMediators(message, data);
             }
         }
         else if (instanceOf(message.initialTarget, "IMediator"))
         {
             if (this.config.forwardMessageFromMediatorsToModels)
             {
-                this.dispatchMessageToModels(message);
+                this.dispatchMessageToModels(message, data);
             }
             if (this.config.forwardMessageFromMediatorsToMediators)
             {
-                this.dispatchMessageToMediators(message);
+                this.dispatchMessageToMediators(message, data);
             }
         }
 
@@ -286,20 +286,20 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         this.commandMapper.tryToExecuteCommand(messageType, messageData);
     }
 
-    public dispatchMessageToMediators(message: IMessage): IContext
+    public dispatchMessageToMediators<DataType>(message: IMessage, data?: DataType): IContext
     {
         this.checkIfDisposed();
 
-        this.mediatorContainer.dispatchMessageToChildren(message);
+        this.mediatorContainer.dispatchMessageToChildren(message, data);
 
         return this;
     }
 
-    public dispatchMessageToModels(message: IMessage): IContext
+    public dispatchMessageToModels<DataType>(message: IMessage, data?: DataType): IContext
     {
         this.checkIfDisposed();
 
-        this.modelContainer.dispatchMessageToChildren(message);
+        this.modelContainer.dispatchMessageToChildren(message, data);
 
         return this;
     }
