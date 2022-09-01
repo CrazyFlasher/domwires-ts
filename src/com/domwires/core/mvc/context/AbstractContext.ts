@@ -209,26 +209,36 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         {
             if (this.config.forwardMessageFromModelsToModels)
             {
-                this.dispatchMessageToModels(message, data);
+                this.forwardMessageToModels(message, data);
             }
             if (this.config.forwardMessageFromModelsToMediators)
             {
-                this.dispatchMessageToMediators(message, data);
+                this.forwardMessageToMediators(message, data);
             }
         }
         else if (instanceOf(message.initialTarget, "IMediator"))
         {
             if (this.config.forwardMessageFromMediatorsToModels)
             {
-                this.dispatchMessageToModels(message, data);
+                this.forwardMessageToModels(message, data);
             }
             if (this.config.forwardMessageFromMediatorsToMediators)
             {
-                this.dispatchMessageToMediators(message, data);
+                this.forwardMessageToMediators(message, data);
             }
         }
 
         return this;
+    }
+
+    protected forwardMessageToModels<DataType>(message: IMessage, data?: DataType): void
+    {
+        this.dispatchMessageToModels(message, data);
+    }
+
+    protected forwardMessageToMediators<DataType>(message: IMessage, data?: DataType): void
+    {
+        this.dispatchMessageToMediators(message, data);
     }
 
     public override dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType): IHierarchyObjectContainer
