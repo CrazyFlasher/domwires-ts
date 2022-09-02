@@ -338,7 +338,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
     {
     }
 
-    private checkIfDisposed(): void
+    protected checkIfDisposed(): void
     {
         if (this.isDisposed)
         {
