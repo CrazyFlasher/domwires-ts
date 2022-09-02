@@ -287,20 +287,20 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         this.commandMapper.tryToExecuteCommand(messageType, messageData);
     }
 
-    public dispatchMessageToMediators<DataType>(message: IMessage, data?: DataType): IContext
+    public dispatchMessageToMediators<DataType>(message: IMessage, data?: DataType, filter?: (child: IHierarchyObject) => boolean): IContext
     {
         this.checkIfDisposed();
 
-        this.mediatorContainer.dispatchMessageToChildren(message, data);
+        this.mediatorContainer.dispatchMessageToChildren(message, data, filter);
 
         return this;
     }
 
-    public dispatchMessageToModels<DataType>(message: IMessage, data?: DataType): IContext
+    public dispatchMessageToModels<DataType>(message: IMessage, data?: DataType, filter?: (child: IHierarchyObject) => boolean): IContext
     {
         this.checkIfDisposed();
 
-        this.modelContainer.dispatchMessageToChildren(message, data);
+        this.modelContainer.dispatchMessageToChildren(message, data, filter);
 
         return this;
     }
