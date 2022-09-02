@@ -129,9 +129,7 @@ export class MockContext5 extends AbstractContext
             forwardMessageFromMediatorsToModels: true,
             forwardMessageFromMediatorsToMediators: true,
             forwardMessageFromModelsToMediators: true,
-            forwardMessageFromModelsToModels: false,
-            forwardMessageFromMediatorsToContexts: false,
-            forwardMessageFromModelsToContexts: false
+            forwardMessageFromModelsToModels: false
         };
 
         super.init();

@@ -2,7 +2,7 @@ import {IHierarchyObject, IHierarchyObjectImmutable} from "./IHierarchyObject";
 import {IMessage} from "../message/IMessageDispatcher";
 import {AbstractHierarchyObject} from "./AbstractHierarchyObject";
 import ArrayUtils from "../../utils/ArrayUtils";
-import {instanceOf, setDefaultImplementation} from "../../Global";
+import {setDefaultImplementation} from "../../Global";
 
 export interface IHierarchyObjectContainerImmutable extends IHierarchyObjectImmutable
 {
@@ -21,7 +21,7 @@ export interface IHierarchyObjectContainer extends IHierarchyObjectContainerImmu
 
     removeAll(dispose?: boolean): IHierarchyObjectContainer;
 
-    dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, ofType?: string): IHierarchyObjectContainer;
+    dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, filter?: (child: IHierarchyObject) => boolean): IHierarchyObjectContainer;
 }
 
 export class HierarchyObjectContainer extends AbstractHierarchyObject implements IHierarchyObjectContainer
@@ -98,11 +98,11 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return this._childrenListImmutable && this._childrenListImmutable.indexOf(child) !== -1;
     }
 
-    public dispatchMessageToChildren<DataType>(message: IMessage, data?:DataType, ofType?: string): IHierarchyObjectContainer
+    public dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, filter?: (child: IHierarchyObject) => boolean): IHierarchyObjectContainer
     {
         for (const child of this._childrenList)
         {
-            if (!ofType || instanceOf(child, ofType))
+            if (!filter || filter(child))
             {
                 if (message.previousTarget !== child)
                 {

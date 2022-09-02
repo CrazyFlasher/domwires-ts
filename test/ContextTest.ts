@@ -31,9 +31,7 @@ describe('ContextTest', function (this: Suite)
             forwardMessageFromMediatorsToMediators: true,
             forwardMessageFromMediatorsToModels: true,
             forwardMessageFromModelsToMediators: true,
-            forwardMessageFromModelsToModels: false,
-            forwardMessageFromModelsToContexts: false,
-            forwardMessageFromMediatorsToContexts: false
+            forwardMessageFromModelsToModels: false
         };
 
         f.mapToValue("ContextConfig", config);
