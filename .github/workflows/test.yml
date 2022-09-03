@@ -19,4 +19,5 @@ jobs:
       - run: npm run test
       - run: npm run eslint-setup
       - run: npm run eslint-run
+      - run: tsc -v
       - run: tsc
