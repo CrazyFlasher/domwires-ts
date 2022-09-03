@@ -434,7 +434,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return guardsAllow;
     }
 
-    private mapValues<T>(data: T | NonNullable<T>, map = true): void
+    private mapValues<T>(data: T, map = true): void
     {
         for (const propName of Object.keys(data))
         {
