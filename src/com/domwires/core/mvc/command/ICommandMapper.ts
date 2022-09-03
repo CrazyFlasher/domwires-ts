@@ -436,8 +436,6 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
 
     private mapValues<T>(data: T, map = true): void
     {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         for (const propName of Object.keys(data))
         {
             this.mapProperty(data, propName, map);
