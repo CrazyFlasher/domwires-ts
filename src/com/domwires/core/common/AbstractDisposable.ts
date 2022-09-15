@@ -25,13 +25,6 @@ export abstract class AbstractDisposable implements IDisposable, ILogger
         this._isDisposed = true;
     }
 
-    public debug(...args: unknown[]): ILogger
-    {
-        if (this.logger) this.callLogger(this.logger.debug.bind(this.logger), ...args);
-
-        return this;
-    }
-
     public error(...args: unknown[]): ILogger
     {
         if (this.logger) this.callLogger(this.logger.error.bind(this.logger), ...args);
@@ -49,13 +42,6 @@ export abstract class AbstractDisposable implements IDisposable, ILogger
     public info(...args: unknown[]): ILogger
     {
         if (this.logger) this.callLogger(this.logger.info.bind(this.logger), ...args);
-
-        return this;
-    }
-
-    public trace(...args: unknown[]): ILogger
-    {
-        if (this.logger) this.callLogger(this.logger.trace.bind(this.logger), ...args);
 
         return this;
     }

@@ -2,6 +2,29 @@
 
 import {IDisposable, IDisposableImmutable} from "../core/common/IDisposable";
 import {AbstractDisposable} from "../core/common/AbstractDisposable";
+import {Enum} from "../core/Enum";
+
+export class LogLevel extends Enum
+{
+    public static readonly INFO:LogLevel = new LogLevel(3);
+    public static readonly WARN:LogLevel = new LogLevel(2);
+    public static readonly ERROR:LogLevel = new LogLevel(1);
+    public static readonly NONE:LogLevel = new LogLevel();
+    
+    private readonly _level: number;
+    
+    private constructor(level: number = 0)
+    {
+        super();
+        
+        this._level = level;
+    }
+
+    public get level(): number
+    {
+        return this._level;
+    }
+}
 
 export interface ILoggerImmutable extends IDisposableImmutable
 {
@@ -21,16 +44,21 @@ export interface ILogger extends ILoggerImmutable, IDisposable
     error(...args: unknown[]): ILogger;
 
     fatal(...args: unknown[]): ILogger;
-
-    debug(...args: unknown[]): ILogger;
-
-    trace(...args: unknown[]): ILogger;
 }
 
 export class Logger extends AbstractDisposable implements ILogger
 {
     private _stackLineIndex = 3;
 
+    private readonly loglevel:LogLevel;
+    
+    public constructor(loglevel:LogLevel = LogLevel.NONE)
+    {
+        super();
+        
+        this.loglevel = loglevel;
+    }
+    
     private get t(): string
     {
         const date = new Date();
@@ -49,50 +77,46 @@ export class Logger extends AbstractDisposable implements ILogger
         return this._stackLineIndex;
     }
 
-    public override trace(...args: unknown[]): ILogger
-    {
-        console.trace(Logger.paintPrefix(this.caller, this.t),
-            Logger.paintArgs(Color.TP_ANSI_BOLD_ON, ...args));
-
-        return this;
-    }
-
     public override warn(...args: unknown[]): ILogger
     {
-        console.warn(Logger.paintPrefix(this.caller, this.t),
-            Logger.paintArgs(Color.TP_ANSI_FG_YELLOW, ...args));
-
-        return this;
-    }
-
-    public override debug(...args: unknown[]): ILogger
-    {
-        console.debug(Logger.paintPrefix(this.caller, this.t),
-            Logger.paintArgs(Color.TP_ANSI_BG_YELLOW, ...args));
+        if (this.loglevel.level > LogLevel.ERROR.level)
+        {
+            console.warn(Logger.paintPrefix(this.caller, this.t),
+                Logger.paintArgs(Color.TP_ANSI_FG_YELLOW, ...args));
+        }
 
         return this;
     }
 
     public override error(...args: unknown[]): ILogger
     {
-        console.error(Logger.paintPrefix(this.caller, this.t),
-            Logger.paintArgs(Color.TP_ANSI_FG_RED, ...args));
+        if (this.loglevel.level > LogLevel.WARN.level)
+        {
+            console.error(Logger.paintPrefix(this.caller, this.t),
+                Logger.paintArgs(Color.TP_ANSI_FG_RED, ...args));
+        }
 
         return this;
     }
 
     public override fatal(...args: unknown[]): ILogger
     {
-        console.error(Logger.paintPrefix(this.caller, this.t),
-            Logger.paintArgs(Color.TP_ANSI_BG_RED, ...args));
+        if (this.loglevel.level > LogLevel.WARN.level)
+        {
+            console.error(Logger.paintPrefix(this.caller, this.t),
+                Logger.paintArgs(Color.TP_ANSI_BG_RED, ...args));
+        }
 
         return this;
     }
 
     public override info(...args: unknown[]): ILogger
     {
-        console.info(Logger.paintPrefix(this.caller, this.t),
-            Logger.paintArgs(Color.TP_ANSI_FG_GREEN, ...args));
+        if (this.loglevel.level > LogLevel.WARN.level)
+        {
+            console.info(Logger.paintPrefix(this.caller, this.t),
+                Logger.paintArgs(Color.TP_ANSI_FG_GREEN, ...args));
+        }
 
         return this;
     }
