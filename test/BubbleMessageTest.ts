@@ -11,7 +11,7 @@ import {
     Factory,
     IContext,
     IFactory,
-    IMessage,
+    IMessage, LogLevel,
     ModelContainer
 } from "../src";
 import {MockContext1} from "./mock/MockContext";
@@ -37,7 +37,7 @@ import {Logger} from "../src";
 
 describe('BubbleMessageTest', function (this: Suite)
 {
-    const logger = new Logger();
+    const logger = new Logger(LogLevel.INFO);
 
     let m1: AbstractModel;
     let c1: AbstractContext;

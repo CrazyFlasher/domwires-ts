@@ -14,7 +14,7 @@ import {IMessage, IMessageDispatcher} from "../message/IMessageDispatcher";
 import {Class, instanceOf} from "../../Global";
 import {ICommand} from "../command/ICommand";
 import {IGuards} from "../command/IGuards";
-import {Logger} from "../../../logger/ILogger";
+import {Logger, LogLevel} from "../../../logger/ILogger";
 import {IHierarchyObject} from "../hierarchy/IHierarchyObject";
 
 export type ContextConfig = {
@@ -52,7 +52,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
 
         if (!this.factory)
         {
-            this.factory = new Factory(new Logger());
+            this.factory = new Factory(new Logger(LogLevel.INFO));
             this.factory.mapToValue("IFactory", this.factory);
         }
 

@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
-import {Class, CommandMapperConfig, Enum, Factory, ICommand, ICommandMapper, IFactory, Logger} from "../src";
+import {Class, CommandMapperConfig, Enum, Factory, ICommand, ICommandMapper, IFactory, Logger, LogLevel} from "../src";
 import {MockMessageType} from "./mock/MockMessageType";
 import {
     MockCommand0,
@@ -34,7 +34,7 @@ describe('CommandMapperTest', function (this: Suite)
 {
     let factory: IFactory;
     let commandMapper: ICommandMapper;
-    const logger = new Logger();
+    const logger = new Logger(LogLevel.INFO);
 
     beforeEach(() =>
     {
@@ -421,7 +421,7 @@ describe('CommandMapperTest', function (this: Suite)
         {
             const timeStarted = new Date().getTime();
 
-            const f: IFactory = new Factory();
+            const f: IFactory = new Factory(new Logger(LogLevel.INFO));
             f.mapToValue("IFactory", f);
             f.mapToValue("CommandMapperConfig", config);
 

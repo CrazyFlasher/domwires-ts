@@ -13,7 +13,7 @@ export class LogLevel extends Enum
     
     private readonly _level: number;
     
-    private constructor(level: number = 0)
+    private constructor(level = 0)
     {
         super();
         
