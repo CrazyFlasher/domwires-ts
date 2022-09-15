@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {Logger} from "../logger/ILogger";
+import {Logger, LogLevel} from "../logger/ILogger";
 
 export type Class<T> = new(...args: T[]) => T;
 
 export type Type<T = any> = string | Class<T>;
 
-const logger = new Logger();
+const logger = new Logger(LogLevel.INFO);
 
 const defaultImplMap: Map<string | Class<any>, Class<any>> = new Map<string | Class<any>, Class<any>>();
 
