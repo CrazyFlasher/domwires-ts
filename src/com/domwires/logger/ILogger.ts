@@ -90,7 +90,7 @@ export class Logger extends AbstractDisposable implements ILogger
 
     public override error(...args: unknown[]): ILogger
     {
-        if (this.loglevel.level > LogLevel.WARN.level)
+        if (this.loglevel.level < LogLevel.WARN.level)
         {
             console.error(Logger.paintPrefix(this.caller, this.t),
                 Logger.paintArgs(Color.TP_ANSI_FG_RED, ...args));
@@ -101,7 +101,7 @@ export class Logger extends AbstractDisposable implements ILogger
 
     public override fatal(...args: unknown[]): ILogger
     {
-        if (this.loglevel.level > LogLevel.WARN.level)
+        if (this.loglevel.level < LogLevel.WARN.level)
         {
             console.error(Logger.paintPrefix(this.caller, this.t),
                 Logger.paintArgs(Color.TP_ANSI_BG_RED, ...args));
