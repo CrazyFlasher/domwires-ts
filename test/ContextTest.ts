@@ -2,15 +2,13 @@
 
 import "reflect-metadata";
 import {Suite} from "mocha";
-import {Factory, IFactory, Logger, LogLevel} from "../src";
-import {IContext} from "../src";
+import {ContextConfigBuilder, Factory, IContext, IFactory, Logger, LogLevel} from "../src";
 import {expect} from "chai";
 import {MockContext1, MockContext2, MockContext3, MockContext5, MockContext7, MockContext8} from "./mock/MockContext";
 import {MockMediator1, MockMediator4} from "./mock/MockMediators";
 import {MockCommand10, MockCommand13, MockCommand14, MockCommand15} from "./mock/MockCommands";
 import {MockObj1} from "./mock/IMockObject";
 import {MockMessageType} from "./mock/MockMessageType";
-import {ContextConfig} from "../src";
 import {MockModel1} from "./mock/MockModels";
 import "../src/com/domwires/core/mvc/model/IModelContainer";
 import "../src/com/domwires/core/mvc/mediator/IMediatorContainer";
@@ -27,14 +25,10 @@ describe('ContextTest', function (this: Suite)
         f.mapToType<IContext>("IContext", MockContext1);
         f.mapToValue<IFactory>("IFactory", f);
 
-        const config:ContextConfig = {
-            forwardMessageFromMediatorsToMediators: true,
-            forwardMessageFromMediatorsToModels: true,
-            forwardMessageFromModelsToMediators: true,
-            forwardMessageFromModelsToModels: false
-        };
+        const configBuilder = new ContextConfigBuilder();
+        configBuilder.forwardMessageFromMediatorsToModels = true;
 
-        f.mapToValue("ContextConfig", config);
+        f.mapToValue("ContextConfig", configBuilder.build());
 
         c = f.getInstance("IContext");
         c.addModel(f.instantiateValueUnmapped<MockModel1>(MockModel1));

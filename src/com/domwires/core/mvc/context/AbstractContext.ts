@@ -24,6 +24,24 @@ export type ContextConfig = {
     readonly forwardMessageFromModelsToModels: boolean;
 };
 
+export class ContextConfigBuilder
+{
+    public forwardMessageFromMediatorsToModels = false;
+    public forwardMessageFromMediatorsToMediators = true;
+    public forwardMessageFromModelsToMediators = true;
+    public forwardMessageFromModelsToModels = false;
+
+    public build(): ContextConfig
+    {
+        return {
+            forwardMessageFromMediatorsToModels: this.forwardMessageFromMediatorsToModels,
+            forwardMessageFromMediatorsToMediators: this.forwardMessageFromMediatorsToMediators,
+            forwardMessageFromModelsToMediators: this.forwardMessageFromModelsToMediators,
+            forwardMessageFromModelsToModels: this.forwardMessageFromModelsToModels
+        };
+    }
+}
+
 export abstract class AbstractContext extends HierarchyObjectContainer implements IContext
 {
     @inject("IFactory") @optional()
@@ -42,12 +60,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
     {
         if (!this.config)
         {
-            this.config = {
-                forwardMessageFromMediatorsToModels: false,
-                forwardMessageFromMediatorsToMediators: true,
-                forwardMessageFromModelsToMediators: true,
-                forwardMessageFromModelsToModels: false,
-            };
+            this.config = new ContextConfigBuilder().build();
         }
 
         if (!this.factory)

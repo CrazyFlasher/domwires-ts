@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {AbstractContext, Class, ICommand, IMessage} from "../../src";
+import {AbstractContext, Class, ContextConfigBuilder, ICommand, IMessage} from "../../src";
 import {MockModel2, MockModel3, MockModel4, MockModel6} from "./MockModels";
 import {MockMessageType} from "./MockMessageType";
 import {MockCommand10, MockCommand11, MockCommand12, MockCommand16} from "./MockCommands";
@@ -125,12 +125,9 @@ export class MockContext5 extends AbstractContext
 
     protected override init(): void
     {
-        this.config = {
-            forwardMessageFromMediatorsToModels: true,
-            forwardMessageFromMediatorsToMediators: true,
-            forwardMessageFromModelsToMediators: true,
-            forwardMessageFromModelsToModels: false
-        };
+        const cb = new ContextConfigBuilder();
+        cb.forwardMessageFromMediatorsToModels = true;
+        this.config = cb.build();
 
         super.init();
 
