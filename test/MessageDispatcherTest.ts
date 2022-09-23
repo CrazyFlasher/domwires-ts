@@ -4,7 +4,7 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
-import {Enum, IMessageDispatcher, IMessageDispatcherImmutable, MessageDispatcher} from "../src";
+import {IMessageDispatcher, IMessageDispatcherImmutable, MessageDispatcher, MessageType} from "../src";
 import {MockMessageDataType1, MockMessageType} from "./mock/MockMessageType";
 
 describe('MessageDispatcherTest', function (this: Suite)
@@ -23,11 +23,11 @@ describe('MessageDispatcherTest', function (this: Suite)
     it('testDispatchMessage', () =>
     {
         let gotMessage = false;
-        let gotMessageType: Enum;
+        let gotMessageType: MessageType;
         let gotMessageTarget: IMessageDispatcherImmutable;
         let gotMessageData: MockMessageDataType1 | undefined;
 
-        d.addMessageListener(MockMessageType.HELLO, (m?, data?) =>
+        d.addMessageListener<MockMessageDataType1>(MockMessageType.HELLO, (m?, data?) =>
         {
             gotMessage = true;
             if (m)

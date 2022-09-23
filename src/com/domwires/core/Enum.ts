@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-export abstract class Enum<T = void>
+export abstract class Enum
 {
     private readonly _name: string | undefined;
 
@@ -11,11 +9,11 @@ export abstract class Enum<T = void>
 
     public toString(): string
     {
-        return this._name || this.constructor.name;
+        return this.name;
     }
 
-    public get name(): string | undefined
+    public get name(): string
     {
-        return this._name;
+        return this._name || this.constructor.name;
     }
 }

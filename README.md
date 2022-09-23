@@ -104,7 +104,7 @@ export class MockModel extends AbstractModel
     }
 }
 
-export class MockMessageType extends Enum
+export class MockMessageType extends MessageType
 {
     public static readonly HELLO: MockMessageType = new MockMessageType();
 }
@@ -589,7 +589,7 @@ export interface IAppModelImmutable extends IModelImmutable
     get currentState(): Enum;
 }
 
-export class AppModelMessage extends Enum
+export class AppModelMessage extends MessageType
 {
     public static readonly STATE_UPDATED: AppModelMessage = new AppModelMessage("STATE_UPDATED");
 }
@@ -614,7 +614,7 @@ class UIMediator extends AbstractMediator implements IUIMediator
     }
 }
 
-export class UIMediatorMessage extends Enum
+export class UIMediatorMessage extends MessageType
 {
     public static readonly UPDATE_APP_STATE: UIMediatorMessage = new UIMediatorMessage("UPDATE_APP_STATE");
 }

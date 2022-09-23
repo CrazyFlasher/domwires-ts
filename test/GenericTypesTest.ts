@@ -3,7 +3,7 @@
 
 import "reflect-metadata";
 import {Suite} from "mocha";
-import {Enum, HierarchyObjectContainer, MessageDispatcher} from "../src";
+import {Enum, HierarchyObjectContainer, MessageDispatcher, MessageType} from "../src";
 import {expect} from "chai";
 
 describe('GenericTypesTest', function (this: Suite)
@@ -12,35 +12,35 @@ describe('GenericTypesTest', function (this: Suite)
     {
         const md = new MessageDispatcher();
 
-        md.addMessageListener(MessageType.A, (message, data) =>
+        md.addMessageListener(MesType.A, (message, data) =>
         {
             expect(data && data.n).equals(123);
         });
 
-        md.addMessageListener(MessageType.B, (message, data) =>
+        md.addMessageListener(MesType.B, (message, data) =>
         {
             expect(data && data.s).equals("asd");
         });
 
-        md.addMessageListener(MessageType.C, (message, data) =>
+        md.addMessageListener(MesType.C, (message, data) =>
         {
             expect(data && data.o.value[1]).equals(2);
         });
 
-        md.addMessageListener(MessageType.D, (message, data) =>
+        md.addMessageListener(MesType.D, (message, data) =>
         {
             expect(data).equals("some text");
         });
 
-        md.addMessageListener(MessageType.E, (message) =>
+        md.addMessageListener(MesType.E, (message) =>
         {
-            expect(message && message.type).equals(MessageType.E);
+            expect(message && message.type).equals(MesType.E);
         });
 
-        md.dispatchMessage(MessageType.A, {n: 123});
-        md.dispatchMessage(MessageType.B, {s: "asd"});
-        md.dispatchMessage(MessageType.C, {o: {value: [1, 2, 3]}});
-        md.dispatchMessage(MessageType.D, "some text");
+        md.dispatchMessage(MesType.A, {n: 123});
+        md.dispatchMessage(MesType.B, {s: "asd"});
+        md.dispatchMessage(MesType.C, {o: {value: [1, 2, 3]}});
+        md.dispatchMessage(MesType.D, "some text");
     });
 
     it('testBubbledMessagesWithDifferentDataTypes', () =>
@@ -52,12 +52,12 @@ describe('GenericTypesTest', function (this: Suite)
         ho_1.add(ho_2);
         ho_2.add(ho_3);
 
-        ho_1.addMessageListener(MessageType.A, (message, data) =>
+        ho_1.addMessageListener(MesType.A, (message, data) =>
         {
             expect(data && data.n).equals(123);
         });
 
-        ho_3.dispatchMessage(MessageType.A, {n: 123});
+        ho_3.dispatchMessage(MesType.A, {n: 123});
     });
 });
 
@@ -65,7 +65,7 @@ type Type_1 = { readonly n: number };
 type Type_2 = { readonly s: string };
 type Type_3 = { readonly o: any };
 
-class MessageType<T = void> extends Enum
+class MesType<T = void> extends Enum
 {
     // TODO: Weird shit 1: no error if doing this way (note: Type_1 and Type_2):
     // public static readonly A: MessageType<Type_1> = new MessageType<Type_2>("A");
@@ -73,9 +73,9 @@ class MessageType<T = void> extends Enum
     // TODO: Weird shit 2: error if doing this way (note: MessageType and MessageType):
     // public static readonly A: MessageType<Type_1> = new MessageType<Type_2>("A");
 
-    public static readonly A: Enum<Type_1> = new MessageType<Type_1>();
-    public static readonly B: Enum<Type_2> = new MessageType<Type_2>();
-    public static readonly C: Enum<Type_3> = new MessageType<Type_3>();
-    public static readonly D: Enum<string> = new MessageType<string>();
-    public static readonly E: MessageType = new MessageType();
+    public static readonly A: MessageType<Type_1> = new MesType<Type_1>();
+    public static readonly B: MessageType<Type_2> = new MesType<Type_2>();
+    public static readonly C: MessageType<Type_3> = new MesType<Type_3>();
+    public static readonly D: MessageType<string> = new MesType<string>();
+    public static readonly E: MesType = new MesType();
 }
