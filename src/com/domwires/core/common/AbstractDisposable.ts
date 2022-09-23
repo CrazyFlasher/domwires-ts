@@ -10,6 +10,8 @@ export abstract class AbstractDisposable implements IDisposable, ILogger
 
     private _isDisposed = false;
 
+    protected stackTraceLineIndex = 5;
+
     public get isDisposed(): boolean
     {
         return this._isDisposed;
@@ -58,7 +60,7 @@ export abstract class AbstractDisposable implements IDisposable, ILogger
         if (!this.logger) return;
 
         const currentStackLineIndex = this.stackLineIndex;
-        this.setStackLineIndex(5);
+        this.setStackLineIndex(this.stackTraceLineIndex);
         method(...args);
         this.setStackLineIndex(currentStackLineIndex);
     }
