@@ -161,7 +161,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
     {
         if (this.isBubbling)
         {
-            this.warn("WARNING: You try to dispatch '" + type + "' while '" + this._message.type +
+            this.warn("WARNING: You try to dispatch '" + type.name + "' while '" + this._message.type.name +
                 "' is bubbling. Making new instance of IMessage");
         }
 
