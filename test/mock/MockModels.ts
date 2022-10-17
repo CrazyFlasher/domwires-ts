@@ -145,6 +145,12 @@ export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
     }
 }
 
+export class MockAsyncModel extends AbstractModel
+{
+    public timePassed = 0;
+    public completeCount = 0;
+}
+
 definableFromString<SuperCoolModel>(SuperCoolModel);
 definableFromString<Default>(Default);
 setDefaultImplementation<ISuperCoolModel>("ISuperCoolModel", SuperCoolModel);

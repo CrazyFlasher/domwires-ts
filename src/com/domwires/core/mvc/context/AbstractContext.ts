@@ -319,7 +319,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
     }
 
     public executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[],
-                             guardNotList?: Class<IGuards>[]): boolean
+                             guardNotList?: Class<IGuards>[]): Promise<void>
     {
         this.checkIfDisposed();
 

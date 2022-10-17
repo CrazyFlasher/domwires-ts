@@ -11,7 +11,8 @@ import {
 } from "../../src";
 import {inject, named, optional} from "inversify";
 import {MockObj1} from "./IMockObject";
-import {MockModel2, MockModel3, MockModel4, MockModel6} from "./MockModels";
+import {MockAsyncModel, MockModel2, MockModel3, MockModel4, MockModel6} from "./MockModels";
+import {AbstractAsyncCommand} from "../../src/com/domwires/core/mvc/command/AbstractAsyncCommand";
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
@@ -298,6 +299,44 @@ export class MockNestedCmd extends AbstractCommand
 
             this.cm.executeCommand(MockNestedCmd);
         }
+    }
+}
+
+export class MockAsyncCommand extends AbstractAsyncCommand
+{
+    @inject(MockAsyncModel)
+    private model!: MockAsyncModel;
+
+    private startTime!: number;
+
+    public override execute(): void
+    {
+        this.startTime = new Date().getTime();
+
+        /* eslint-disable @typescript-eslint/no-this-alias */
+        const that = this;
+
+        setTimeout(function ()
+        {
+            that.complete();
+        }, 250);
+    }
+
+    private complete(): void
+    {
+        this.model.timePassed += new Date().getTime() - this.startTime;
+        this.resolve();
+    }
+}
+
+export class MockAfterAsyncCommand extends AbstractCommand
+{
+    @lazyInject(MockAsyncModel)
+    private model!: MockAsyncModel;
+
+    public override execute(): void
+    {
+        this.model.completeCount++;
     }
 }
 

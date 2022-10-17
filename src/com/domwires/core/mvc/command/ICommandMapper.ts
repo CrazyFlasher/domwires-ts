@@ -3,12 +3,13 @@
 import {IDisposable, IDisposableImmutable} from "../../common/IDisposable";
 import {Enum} from "../../Enum";
 import {ICommand} from "./ICommand";
-import {Class, setDefaultImplementation} from "../../Global";
+import {Class, instanceOf, setDefaultImplementation} from "../../Global";
 import {IGuards} from "./IGuards";
 import {inject, optional, postConstruct} from "inversify";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
 import {IFactory} from "../../factory/IFactory";
 import ArrayUtils from "../../utils/ArrayUtils";
+import {IAsyncCommand} from "./IAsyncCommand";
 
 export type CommandMapperConfig = {
     readonly singletonCommands: boolean;
@@ -155,7 +156,7 @@ export interface ICommandMapper extends ICommandMapperImmutable, IDisposable
     tryToExecuteCommand<T>(messageType: Enum, messageData?: T): void;
 
     executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[],
-                      guardNotList?: Class<IGuards>[]): boolean;
+                      guardNotList?: Class<IGuards>[]): Promise<void>;
 
     setMergeMessageDataAndMappingData(value: boolean): ICommandMapper;
 }
@@ -171,6 +172,8 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
     private commandMap: CommandMap = new CommandMap();
 
     private _mergeMessageDataAndMappingData!: boolean;
+
+    private lastCommandExecutionAllowed!: boolean;
 
     @postConstruct()
     private init(): void
@@ -190,7 +193,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
 
     private _map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T>
     {
-        const mappingConfig:MappingConfig<T> = new MappingConfig<T>(commandClass, data, once, stopOnExecute);
+        const mappingConfig: MappingConfig<T> = new MappingConfig<T>(commandClass, data, once, stopOnExecute);
 
         let list = this.commandMap.get(messageType);
 
@@ -198,8 +201,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         {
             list = [mappingConfig];
             this.commandMap.set(messageType, list);
-        }
-        else if (!CommandMapper.mappingListContains(list, commandClass))
+        } else
         {
             list.push(mappingConfig);
         }
@@ -219,7 +221,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
             return this._map(messageType, commandClass, data, once, stopOnExecute);
         }
 
-        const mappingConfigList:MappingConfigList<T> = new MappingConfigList();
+        const mappingConfigList: MappingConfigList<T> = new MappingConfigList();
         const commandClassList = commandClass as Class<ICommand>[];
         const messageTypeList = messageType as Enum[];
 
@@ -300,7 +302,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return this;
     }
 
-    public tryToExecuteCommand<T>(messageType: Enum, messageData?: T): void
+    public async tryToExecuteCommand<T>(messageType: Enum, messageData?: T)
     {
         const mappedToMessageCommands = this.commandMap.get(messageType);
 
@@ -321,9 +323,15 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
 
                 commandClass = mappingVo.commandClass;
 
-                const success: boolean = this.executeCommand(commandClass, injectionData, mappingVo.guardList, mappingVo.oppositeGuardList);
+                if (commandClass.prototype.executeAsync)
+                {
+                    await this.executeCommand(commandClass, injectionData, mappingVo.guardList, mappingVo.oppositeGuardList);
+                } else
+                {
+                    this.executeCommand(commandClass, injectionData, mappingVo.guardList, mappingVo.oppositeGuardList);
+                }
 
-                if (success)
+                if (this.lastCommandExecutionAllowed)
                 {
                     if (mappingVo.once)
                     {
@@ -355,7 +363,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return messageData;
     }
 
-    public executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[], guardNotList?: Class<IGuards>[]): boolean
+    public async executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[], guardNotList?: Class<IGuards>[]): Promise<void>
     {
         if (this.config.singletonCommands)
         {
@@ -367,7 +375,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
             this.mapValues(data);
         }
 
-        let result: boolean;
+        this.lastCommandExecutionAllowed = false;
 
         if (
             (!guardList || this.guardsAllow(guardList)) &&
@@ -383,26 +391,29 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
             }
 
             const command: ICommand = this.factory.getInstance(commandClass);
-            command.execute();
+
+            if (instanceOf(command, "IAsyncCommand"))
+            {
+                const asyncCommand: IAsyncCommand = command as IAsyncCommand;
+                await asyncCommand.executeAsync();
+            }
+            else
+            {
+                (command as ICommand).execute();
+            }
 
             if (!this.config.singletonCommands && data)
             {
                 this.mapValues(data, false);
             }
 
-            result = true;
-        }
-        else
-        {
-            result = false;
+            this.lastCommandExecutionAllowed = true;
         }
 
         if (this.config.singletonCommands)
         {
             this.factory.clearLazy();
         }
-
-        return result;
     }
 
     private guardsAllow(guardList: Class<IGuards>[], opposite?: boolean): boolean

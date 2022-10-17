@@ -1,6 +1,6 @@
 {
   "name": "domwires",
-  "version": "0.9.55",
+  "version": "0.9.57",
   "description": "Flexible and extensible MVC framework",
   "repository": {
     "type": "git",
@@ -33,7 +33,7 @@
     "node": ">=16.17.0"
   },
   "scripts": {
-    "test": "mocha -r ts-node/register test/*.ts",
+    "test": "mocha -r ts-node/register test/*.ts --timeout=2000",
     "eslint-setup": "npm install eslint --save-dev",
     "eslint-run": "eslint . --ext .ts"
   }

@@ -1,9 +1,11 @@
 import "reflect-metadata";
-import {Suite} from "mocha";
+import {Done, Suite} from "mocha";
 import {expect} from "chai";
 import {Class, CommandMapperConfig, Enum, Factory, ICommand, ICommandMapper, IFactory, Logger, LogLevel} from "../src";
 import {MockMessageType} from "./mock/MockMessageType";
 import {
+    MockAfterAsyncCommand,
+    MockAsyncCommand,
     MockCommand0,
     MockCommand1,
     MockCommand17,
@@ -15,7 +17,8 @@ import {
     MockCommand3,
     MockCommand4,
     MockCommand5,
-    MockCommand8, MockNestedCmd,
+    MockCommand8,
+    MockNestedCmd,
     MockVo,
     MockVo2
 } from "./mock/MockCommands";
@@ -28,7 +31,7 @@ import {
     MockValuesNotSingletonGuards
 } from "./mock/MockGuards";
 import "../src/com/domwires/core/mvc/command/ICommandMapper";
-import {MockModel2} from "./mock/MockModels";
+import {MockAsyncModel, MockModel2} from "./mock/MockModels";
 
 describe('CommandMapperTest', function (this: Suite)
 {
@@ -460,5 +463,28 @@ describe('CommandMapperTest', function (this: Suite)
         commandMapper.executeCommand(MockNestedCmd);
 
         expect(obj.d).equals(7);
+    });
+
+    it('testAsyncCommand', (done: Done) =>
+    {
+        const obj = factory.getInstance<MockAsyncModel>(MockAsyncModel);
+        factory.mapToValue<MockAsyncModel>(MockAsyncModel, obj);
+
+        commandMapper.map(MockMessageType.GOODBYE, [
+            MockAsyncCommand, MockAfterAsyncCommand,
+            MockAsyncCommand, MockAfterAsyncCommand
+        ]);
+
+        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
+
+        setTimeout(() =>
+        {
+            logger.info("time passed:", obj.timePassed);
+            expect(obj.timePassed).least(500);
+            expect(obj.completeCount).equals(2);
+
+            done();
+
+        }, 600);
     });
 });
