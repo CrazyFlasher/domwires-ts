@@ -1,8 +1,9 @@
 import "reflect-metadata";
 import {Suite} from "mocha";
-import {Factory, IFactory, Logger, LogLevel, MappingConfigDictionary} from "../src";
+import {Factory, IFactory, Logger, LogLevel} from "../src";
 import {expect} from "chai";
 import {
+    IMockObject,
     IMockObject3,
     IMockPool1,
     IMockPool2,
@@ -11,7 +12,6 @@ import {
     MockObject,
     MockObject2,
     MockObject3,
-    IMockObject,
     MockPool1,
     MockPool2,
     MockPool3,
@@ -39,7 +39,8 @@ describe('FactoryTest', function (this: Suite)
         factory.mapToValue("number", 5);
         factory.mapToValue("number", 7, "n2");
 
-        expect(function (): void {
+        expect(function (): void
+        {
             factory.getInstance<MockModel0>(MockModel0);
         }).not.throw();
     });
@@ -421,38 +422,32 @@ describe('FactoryTest', function (this: Suite)
     {
         /* eslint-disable @typescript-eslint/no-explicit-any */
 
-        const json: any = {};
-
-        json["IDefault$def"] = {
-            implementation: "Default",
-            newInstance: true
-        };
-
-        json["ISuperCoolModel"] = {
-            implementation: "SuperCoolModel"
-        };
-
-        json["number$coolValue"] = {
-            value: 7
-        };
-
-        json["boolean$myBool"] = {
-            value: false
-        };
-
-        json["number"] = {
-            value: 5
-        };
-
-        json["any$obj"] = {
-            value: {
-                firstName: "nikita",
-                lastName: "dzigurda"
+        const json = {
+            "IDefault$def": {
+                "implementation": "Default",
+                "newInstance": true
+            },
+            "ISuperCoolModel": {
+                "implementation": "SuperCoolModel"
+            },
+            "number$coolValue": {
+                "value": 7
+            },
+            "boolean$myBool": {
+                "value": false
+            },
+            "number": {
+                "value": 5
+            },
+            "any$obj": {
+                "value": {
+                    "firstName": "nikita",
+                    "lastName": "dzigurda"
+                }
+            },
+            "string[]": {
+                "value": ["botan", "sjava"]
             }
-        };
-
-        json["string[]"] = {
-            value: ["botan", "sjava"]
         };
 
         const jsonOverride = {
@@ -461,8 +456,8 @@ describe('FactoryTest', function (this: Suite)
             }
         };
 
-        factory.appendMappingConfig(new MappingConfigDictionary(json).map);
-        factory.appendMappingConfig(new MappingConfigDictionary(jsonOverride).map);
+        factory.appendMappingConfig(new Map(Object.entries(json)));
+        factory.appendMappingConfig(new Map(Object.entries(jsonOverride)));
 
         const m: ISuperCoolModel = factory.getInstance<ISuperCoolModel>("ISuperCoolModel");
         expect(m.getCoolValue).equals(5);

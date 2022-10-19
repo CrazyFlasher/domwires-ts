@@ -35,76 +35,16 @@ function mergeIntoLazyOne(from: Container): void
     });
 }
 
+export type FactoryConfig = Map<string, {
+    value?: string | boolean | number | object;
+    implementation?: string;
+    newInstance?: boolean;
+}>;
+
 type MappingData<T = any> = {
     readonly typeOrValue: T;
     readonly name?: string;
 };
-
-export class DependencyVo
-{
-    private readonly _implementation!: string;
-    private readonly _value: JSON;
-    private readonly _newInstance!: boolean;
-
-    public constructor(json: any, logWarnFunc?: (data: string) => void)
-    {
-        if (!json.implementation)
-        {
-            if (logWarnFunc)
-            {
-                logWarnFunc("'implementation' is not set in json!");
-            }
-        }
-        else
-        {
-            this._implementation = json.implementation;
-        }
-
-        this._value = json.value;
-
-        if (json.newInstance)
-        {
-            this._newInstance = json.newInstance;
-        }
-    }
-
-    public get implementation(): string
-    {
-        return this._implementation;
-    }
-
-    public get value(): any
-    {
-        return this._value;
-    }
-
-    public get newInstance(): boolean
-    {
-        return this._newInstance;
-    }
-}
-
-export class MappingConfigDictionary
-{
-    private _map: Map<string, DependencyVo> = new Map();
-
-    public constructor(json: any, logWarnFunc?: (data: string) => void)
-    {
-        if (json)
-        {
-            for (const key of Object.keys(json))
-            {
-                this._map.set(key, new DependencyVo(Reflect.get(json, key), logWarnFunc));
-            }
-        }
-    }
-
-    public get map(): Map<string, DependencyVo>
-    {
-        return this._map;
-    }
-}
-
 
 class PoolModel
 {
@@ -265,7 +205,7 @@ export interface IFactory extends IFactoryImmutable, IDisposable
 
     setSafePool(value: boolean): IFactory;
 
-    appendMappingConfig(config: Map<string, DependencyVo>): IFactory;
+    appendMappingConfig(config: FactoryConfig): IFactory;
 
     mapValueToLazy<T>(type: Type<T>, to: T, name?: string): IFactory;
 
@@ -485,7 +425,8 @@ export class Factory extends AbstractDisposable implements IFactory
             if (name)
             {
                 bs.whenTargetNamed(name);
-            } else
+            }
+            else
             {
                 bs.whenTargetIsDefault();
             }
@@ -705,18 +646,18 @@ export class Factory extends AbstractDisposable implements IFactory
         return this;
     }
 
-    public appendMappingConfig(config: Map<string, DependencyVo>): IFactory
+    public appendMappingConfig(config: FactoryConfig): IFactory
     {
         let name: string | undefined;
-        let d: DependencyVo | undefined;
         let splitted: string[];
+        let interfaceDefinition: string | undefined;
 
-        for (let interfaceDefinition of config.keys())
+        for (const [key, value] of config)
         {
             name = undefined;
-            d = config.get(interfaceDefinition);
+            interfaceDefinition = key;
 
-            if (d)
+            if (value)
             {
                 splitted = interfaceDefinition.split("$");
                 if (splitted.length > 1)
@@ -725,27 +666,27 @@ export class Factory extends AbstractDisposable implements IFactory
                     interfaceDefinition = splitted[0];
                 }
 
-                if (d.value != undefined)
+                if (value.value != undefined)
                 {
                     if (name)
                     {
-                        this.mapToValue(interfaceDefinition, d.value, name);
+                        this.mapToValue(interfaceDefinition, value.value, name);
                     }
                     else
                     {
-                        this.mapToValue(interfaceDefinition, d.value);
+                        this.mapToValue(interfaceDefinition, value.value);
                     }
                 }
                 else
                 {
-                    if (d.implementation)
+                    if (value.implementation)
                     {
-                        this.info("Mapping '" + interfaceDefinition + "' to '" + d.implementation + "'");
+                        this.info("Mapping '" + interfaceDefinition + "' to '" + value.implementation + "'");
 
-                        this.mapToType(interfaceDefinition, getClassFromString(d.implementation), name);
+                        this.mapToType(interfaceDefinition, getClassFromString(value.implementation), name);
                     }
 
-                    if (d.newInstance)
+                    if (value.newInstance)
                     {
                         this.mapToValue(interfaceDefinition, this.getInstance(interfaceDefinition), name);
                     }
