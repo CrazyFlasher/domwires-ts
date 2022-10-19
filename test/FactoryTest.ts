@@ -430,10 +430,10 @@ describe('FactoryTest', function (this: Suite)
             "ISuperCoolModel": {
                 "implementation": "SuperCoolModel"
             },
-            "number$coolValue": {
+            "coolValue": {
                 "value": 7
             },
-            "boolean$myBool": {
+            "myBool": {
                 "value": false
             },
             "number": {
@@ -451,7 +451,7 @@ describe('FactoryTest', function (this: Suite)
         };
 
         const jsonOverride = {
-            "number$coolValue": {
+            "coolValue": {
                 value: 5
             }
         };

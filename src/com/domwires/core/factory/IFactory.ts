@@ -654,8 +654,8 @@ export class Factory extends AbstractDisposable implements IFactory
 
         for (const [key, value] of config)
         {
-            name = undefined;
             interfaceDefinition = key;
+            name = undefined;
 
             if (value)
             {
@@ -664,6 +664,19 @@ export class Factory extends AbstractDisposable implements IFactory
                 {
                     name = splitted[1];
                     interfaceDefinition = splitted[0];
+                } else
+                if (value.value != undefined)
+                {
+                    const type = typeof value.value;
+                    if (type != "object")
+                    {
+                        interfaceDefinition = type;
+
+                        if (interfaceDefinition != key)
+                        {
+                            name = key;
+                        }
+                    }
                 }
 
                 if (value.value != undefined)
