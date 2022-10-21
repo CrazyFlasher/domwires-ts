@@ -681,6 +681,9 @@ export class Factory extends AbstractDisposable implements IFactory
 
                 if (value.value != undefined)
                 {
+                    this.warn("Mapping value from config:", "'" + interfaceDefinition + "'", "to", "'" + JSON.stringify(value.value) + "'"
+                        + (name ? " with name '" + name + "'" : ""));
+
                     if (name)
                     {
                         this.mapToValue(interfaceDefinition, value.value, name);
@@ -694,13 +697,17 @@ export class Factory extends AbstractDisposable implements IFactory
                 {
                     if (value.implementation)
                     {
-                        this.info("Mapping '" + interfaceDefinition + "' to '" + value.implementation + "'");
+                        this.warn("Mapping type from config:", "'" + interfaceDefinition + "'", "to", "'" + value.implementation + "'"
+                            + (name ? " with name '" + name + "'" : ""));
 
                         this.mapToType(interfaceDefinition, getClassFromString(value.implementation), name);
                     }
 
                     if (value.newInstance)
                     {
+                        this.warn("Creating new instance and mapping to value: '" + interfaceDefinition + "'" +
+                            (name ? " with name '" + name + "'" : ""));
+
                         this.mapToValue(interfaceDefinition, this.getInstance(interfaceDefinition), name);
                     }
                 }
