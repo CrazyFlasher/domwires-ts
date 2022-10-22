@@ -151,8 +151,8 @@ describe('MessageDispatcherTest', function (this: Suite)
         const listener1: () => void = () => x += 1;
         const listener2: () => void = () => x *= 2;
 
-        d.addMessageListener(MockMessageType.HELLO, listener1, 0);
-        d.addMessageListener(MockMessageType.HELLO, listener2, 1);
+        d.addMessageListener(MockMessageType.HELLO, listener1, false, 0);
+        d.addMessageListener(MockMessageType.HELLO, listener2, false, 1);
 
         d.dispatchMessage(MockMessageType.HELLO);
 
@@ -166,8 +166,8 @@ describe('MessageDispatcherTest', function (this: Suite)
         const listener1: () => void = () => x += 1;
         const listener2: () => void = () => x *= 2;
 
-        d.addMessageListener(MockMessageType.HELLO, listener1, 1);
-        d.addMessageListener(MockMessageType.HELLO, listener2, 0);
+        d.addMessageListener(MockMessageType.HELLO, listener1, false, 1);
+        d.addMessageListener(MockMessageType.HELLO, listener2, false, 0);
 
         d.dispatchMessage(MockMessageType.HELLO);
 
@@ -181,5 +181,20 @@ describe('MessageDispatcherTest', function (this: Suite)
         {
         });
         d.dispatchMessage(MockMessageType.HELLO);
+    });
+
+    it('testListenOnce', () =>
+    {
+        let x = 0;
+
+        const listener1: () => void = () => x += 1;
+
+        d.addMessageListener(MockMessageType.HELLO, listener1, true);
+
+        d.dispatchMessage(MockMessageType.HELLO);
+        d.dispatchMessage(MockMessageType.HELLO);
+
+        expect(x).equals(1);
+        expect(d.hasMessageListener(MockMessageType.HELLO)).false;
     });
 });

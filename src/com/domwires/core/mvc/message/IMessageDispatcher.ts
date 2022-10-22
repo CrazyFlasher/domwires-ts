@@ -9,14 +9,14 @@ import {setDefaultImplementation} from "../../Global";
 
 export class MessageType<DataType = void> extends Enum
 {
-    
+
 }
 
 export interface IMessageDispatcherImmutable extends IDisposableImmutable
 {
     hasMessageListener<DataType>(type: MessageType<DataType>): boolean;
 
-    addMessageListener<DataType>(type: MessageType<DataType>, listener: (message?: IMessage, data?: DataType) => void, priority?: number): void;
+    addMessageListener<DataType>(type: MessageType<DataType>, listener: (message?: IMessage, data?: DataType) => void, once?: boolean, priority?: number): void;
 
     removeMessageListener<DataType>(type: MessageType<DataType>, listener: (message?: IMessage, data?: DataType) => void): void;
 
@@ -109,7 +109,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
 
     private isBubbling!: boolean;
 
-    public addMessageListener<DataType>(type: MessageType<DataType>, listener: (message?: IMessage, data?: DataType) => void, priority?: number): void
+    public addMessageListener<DataType>(type: MessageType<DataType>, listener: (message?: IMessage, data?: DataType) => void, once?: boolean, priority?: number): void
     {
         if (!this._messageMap)
         {
@@ -119,13 +119,13 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         let messageMapForType = this._messageMap.get(type);
         if (!messageMapForType)
         {
-            messageMapForType = [new Listener<DataType>(listener, this, priority)];
+            messageMapForType = [new Listener<DataType>(listener, this, priority, once)];
 
             this._messageMap.set(type, messageMapForType);
         }
         else if (!MessageDispatcher.getListenerWithPriority(messageMapForType, listener))
         {
-            messageMapForType.push(new Listener<DataType>(listener, this, priority));
+            messageMapForType.push(new Listener<DataType>(listener, this, priority, once));
             MessageDispatcher.sortOnPriority<DataType>(messageMapForType);
         }
     }
@@ -141,7 +141,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
     }
 
     private static getListenerWithPriority<DataType>(messageMapForType: Listener<DataType>[] | undefined,
-                                                            listener: (message?: IMessage, data?: DataType) => void): Listener<DataType> | undefined
+                                                     listener: (message?: IMessage, data?: DataType) => void): Listener<DataType> | undefined
     {
         if (messageMapForType)
         {
@@ -237,7 +237,15 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
 
             if (messageMapForType)
             {
-                messageMapForType.forEach((listener: Listener<DataType>) => listener.bindedFunc(message, data));
+                messageMapForType.forEach((listener: Listener<DataType>) =>
+                {
+                    if (listener.once)
+                    {
+                        this.removeMessageListener(message.type, listener.func);
+                    }
+
+                    listener.bindedFunc(message, data);
+                });
             }
         }
 
@@ -304,23 +312,30 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
 
 class Listener<DataType>
 {
-    private readonly _func: (message?: IMessage) => void;
+    private readonly _func: (message?: IMessage, data?: DataType) => void;
     private readonly _priority: number;
-    private readonly _bindedFunc: (message?: IMessage) => void;
+    private readonly _once: boolean | undefined;
+    private readonly _bindedFunc: (message?: IMessage, data?: DataType) => void;
 
     public constructor(func: (message?: IMessage) => void, bind: IMessageDispatcherImmutable,
-                       priority?: number)
+                       priority?: number, once?: boolean)
     {
         if (!priority) priority = 0;
 
         this._func = func;
         this._priority = priority;
+        this._once = once;
         this._bindedFunc = func.bind(bind);
     }
 
     public get priority(): number
     {
         return this._priority;
+    }
+
+    public get once(): boolean | undefined
+    {
+        return this._once;
     }
 
     public get func(): (message?: IMessage, data?: DataType) => void
