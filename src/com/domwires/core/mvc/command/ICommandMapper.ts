@@ -13,6 +13,7 @@ import {IAsyncCommand} from "./IAsyncCommand";
 
 export type CommandMapperConfig = {
     readonly singletonCommands: boolean;
+    readonly mergeMessageDataAndMappingData: boolean;
 };
 
 export class MappingConfig<T>
@@ -157,8 +158,6 @@ export interface ICommandMapper extends ICommandMapperImmutable, IDisposable
 
     executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[],
                       guardNotList?: Class<IGuards>[]): Promise<void>;
-
-    setMergeMessageDataAndMappingData(value: boolean): ICommandMapper;
 }
 
 export class CommandMapper extends AbstractDisposable implements ICommandMapper
@@ -171,8 +170,6 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
 
     private commandMap: CommandMap = new CommandMap();
 
-    private _mergeMessageDataAndMappingData!: boolean;
-
     private lastCommandExecutionAllowed!: boolean;
 
     @postConstruct()
@@ -180,7 +177,10 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
     {
         if (!this.config)
         {
-            this.config = {singletonCommands: true};
+            this.config = {
+                singletonCommands: true,
+                mergeMessageDataAndMappingData: true
+            };
         }
     }
 
@@ -312,7 +312,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
             let injectionData: T;
             for (const mappingVo of mappedToMessageCommands)
             {
-                if (!this._mergeMessageDataAndMappingData)
+                if (!this.config.mergeMessageDataAndMappingData)
                 {
                     injectionData = !messageData ? mappingVo.data : messageData;
                 }
@@ -499,13 +499,6 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         }
 
         return value;
-    }
-
-    public setMergeMessageDataAndMappingData(value: boolean): ICommandMapper
-    {
-        this._mergeMessageDataAndMappingData = value;
-
-        return this;
     }
 
     private static mappingListContains<T>(list: MappingConfig<T>[], commandClass: Class<ICommand>, ignoreGuards = false): MappingConfig<T> | undefined

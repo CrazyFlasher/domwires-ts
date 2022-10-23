@@ -326,11 +326,6 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this.commandMapper.executeCommand(commandClass, data, guardList, guardNotList);
     }
 
-    public setMergeMessageDataAndMappingData(value: boolean): ICommandMapper
-    {
-        return this.commandMapper.setMergeMessageDataAndMappingData(value);
-    }
-
     public isIMediator(): void
     {
     }

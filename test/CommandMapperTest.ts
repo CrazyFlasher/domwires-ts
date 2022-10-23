@@ -218,8 +218,6 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testMapWithData2', () =>
     {
-        commandMapper.setMergeMessageDataAndMappingData(true);
-
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
         commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5});
@@ -229,30 +227,45 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testMessageDataOverridesMappedData', () =>
     {
+        factory.mapToValue<CommandMapperConfig>("CommandMapperConfig",
+            {singletonCommands: true, mergeMessageDataAndMappingData: false});
+
+        const cm: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
+
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5});
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
+        cm.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5});
+        cm.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
         expect(m.d).equals(4);
     });
 
     it('testAllowGuards', () =>
     {
+        factory.mapToValue<CommandMapperConfig>("CommandMapperConfig",
+            {singletonCommands: true, mergeMessageDataAndMappingData: false});
+
+        const cm: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
+
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5}).addGuards(MockAllowGuards);
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
+        cm.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5}).addGuards(MockAllowGuards);
+        cm.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
         expect(m.d).equals(4);
     });
 
     it('testAllowOppositeGuards', () =>
     {
+        factory.mapToValue<CommandMapperConfig>("CommandMapperConfig",
+            {singletonCommands: true, mergeMessageDataAndMappingData: false});
+
+        const cm: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
+
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {
+        cm.map(MockMessageType.GOODBYE, MockCommand3, {
             olo: 5
         }).addGuardsNot(MockNotAllowGuards);
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
+        cm.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
         expect(m.d).equals(4);
     });
 
@@ -303,7 +316,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testMapValuesToGuardsNotSingleton', () =>
     {
-        factory.mapToValue("CommandMapperConfig", {singletonCommands: false});
+        factory.mapToValue<CommandMapperConfig>("CommandMapperConfig",
+            {singletonCommands: false, mergeMessageDataAndMappingData: true});
         const cm: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
 
         cm.map(MockMessageType.GOODBYE, MockCommand0).addGuards(MockValuesNotSingletonGuards);
@@ -421,7 +435,8 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testCommandIsNotSingleton', () =>
     {
-        factory.mapToValue("CommandMapperConfig", {singletonCommands: false});
+        factory.mapToValue<CommandMapperConfig>("CommandMapperConfig",
+            {singletonCommands: false, mergeMessageDataAndMappingData: true});
         const cm: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
 
         const model: MockModel2 = factory.getInstance<MockModel2>(MockModel2);
@@ -460,8 +475,11 @@ describe('CommandMapperTest', function (this: Suite)
             return new Date().getTime() - timeStarted;
         }
 
-        const timePassedForSingletonCommands = executeCommands({singletonCommands: true}, MockCommand18);
-        const timePassedForNotSingletonCommands = executeCommands({singletonCommands: false}, MockCommand18NotLazy);
+        const timePassedForSingletonCommands = executeCommands(
+            {singletonCommands: true, mergeMessageDataAndMappingData: true}, MockCommand18);
+
+        const timePassedForNotSingletonCommands = executeCommands(
+            {singletonCommands: false, mergeMessageDataAndMappingData: true}, MockCommand18NotLazy);
 
         logger.info("Time passed for singleton commands: ", timePassedForSingletonCommands);
         logger.info("Time passed for NOT singleton commands: ", timePassedForNotSingletonCommands);
