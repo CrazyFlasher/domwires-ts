@@ -390,21 +390,28 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
                 }
             }
 
-            const command: ICommand = this.factory.getInstance(commandClass);
+            try
+            {
+                const command: ICommand = this.factory.getInstance(commandClass);
 
-            if (instanceOf(command, "IAsyncCommand"))
-            {
-                const asyncCommand: IAsyncCommand = command as IAsyncCommand;
-                await asyncCommand.executeAsync();
-            }
-            else
-            {
-                (command as ICommand).execute();
-            }
+                if (instanceOf(command, "IAsyncCommand"))
+                {
+                    const asyncCommand: IAsyncCommand = command as IAsyncCommand;
+                    await asyncCommand.executeAsync();
+                }
+                else
+                {
+                    (command as ICommand).execute();
+                }
 
-            if (!this.config.singletonCommands && data)
+                if (!this.config.singletonCommands && data)
+                {
+                    this.mapValues(data, false);
+                }
+            } catch (e)
             {
-                this.mapValues(data, false);
+                this.error(e);
+                throw e;
             }
 
             this.lastCommandExecutionAllowed = true;
