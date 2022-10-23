@@ -464,19 +464,22 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
     {
         const value = Reflect.get(data as any, propertyName);
 
-        if (this.config.singletonCommands)
+        const serviceIdentifier: string = value.constructor.serviceIdentifier ? value.constructor.serviceIdentifier
+            : value.constructor.name;
+
+        if (this.config.singletonCommands && map)
         {
-            this.factory.mapValueToLazy(this.getType(value.constructor.name), value, propertyName);
+            this.factory.mapValueToLazy(this.getType(serviceIdentifier), value, propertyName);
         }
         else
         {
             if (map)
             {
-                this.factory.mapToValue(this.getType(value.constructor.name), value, propertyName);
+                this.factory.mapToValue(this.getType(serviceIdentifier), value, propertyName);
             }
             else
             {
-                this.factory.unmapFromValue(this.getType(value.constructor.name), propertyName);
+                this.factory.unmapFromValue(this.getType(serviceIdentifier), propertyName);
             }
         }
     }

@@ -18,6 +18,8 @@ import {AbstractAsyncCommand} from "../../src/com/domwires/core/mvc/command/Abst
 
 export class MockVo
 {
+    public static serviceIdentifier: string | undefined = undefined;
+
     public name!: string;
     public age!: number;
     public str!: string;
@@ -51,6 +53,26 @@ export class MockCommand2 extends AbstractCommand
     private itemId!: string;
 
     @lazyInjectNamed("MockVo", "vo")
+    private vo!: MockVo;
+
+    @lazyInjectNamed("MockMessageType", "e")
+    private e!: Enum;
+
+    public override execute()
+    {
+        this.vo.age = 11;
+        this.vo.name = "hi";
+        this.vo.str = this.itemId;
+        this.vo.e = this.e;
+    }
+}
+
+export class MockCommand2_1 extends AbstractCommand
+{
+    @lazyInjectNamed("string", "itemId")
+    private itemId!: string;
+
+    @lazyInjectNamed("someName", "vo")
     private vo!: MockVo;
 
     @lazyInjectNamed("MockMessageType", "e")

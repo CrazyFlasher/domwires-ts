@@ -13,7 +13,7 @@ import {
     MockCommand18NotLazy,
     MockCommand19,
     MockCommand19Ex,
-    MockCommand2,
+    MockCommand2, MockCommand2_1,
     MockCommand3,
     MockCommand4,
     MockCommand5,
@@ -171,6 +171,22 @@ describe('CommandMapperTest', function (this: Suite)
     it('testInjectMessageData', () =>
     {
         commandMapper.map(MockMessageType.GOODBYE, MockCommand2);
+
+        const vo: MockVo = new MockVo();
+        const itemId = "lol";
+
+        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {vo, itemId, e: MockMessageType.HELLO});
+
+        expect(vo.age).equals(11);
+        expect(vo.name).equals("hi");
+        expect(vo.str).equals("lol");
+    });
+
+    it('testInjectMessageDataWidthCustomConstructorName', () =>
+    {
+        commandMapper.map(MockMessageType.GOODBYE, MockCommand2_1);
+
+        MockVo.serviceIdentifier = "someName";
 
         const vo: MockVo = new MockVo();
         const itemId = "lol";
@@ -480,7 +496,7 @@ describe('CommandMapperTest', function (this: Suite)
         setTimeout(() =>
         {
             logger.info("time passed:", obj.timePassed);
-            expect(obj.timePassed).least(500);
+            expect(obj.timePassed).least(400);
             expect(obj.completeCount).equals(2);
 
             done();
