@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {AbstractGuards} from "../../src";
-import {lazyInjectNamed} from "../../src";
+import {AbstractGuards, lazyInjectNamed} from "../../src";
 import {inject, named} from "inversify";
+import {MockVo5, MockVo6, MockVoBase} from "./MockCommands";
 
 export class MockValuesGuards extends AbstractGuards
 {
@@ -69,5 +69,39 @@ export class MockNotAllowGuards extends AbstractGuards
     public override get allows(): boolean
     {
         return false;
+    }
+}
+
+export class MockTargetIsMockVo1 extends AbstractGuards
+{
+    @inject(MockVo5)
+    private vo1!: MockVo5;
+
+    @inject(MockVo6)
+    private vo2!: MockVo6;
+
+    @lazyInjectNamed("MockVoBase", "target")
+    private target!: MockVoBase;
+
+    public override get allows(): boolean
+    {
+        return this.target === this.vo1;
+    }
+}
+
+export class MockTargetIsMockVo2 extends AbstractGuards
+{
+    @inject(MockVo5)
+    private vo1!: MockVo5;
+
+    @inject(MockVo6)
+    private vo2!: MockVo6;
+
+    @lazyInjectNamed("MockVoBase", "target")
+    private target!: MockVoBase;
+
+    public override get allows(): boolean
+    {
+        return this.target === this.vo2;
     }
 }

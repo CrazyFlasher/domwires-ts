@@ -537,6 +537,10 @@ export class Factory extends AbstractDisposable implements IFactory
         {
             bs.whenTargetNamed(name);
         }
+        else
+        {
+            bs.whenTargetIsDefault();
+        }
 
         return this;
     }
@@ -664,8 +668,8 @@ export class Factory extends AbstractDisposable implements IFactory
                 {
                     name = splitted[1];
                     interfaceDefinition = splitted[0];
-                } else
-                if (value.value != undefined)
+                }
+                else if (value.value != undefined)
                 {
                     const type = typeof value.value;
                     if (type != "object")

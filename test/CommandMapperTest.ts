@@ -13,7 +13,8 @@ import {
     MockCommand18NotLazy,
     MockCommand19,
     MockCommand19Ex,
-    MockCommand2, MockCommand2_1,
+    MockCommand2,
+    MockCommand2_1,
     MockCommand3,
     MockCommand4,
     MockCommand5,
@@ -32,6 +33,7 @@ import {
 } from "./mock/MockGuards";
 import "../src/com/domwires/core/mvc/command/ICommandMapper";
 import {MockAsyncModel, MockModel2} from "./mock/MockModels";
+import {MockContext9} from "./mock/MockContext";
 
 describe('CommandMapperTest', function (this: Suite)
 {
@@ -520,5 +522,13 @@ describe('CommandMapperTest', function (this: Suite)
             done();
 
         }, 600);
+    });
+
+    it('testCommandMappingValuesAndMessageValues', () =>
+    {
+        const c = factory.getInstance<MockContext9>(MockContext9);
+
+        expect(c.vo1.value).equals(3);
+        expect(c.vo2.value).equals(7);
     });
 });

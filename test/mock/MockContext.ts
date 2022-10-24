@@ -3,9 +3,20 @@
 import {AbstractContext, Class, ContextConfigBuilder, ICommand, IMessage} from "../../src";
 import {MockModel2, MockModel3, MockModel4, MockModel6} from "./MockModels";
 import {MockMessageType} from "./MockMessageType";
-import {MockCommand10, MockCommand11, MockCommand12, MockCommand16} from "./MockCommands";
+import {
+    MockCommand10,
+    MockCommand11,
+    MockCommand12,
+    MockCommand16,
+    MockCommand20,
+    MockCommand21,
+    MockCommand23,
+    MockVo5,
+    MockVo6
+} from "./MockCommands";
 import {MockMediator2, MockMediator3, MockMediator4} from "./MockMediators";
 import {inject, postConstruct} from "inversify";
+import {MockTargetIsMockVo1, MockTargetIsMockVo2} from "./MockGuards";
 
 export class MockContext1 extends AbstractContext
 {
@@ -221,5 +232,30 @@ export class MockContext8 extends AbstractContext
         this.factory.mapToValue<MockModel6>(MockModel6, this.testModel);
 
         this.addModel(this.testModel);
+    }
+}
+
+export class MockContext9 extends AbstractContext
+{
+    public vo1!: MockVo5;
+    public vo2!: MockVo6;
+
+    public override init(): void
+    {
+        super.init();
+
+        this.vo1 = new MockVo5();
+        this.vo2 = new MockVo6();
+
+        this.addModel(this.vo1);
+        this.addModel(this.vo2);
+
+        this.factory.mapToValue<MockVo5>(MockVo5, this.vo1);
+        this.factory.mapToValue<MockVo6>(MockVo6, this.vo2);
+
+        this.map(MockMessageType.SHALOM, MockCommand21, {vo: this.vo2}).addGuards(MockTargetIsMockVo1);
+        this.map(MockMessageType.SHALOM, MockCommand23, {vo1: this.vo1, vo2: this.vo2}).addGuards(MockTargetIsMockVo2);
+
+        this.executeCommand(MockCommand20, {vo: this.vo1});
     }
 }

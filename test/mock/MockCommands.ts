@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import {
-    AbstractCommand,
+    AbstractCommand, AbstractModel,
     Enum,
     ICommand,
     ICommandMapper,
@@ -13,6 +13,7 @@ import {inject, named, optional} from "inversify";
 import {MockObj1} from "./IMockObject";
 import {MockAsyncModel, MockModel2, MockModel3, MockModel4, MockModel6} from "./MockModels";
 import {AbstractAsyncCommand} from "../../src/com/domwires/core/mvc/command/AbstractAsyncCommand";
+import {MockMessageType} from "./MockMessageType";
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
@@ -29,6 +30,33 @@ export class MockVo
 export class MockVo2
 {
     public olo!: string;
+}
+
+export class MockVoBase extends AbstractModel
+{
+    private static serviceIdentifier = "MockVoBase";
+
+    public value!: number;
+}
+
+export class MockVo3 extends MockVoBase
+{
+    public olo!: string;
+}
+
+export class MockVo4 extends MockVoBase
+{
+    public puk!: number;
+}
+
+export class MockVo5 extends MockVoBase
+{
+    public aza!: number;
+}
+
+export class MockVo6 extends MockVoBase
+{
+    public ger!: number;
 }
 
 export class MockCommand0 extends AbstractCommand
@@ -321,6 +349,46 @@ export class MockNestedCmd extends AbstractCommand
 
             this.cm.executeCommand(MockNestedCmd);
         }
+    }
+}
+
+export class MockCommand20 extends AbstractCommand
+{
+    @lazyInjectNamed("MockVoBase", "vo")
+    private vo!: MockVoBase;
+
+    public override execute()
+    {
+        this.vo.value = 1;
+
+        this.vo.dispatchMessage(MockMessageType.SHALOM, {target: this.vo});
+    }
+}
+
+export class MockCommand21 extends AbstractCommand
+{
+    @lazyInjectNamed("MockVoBase", "vo")
+    private vo!: MockVoBase;
+
+    public override execute()
+    {
+        this.vo.value = 2;
+        this.vo.dispatchMessage(MockMessageType.SHALOM, {target: this.vo});
+    }
+}
+
+export class MockCommand23 extends AbstractCommand
+{
+    @lazyInjectNamed("MockVoBase", "vo1")
+    private vo1!: MockVoBase;
+
+    @lazyInjectNamed("MockVoBase", "vo2")
+    private vo2!: MockVoBase;
+
+    public override execute()
+    {
+        this.vo1.value += 2;
+        this.vo2.value += 5;
     }
 }
 

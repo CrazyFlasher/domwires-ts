@@ -367,6 +367,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
     {
         if (this.config.singletonCommands)
         {
+            this.factory.clearLazy();
             this.factory.mergeIntoLazy();
         }
 
@@ -417,10 +418,10 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
             this.lastCommandExecutionAllowed = true;
         }
 
-        if (this.config.singletonCommands)
-        {
-            this.factory.clearLazy();
-        }
+        // if (this.config.singletonCommands)
+        // {
+        //     this.factory.clearLazy();
+        // }
     }
 
     private guardsAllow(guardList: Class<IGuards>[], opposite?: boolean): boolean
@@ -431,21 +432,28 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
 
         for (const guardClass of guardList)
         {
-            if (this.config.singletonCommands)
+            try
             {
-                if (!this.factory.hasPoolForType(guardClass))
+                if (this.config.singletonCommands)
                 {
-                    this.factory.registerPool(guardClass, 1);
+                    if (!this.factory.hasPoolForType(guardClass))
+                    {
+                        this.factory.registerPool(guardClass, 1);
+                    }
                 }
-            }
 
-            guards = this.factory.getInstance(guardClass);
+                guards = this.factory.getInstance(guardClass);
 
-            const allows: boolean = !opposite ? guards.allows : !guards.allows;
+                const allows: boolean = !opposite ? guards.allows : !guards.allows;
 
-            if (!allows)
+                if (!allows)
+                {
+                    return false;
+                }
+            } catch (e)
             {
-                return false;
+                this.error(e);
+                throw e;
             }
         }
 
@@ -467,7 +475,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         const serviceIdentifier: string = value.constructor.serviceIdentifier ? value.constructor.serviceIdentifier
             : value.constructor.name;
 
-        if (this.config.singletonCommands && map)
+        if (this.config.singletonCommands)
         {
             this.factory.mapValueToLazy(this.getType(serviceIdentifier), value, propertyName);
         }
