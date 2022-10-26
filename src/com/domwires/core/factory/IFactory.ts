@@ -685,7 +685,7 @@ export class Factory extends AbstractDisposable implements IFactory
 
                 if (value.value != undefined)
                 {
-                    this.warn("Mapping value from config:", "'" + interfaceDefinition + "'", "to", "'" + JSON.stringify(value.value) + "'"
+                    this.warn("Mapping value from config:", "'" + interfaceDefinition + "'", "to", "'" + value.value + "'"
                         + (name ? " with name '" + name + "'" : ""));
 
                     if (name)

@@ -463,7 +463,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
                 this.mapProperty(data, propName, map);
             } catch (e)
             {
-                this.error(this.error("Cannot map or unmap value to command:", JSON.stringify(data), propName));
+                this.error(this.error("Cannot map or unmap value to command:", data, propName));
                 throw e;
             }
         }

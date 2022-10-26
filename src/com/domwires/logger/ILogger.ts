@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {IDisposable, IDisposableImmutable} from "../core/common/IDisposable";
 import {AbstractDisposable} from "../core/common/AbstractDisposable";
@@ -105,14 +106,22 @@ export class Logger extends AbstractDisposable implements ILogger
         return this;
     }
 
-    private caller(...args: unknown[]): string
+    private caller(...args: any[]): string
     {
         let firstArgClassName = "";
 
         if (args && args.length > 0 && args[0] && args[0] instanceof Array && args[0].length > 0)
         {
+            args[0].map(value => {
+                if (value && value.constructor && value.constructor.name === "Object")
+                {
+                    const index = args[0].indexOf(value);
+                    args[0].splice(index, 1, JSON.stringify(value));
+                }
+            });
+
             const firstArg = args[0][0] as string;
-            if (firstArg.indexOf("__<!$") === 0 && firstArg.lastIndexOf("$>!__") === firstArg.length - 5)
+            if (firstArg && firstArg.indexOf("__<!$") === 0 && firstArg.lastIndexOf("$>!__") === firstArg.length - 5)
             {
                 firstArgClassName = firstArg.replace("__<!$", "").replace("$>!__", "");
 
