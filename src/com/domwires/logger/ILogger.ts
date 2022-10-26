@@ -121,11 +121,18 @@ export class Logger extends AbstractDisposable implements ILogger
             });
 
             const firstArg = args[0][0] as string;
-            if (firstArg && firstArg.indexOf("__<!$") === 0 && firstArg.lastIndexOf("$>!__") === firstArg.length - 5)
-            {
-                firstArgClassName = firstArg.replace("__<!$", "").replace("$>!__", "");
 
-                args[0].splice(0, 1);
+            try
+            {
+                if (firstArg && firstArg.indexOf("__<!$") === 0 && firstArg.lastIndexOf("$>!__") === firstArg.length - 5)
+                {
+                    firstArgClassName = firstArg.replace("__<!$", "").replace("$>!__", "");
+
+                    args[0].splice(0, 1);
+                }
+            } catch (e)
+            {
+                console.log("First arg parse error:", firstArg);
             }
         }
 
@@ -148,13 +155,30 @@ export class Logger extends AbstractDisposable implements ILogger
                     result = arr.length > 3 ? arr[3] : "";
                 } else
                 {
+                    let found = false;
+
                     for (const line of arr)
                     {
                         if (line.indexOf(firstArgClassName + ".ts:") != -1)
                         {
                             result = line;
 
+                            found = true;
+
                             break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        for (const line of arr.reverse())
+                        {
+                            if (line.indexOf(" at " + firstArgClassName + ".") != -1)
+                            {
+                                result = line;
+
+                                break;
+                            }
                         }
                     }
                 }
