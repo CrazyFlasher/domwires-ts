@@ -33,10 +33,6 @@ export interface ILoggerImmutable extends IDisposableImmutable
 
 export interface ILogger extends ILoggerImmutable, IDisposable
 {
-    setStackLineIndex(value: number): void;
-
-    get stackLineIndex(): number;
-
     info(...args: unknown[]): ILogger;
 
     warn(...args: unknown[]): ILogger;
@@ -48,8 +44,6 @@ export interface ILogger extends ILoggerImmutable, IDisposable
 
 export class Logger extends AbstractDisposable implements ILogger
 {
-    private _stackLineIndex = 3;
-
     private readonly loglevel:LogLevel;
     
     public constructor(loglevel:LogLevel = LogLevel.NONE)
@@ -67,21 +61,11 @@ export class Logger extends AbstractDisposable implements ILogger
             date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "]";
     }
 
-    public override setStackLineIndex(value: number): void
-    {
-        this._stackLineIndex = value;
-    }
-
-    public override get stackLineIndex(): number
-    {
-        return this._stackLineIndex;
-    }
-
     public override warn(...args: unknown[]): ILogger
     {
         if (this.loglevel.level >= LogLevel.WARN.level)
         {
-            console.warn(Logger.paintPrefix(this.caller, this.t) + " " +
+            console.warn(Logger.paintPrefix(this.caller(args), this.t) + " " +
                 Logger.paintArgs(Color.TP_ANSI_FG_YELLOW, ...args));
         }
 
@@ -92,7 +76,7 @@ export class Logger extends AbstractDisposable implements ILogger
     {
         if (this.loglevel.level >= LogLevel.ERROR.level)
         {
-            console.error(Logger.paintPrefix(this.caller, this.t) + " " +
+            console.error(Logger.paintPrefix(this.caller(args), this.t) + " " +
                 Logger.paintArgs(Color.TP_ANSI_FG_RED, ...args));
         }
 
@@ -103,7 +87,7 @@ export class Logger extends AbstractDisposable implements ILogger
     {
         if (this.loglevel.level >= LogLevel.ERROR.level)
         {
-            console.error(Logger.paintPrefix(this.caller, this.t) + " " +
+            console.error(Logger.paintPrefix(this.caller(args), this.t) + " " +
                 Logger.paintArgs(Color.TP_ANSI_BG_RED, ...args));
         }
 
@@ -114,15 +98,28 @@ export class Logger extends AbstractDisposable implements ILogger
     {
         if (this.loglevel.level >= LogLevel.INFO.level)
         {
-            console.info(Logger.paintPrefix(this.caller, this.t) + " " +
+            console.info(Logger.paintPrefix(this.caller(args), this.t) + " " +
                 Logger.paintArgs(Color.TP_ANSI_FG_GREEN, ...args));
         }
 
         return this;
     }
 
-    private get caller(): string
+    private caller(...args: unknown[]): string
     {
+        let firstArgClassName = "";
+
+        if (args && args.length > 0 && args[0] && args[0] instanceof Array && args[0].length > 0)
+        {
+            const firstArg = args[0][0] as string;
+            if (firstArg.indexOf("__<!$") === 0 && firstArg.lastIndexOf("$>!__") === firstArg.length - 5)
+            {
+                firstArgClassName = firstArg.replace("__<!$", "").replace("$>!__", "");
+
+                args[0].splice(0, 1);
+            }
+        }
+
         try
         {
             throw new Error();
@@ -132,19 +129,47 @@ export class Logger extends AbstractDisposable implements ILogger
             {
                 const stack = (e as Error).stack;
 
-                if (!stack) return "";
+                if (!stack) return firstArgClassName;
 
                 const arr = stack.split("\n");
-                let result = arr.length > this._stackLineIndex ? arr[this._stackLineIndex] : "";
+                let result = "";
+
+                if (firstArgClassName === "")
+                {
+                    result = arr.length > 3 ? arr[3] : "";
+                } else
+                {
+                    for (const line of arr)
+                    {
+                        if (line.indexOf(firstArgClassName + ".ts:") != -1)
+                        {
+                            result = line;
+
+                            break;
+                        }
+                    }
+                }
+
                 if (result.length > 4)
                 {
-                    result = result.split("(")[1].split(")")[0];
+                    let splittedResult = result.split("(");
+                    if (splittedResult.length > 1)
+                    {
+                        result = splittedResult[1].split(")")[0];
+                    } else
+                    {
+                        splittedResult = result.split(" at ");
+                        if (splittedResult.length > 1)
+                        {
+                            result = splittedResult[1];
+                        }
+                    }
                 }
 
                 return result;
             }
 
-            return "";
+            return firstArgClassName;
         }
     }
 

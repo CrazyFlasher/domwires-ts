@@ -254,15 +254,16 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this;
     }
 
-    public map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T>;
-    public map<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>;
-    public map<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>;
-    public map<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>;
-    public map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T> | MappingConfigList<T>
+    public map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfig<T>;
+    public map<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
+    public map<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
+    public map<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
+    public map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfig<T> | MappingConfigList<T>;
+    public map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfig<T> | MappingConfigList<T>
     {
         this.checkIfDisposed();
 
-        return this.commandMapper.map(messageType, commandClass, data, once, stopOnExecute);
+        return this.commandMapper.map(messageType, commandClass, data, stopOnExecute, once);
     }
 
     public unmap(messageType: Enum, commandClass: Class<ICommand>): ICommandMapper

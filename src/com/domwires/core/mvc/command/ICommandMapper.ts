@@ -133,20 +133,20 @@ export interface ICommandMapperImmutable extends IDisposableImmutable
 
 export interface ICommandMapper extends ICommandMapperImmutable, IDisposable
 {
-    map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, once?: boolean,
-           stopOnExecute?: boolean): MappingConfig<T>;
+    map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T,
+           stopOnExecute?: boolean, once?: boolean): MappingConfig<T>;
 
-    map<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, once?: boolean,
-           stopOnExecute?: boolean): MappingConfigList<T>;
+    map<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T,
+           stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
 
-    map<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, once?: boolean,
-           stopOnExecute?: boolean): MappingConfigList<T>;
+    map<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T,
+           stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
 
-    map<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, once?: boolean,
-           stopOnExecute?: boolean): MappingConfigList<T>;
+    map<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T,
+           stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
 
-    map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T, once?: boolean,
-           stopOnExecute?: boolean): MappingConfig<T> | MappingConfigList<T>;
+    map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T,
+           stopOnExecute?: boolean, once?: boolean): MappingConfig<T> | MappingConfigList<T>;
 
     unmap(messageType: Enum, commandClass: Class<ICommand>): ICommandMapper;
 
@@ -209,12 +209,11 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return mappingConfig;
     }
 
-    public map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T>;
-    public map<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>;
-    public map<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>;
-    public map<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfigList<T>;
-    public map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T> | MappingConfigList<T>;
-    public map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T> | MappingConfigList<T>
+    public map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfig<T>;
+    public map<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
+    public map<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
+    public map<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
+    public map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfig<T> | MappingConfigList<T>
     {
         if (!(messageType instanceof Array) && !(commandClass instanceof Array))
         {
@@ -411,17 +410,12 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
                 }
             } catch (e)
             {
-                this.error(e);
+                this.error("Command class:", commandClass.name, e);
                 throw e;
             }
 
             this.lastCommandExecutionAllowed = true;
         }
-
-        // if (this.config.singletonCommands)
-        // {
-        //     this.factory.clearLazy();
-        // }
     }
 
     private guardsAllow(guardList: Class<IGuards>[], opposite?: boolean): boolean
@@ -452,7 +446,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
                 }
             } catch (e)
             {
-                this.error(e);
+                this.error(this.error("Guards class:", guardClass.name, e));
                 throw e;
             }
         }
@@ -464,7 +458,14 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
     {
         for (const propName of Object.keys(data))
         {
-            this.mapProperty(data, propName, map);
+            try
+            {
+                this.mapProperty(data, propName, map);
+            } catch (e)
+            {
+                this.error(this.error("Cannot map or unmap value to command:", JSON.stringify(data), propName));
+                throw e;
+            }
         }
     }
 

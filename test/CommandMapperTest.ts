@@ -204,7 +204,7 @@ describe('CommandMapperTest', function (this: Suite)
     {
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand1, null, true);
+        commandMapper.map(MockMessageType.GOODBYE, MockCommand1, null, false, true);
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
         expect(commandMapper.hasMapping(MockMessageType.GOODBYE)).false;
     });
@@ -363,7 +363,7 @@ describe('CommandMapperTest', function (this: Suite)
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
         factory.mapToValue("string", "test", "olo");
-        commandMapper.map(MockMessageType.GOODBYE, [MockCommand4, MockCommand1], null, false, true);
+        commandMapper.map(MockMessageType.GOODBYE, [MockCommand4, MockCommand1], null, true);
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
         expect(m.d).equals(7);
     });
