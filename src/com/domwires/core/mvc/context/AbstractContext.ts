@@ -2,20 +2,17 @@
 
 import {inject, optional, postConstruct} from "inversify";
 import {Factory, IFactory} from "../../factory/IFactory";
-import {HierarchyObjectContainer, IHierarchyObjectContainer} from "../hierarchy/IHierarchyObjectContainer";
-import {IContext} from "./IContext";
-import {IModelContainer} from "../model/IModelContainer";
-import {IMediatorContainer} from "../mediator/IMediatorContainer";
+import {HierarchyObjectContainer} from "../hierarchy/IHierarchyObjectContainer";
+import {IContext, IContextImmutable} from "./IContext";
 import {ICommandMapper, MappingConfig, MappingConfigList} from "../command/ICommandMapper";
-import {IModel, IModelImmutable} from "../model/IModel";
-import {IMediator, IMediatorImmutable} from "../mediator/IMediator";
 import {Enum} from "../../Enum";
 import {IMessage, IMessageDispatcher} from "../message/IMessageDispatcher";
 import {Class, instanceOf} from "../../Global";
 import {ICommand} from "../command/ICommand";
 import {IGuards} from "../command/IGuards";
 import {Logger, LogLevel} from "../../../logger/ILogger";
-import {IHierarchyObject} from "../hierarchy/IHierarchyObject";
+import {IHierarchyObject, IHierarchyObjectImmutable} from "../hierarchy/IHierarchyObject";
+import ArrayUtils from "../../utils/ArrayUtils";
 
 export type ContextConfig = {
     readonly forwardMessageFromMediatorsToModels: boolean;
@@ -50,10 +47,13 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
     @inject("ContextConfig") @optional()
     protected config!: ContextConfig;
 
-    protected modelContainer!: IModelContainer;
-    protected mediatorContainer!: IMediatorContainer;
+    // protected modelContainer!: IHierarchyObjectContainer;
+    // protected mediatorContainer!: IHierarchyObjectContainer;
 
     protected commandMapper!: ICommandMapper;
+
+    private modelList: IHierarchyObject[] = [];
+    private mediatorList: IHierarchyObject[] = [];
 
     @postConstruct()
     protected init(): void
@@ -69,125 +69,137 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
             this.factory.mapToValue("IFactory", this.factory);
         }
 
-        this.modelContainer = this.factory.instantiateValueUnmapped("IModelContainer");
-        this.add(this.modelContainer);
+        // this.modelContainer = this.factory.instantiateValueUnmapped("IHierarchyObjectContainer");
+        // this.modelContainer.setId("modelContainer");
+        // this.add(this.modelContainer);
 
-        this.mediatorContainer = this.factory.instantiateValueUnmapped("IMediatorContainer");
-        this.add(this.mediatorContainer);
+        // this.mediatorContainer = this.factory.instantiateValueUnmapped("IHierarchyObjectContainer");
+        // this.mediatorContainer.setId("mediatorContainer");
+        // this.add(this.mediatorContainer);
 
         this.commandMapper = this.factory.instantiateValueUnmapped("ICommandMapper");
     }
 
-    public addModel(model: IModel): IModelContainer
+    public isMediator(child: IHierarchyObject): boolean
+    {
+        return this.containsMediator(child);
+    }
+
+    public isModel(child: IHierarchyObject): boolean
+    {
+        return this.containsModel(child);
+    }
+
+    public addModel(value: IHierarchyObject, index?: number): IContext
     {
         this.checkIfDisposed();
 
-        this.modelContainer.addModel(model);
-        model.setParent(this);
+        if (this.add(value, index))
+        {
+            this.modelList.push(value);
+        }
 
         return this;
     }
 
-    public removeModel(model: IModel, dispose = false): IModelContainer
+    public removeModel(value: IHierarchyObject, dispose = false): IContext
     {
         this.checkIfDisposed();
 
-        this.modelContainer.removeModel(model, dispose);
+        if (this.remove(value, dispose))
+        {
+            ArrayUtils.remove(this.modelList, value);
+        }
 
         return this;
     }
 
-    public removeAllModels(dispose = false): IModelContainer
+    public removeAllModels(dispose = false): IContext
     {
         this.checkIfDisposed();
 
-        this.modelContainer.removeAllModels(dispose);
+        this.modelList.map(value => this.remove(value, dispose));
+
+        ArrayUtils.clear(this.modelList);
 
         return this;
     }
 
-    public get numModels(): number
+    public containsModel(value: IHierarchyObject): boolean
     {
         this.checkIfDisposed();
 
-        return this.modelContainer.numModels;
+        return this.modelList.indexOf(value) != -1;
     }
 
-    public containsModel(model: IModelImmutable): boolean
+    public get models(): ReadonlyArray<IHierarchyObject>
     {
         this.checkIfDisposed();
 
-        return this.modelContainer.containsModel(model);
+        return this.modelList;
     }
 
-    public get modelList(): IModel[]
+    public get modelsImmutable(): ReadonlyArray<IHierarchyObjectImmutable>
     {
         this.checkIfDisposed();
 
-        return this.modelContainer.modelList;
+        return this.modelList;
     }
 
-    public get modelListImmutable(): ReadonlyArray<IModelImmutable>
+    public addMediator(value: IHierarchyObject): IContext
     {
         this.checkIfDisposed();
 
-        return this.modelContainer.modelListImmutable;
-    }
-
-    public addMediator(mediator: IMediator): IMediatorContainer
-    {
-        this.checkIfDisposed();
-
-        this.mediatorContainer.addMediator(mediator);
-        mediator.setParent(this);
+        if (this.add(value))
+        {
+            this.mediatorList.push(value);
+        }
 
         return this;
     }
 
-    public removeMediator(mediator: IMediator, dispose?: boolean): IMediatorContainer
+    public removeMediator(value: IHierarchyObject, dispose?: boolean): IContext
     {
         this.checkIfDisposed();
 
-        this.mediatorContainer.removeMediator(mediator, dispose);
+        if (this.removeModel(value, dispose))
+        {
+            ArrayUtils.remove(this.mediatorList, value);
+        }
 
         return this;
     }
 
-    public removeAllMediators(dispose?: boolean): IMediatorContainer
+    public removeAllMediators(dispose?: boolean): IContext
     {
         this.checkIfDisposed();
 
-        this.mediatorContainer.removeAllMediators(dispose);
+        this.mediatorList.map(value => this.remove(value, dispose));
+
+        ArrayUtils.clear(this.mediatorList);
 
         return this;
     }
 
-    public get numMediators(): number
+    public containsMediator(value: IHierarchyObject): boolean
     {
         this.checkIfDisposed();
 
-        return this.mediatorContainer.numMediators;
+        return this.mediatorList.indexOf(value) != -1;
     }
 
-    public containsMediator(mediator: IMediatorImmutable): boolean
+    public get mediators(): ReadonlyArray<IHierarchyObject>
     {
         this.checkIfDisposed();
 
-        return this.mediatorContainer.containsMediator(mediator);
+        return this.mediatorList;
     }
 
-    public get mediatorList(): IMediator[]
+    public get mediatorsImmutable(): ReadonlyArray<IHierarchyObjectImmutable>
     {
         this.checkIfDisposed();
 
-        return this.mediatorContainer.mediatorList;
-    }
-
-    public get mediatorListImmutable(): ReadonlyArray<IMediatorImmutable>
-    {
-        this.checkIfDisposed();
-
-        return this.mediatorContainer.mediatorListImmutable;
+        return this.mediatorList;
     }
 
     public override dispose(): void
@@ -201,8 +213,6 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
 
     private nullifyContainers(): void
     {
-        // this.modelContainer = undefined;
-        // this.mediatorContainer = undefined;
         // this.commandMapper = undefined;
     }
 
@@ -219,37 +229,38 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
 
         this.tryToExecuteCommand(message.type, data);
 
-        if (instanceOf(message.initialTarget, "IModel"))
+        const initialTarget = message.initialTarget as IHierarchyObject;
+
+        if (instanceOf(initialTarget.root, "IContext"))
         {
-            if (this.config.forwardMessageFromModelsToModels)
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            // we check above, that initialTarget.root is IContext
+            const context = initialTarget.root as IContextImmutable;
+
+            if (context.isModel(initialTarget))
             {
-                this.dispatchMessageToModels(message, data);
+                if (this.config.forwardMessageFromModelsToModels)
+                {
+                    this.dispatchMessageToModels(message, data);
+                }
+                if (this.config.forwardMessageFromModelsToMediators)
+                {
+                    this.dispatchMessageToMediators(message, data);
+                }
             }
-            if (this.config.forwardMessageFromModelsToMediators)
+            else if (context.isMediator(initialTarget))
             {
-                this.dispatchMessageToMediators(message, data);
+                if (this.config.forwardMessageFromMediatorsToModels)
+                {
+                    this.dispatchMessageToModels(message, data);
+                }
+                if (this.config.forwardMessageFromMediatorsToMediators)
+                {
+                    this.dispatchMessageToMediators(message, data);
+                }
             }
         }
-        else if (instanceOf(message.initialTarget, "IMediator"))
-        {
-            if (this.config.forwardMessageFromMediatorsToModels)
-            {
-                this.dispatchMessageToModels(message, data);
-            }
-            if (this.config.forwardMessageFromMediatorsToMediators)
-            {
-                this.dispatchMessageToMediators(message, data);
-            }
-        }
-
-        return this;
-    }
-
-    public override dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, filter?: (child: IHierarchyObject) => boolean): IHierarchyObjectContainer
-    {
-        super.dispatchMessageToChildren(message, data, filter);
-
-        this.tryToExecuteCommand(message.type, data);
 
         return this;
     }
@@ -301,20 +312,35 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         this.commandMapper.tryToExecuteCommand(messageType, messageData);
     }
 
-    public dispatchMessageToMediators<DataType>(message: IMessage, data?: DataType, filter?: (child: IHierarchyObject) => boolean): IContext
+    private finalFilter(typeFilter: (child: IHierarchyObject) => boolean,
+                        filter?: (child: IHierarchyObject) => boolean): (child: IHierarchyObject) => boolean
+    {
+        return filter ? (child: IHierarchyObject) =>
+        {
+            return typeFilter(child) && filter(child);
+        } : typeFilter;
+    }
+
+    public dispatchMessageToMediators<DataType>(message: IMessage, data?: DataType,
+                                                filter?: (child: IHierarchyObject) => boolean): IContext
     {
         this.checkIfDisposed();
 
-        this.mediatorContainer.dispatchMessageToChildren(message, data, filter);
+        const typeFilter = (child: IHierarchyObject) => this.isMediator(child);
+
+        this.dispatchMessageToChildren(message, data, this.finalFilter(typeFilter, filter));
 
         return this;
     }
 
-    public dispatchMessageToModels<DataType>(message: IMessage, data?: DataType, filter?: (child: IHierarchyObject) => boolean): IContext
+    public dispatchMessageToModels<DataType>(message: IMessage, data?: DataType,
+                                             filter?: (child: IHierarchyObject) => boolean): IContext
     {
         this.checkIfDisposed();
 
-        this.modelContainer.dispatchMessageToChildren(message, data, filter);
+        const typeFilter = (child: IHierarchyObject) => this.isModel(child);
+
+        this.dispatchMessageToChildren(message, data, this.finalFilter(typeFilter, filter));
 
         return this;
     }
@@ -327,23 +353,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer implement
         return this.commandMapper.executeCommand(commandClass, data, guardList, guardNotList);
     }
 
-    public isIMediator(): void
-    {
-    }
-
-    public isIModel(): void
-    {
-    }
-
     public isIContext(): void
-    {
-    }
-
-    public isIMediatorContainer(): void
-    {
-    }
-
-    public isIModelContainer(): void
     {
     }
 

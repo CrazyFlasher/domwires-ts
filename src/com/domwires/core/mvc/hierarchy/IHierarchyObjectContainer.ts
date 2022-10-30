@@ -1,33 +1,49 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 import {IHierarchyObject, IHierarchyObjectImmutable} from "./IHierarchyObject";
 import {IMessage} from "../message/IMessageDispatcher";
 import {AbstractHierarchyObject} from "./AbstractHierarchyObject";
 import ArrayUtils from "../../utils/ArrayUtils";
-import {setDefaultImplementation} from "../../Global";
+import {instanceOf, setDefaultImplementation} from "../../Global";
 
-export interface IHierarchyObjectContainerImmutable extends IHierarchyObjectImmutable
+export interface IHierarchyObjectContainerImmutable<TChildImmutable extends IHierarchyObjectImmutable = IHierarchyObjectImmutable>
+    extends IHierarchyObjectImmutable
 {
-    get childrenImmutable(): ReadonlyArray<IHierarchyObjectImmutable>;
+    get childrenImmutable(): ReadonlyArray<TChildImmutable>;
 
-    contains(child: IHierarchyObjectImmutable): boolean;
+    contains(child: TChildImmutable): boolean;
+
+    get id(): string | undefined;
+
+    isIHierarchyObjectContainer(): void;
 }
 
-export interface IHierarchyObjectContainer extends IHierarchyObjectContainerImmutable, IHierarchyObject
+export interface IHierarchyObjectContainer<TChild extends IHierarchyObject = IHierarchyObject, TChildImmutable extends IHierarchyObjectImmutable = IHierarchyObjectImmutable>
+    extends IHierarchyObjectContainerImmutable<TChildImmutable>, IHierarchyObject
 {
-    get children(): ReadonlyArray<IHierarchyObject>;
+    get children(): ReadonlyArray<TChild>;
 
-    add(child: IHierarchyObject, index?: number): boolean;
+    add(child: TChild, index?: number): boolean;
 
-    remove(child: IHierarchyObject, dispose?: boolean): boolean;
+    remove(child: TChild, dispose?: boolean): boolean;
 
-    removeAll(dispose?: boolean): IHierarchyObjectContainer;
+    removeAll(dispose?: boolean): IHierarchyObjectContainer<TChild>;
 
-    dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, filter?: (child: IHierarchyObject) => boolean): IHierarchyObjectContainer;
+    dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, filter?: (child: TChild) => boolean): IHierarchyObjectContainer<TChild>;
+
+    setId(value: string): IHierarchyObjectContainer<TChild>;
 }
 
 export class HierarchyObjectContainer extends AbstractHierarchyObject implements IHierarchyObjectContainer
 {
     private _childrenList: IHierarchyObject[] = [];
     private _childrenListImmutable: IHierarchyObjectImmutable[] = [];
+
+    private _id: string | undefined;
+
+    public isIHierarchyObjectContainer(): void
+    {
+    }
 
     public override dispose()
     {
@@ -37,6 +53,18 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         // this._childrenListImmutable = null;
 
         super.dispose();
+    }
+
+    public get id(): string | undefined
+    {
+        return this._id;
+    }
+
+    public setId(value: string): IHierarchyObjectContainer<IHierarchyObject>
+    {
+        this._id = value;
+
+        return this;
     }
 
     public add(child: IHierarchyObject, index?: number): boolean
@@ -60,8 +88,6 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
 
             this._childrenList.splice(index, 0, child);
             this._childrenListImmutable.splice(index, 0, child);
-
-            success = true;
         }
 
         if (!contains)
@@ -78,6 +104,8 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
             }
 
             child.setParent(this);
+
+            success = true;
         }
 
         return success;
@@ -106,8 +134,11 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
             {
                 if (message.previousTarget !== child)
                 {
-                    if (HierarchyObjectContainer.instanceOfIHierarchyObjectContainer(child))
+                    if (instanceOf(child, "IHierarchyObjectContainer") && !instanceOf(child, "IContext"))
                     {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        // we check above
                         child.dispatchMessageToChildren(message, data);
                     }
                     else
@@ -119,11 +150,6 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         }
 
         return this;
-    }
-
-    private static instanceOfIHierarchyObjectContainer(object: IHierarchyObject): object is IHierarchyObjectContainer
-    {
-        return 'dispatchMessageToChildren' in object;
     }
 
     public override onMessageBubbled<DataType>(message: IMessage, data?: DataType): boolean

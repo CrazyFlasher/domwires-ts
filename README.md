@@ -95,7 +95,7 @@ const context: IContext = factory.getInstance("IContext");
 ##### Dispatching message from model
 
 ```ts
-export class MockModel extends AbstractModel
+export class MockModel extends AbstractHierarchyObject
 {
     @postConstruct()
     private init(): void
@@ -562,7 +562,7 @@ export class AppContext extends AbstractContext implements IContext
     }
 }
 
-export class AppModel extends AbstractModel implements IAppModel
+export class AppModel extends AbstractHierarchyObject implements IAppModel
 {
     private _currentState: Enum;
 

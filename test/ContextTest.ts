@@ -10,8 +10,6 @@ import {MockCommand10, MockCommand13, MockCommand14, MockCommand15} from "./mock
 import {MockObj1} from "./mock/IMockObject";
 import {MockMessageType} from "./mock/MockMessageType";
 import {MockModel1} from "./mock/MockModels";
-import "../src/com/domwires/core/mvc/model/IModelContainer";
-import "../src/com/domwires/core/mvc/mediator/IMediatorContainer";
 import "../src/com/domwires/core/mvc/command/ICommandMapper";
 
 describe('ContextTest', function (this: Suite)
@@ -54,14 +52,14 @@ describe('ContextTest', function (this: Suite)
 
     it('testExecuteCommandFromBubbledMessage', () =>
     {
-        const c1: MockContext2 = f.instantiateValueUnmapped<MockContext2>(MockContext2);
-        const c2: MockContext3 = f.instantiateValueUnmapped<MockContext3>(MockContext3);
-        c.addModel(c1);
+        const c2: MockContext2 = f.instantiateValueUnmapped<MockContext2>(MockContext2);
+        const c3: MockContext3 = f.instantiateValueUnmapped<MockContext3>(MockContext3);
         c.addModel(c2);
+        c.addModel(c3);
 
-        c2.ready();
+        c3.ready();
 
-        expect(c1.getTestModel().testVar).equals(1);
+        expect(c2.getTestModel().testVar).equals(1);
     });
 
     it('testBubbledMessageNotRedirectedToContextItCameFrom', () =>
