@@ -4,21 +4,16 @@ import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
 import {
-    AbstractContext,
-    AbstractMediator,
-    AbstractModel,
+    AbstractContext, AbstractHierarchyObject,
     Enum,
-    Factory,
+    Factory, HierarchyObjectContainer,
     IContext,
-    IFactory,
-    IMessage, LogLevel,
-    ModelContainer
+    IFactory, IHierarchyObject, IHierarchyObjectImmutable,
+    IMessage, LogLevel
 } from "../src";
 import {MockContext1} from "./mock/MockContext";
 import {MockModel1} from "./mock/MockModels";
 import {MockMediator1} from "./mock/MockMediators";
-import "../src/com/domwires/core/mvc/model/IModelContainer";
-import "../src/com/domwires/core/mvc/mediator/IMediatorContainer";
 import "../src/com/domwires/core/mvc/command/ICommandMapper";
 import {MockMessageType} from "./mock/MockMessageType";
 import {Logger} from "../src";
@@ -39,16 +34,16 @@ describe('BubbleMessageTest', function (this: Suite)
 {
     const logger = new Logger(LogLevel.INFO);
 
-    let m1: AbstractModel;
+    let m1: AbstractHierarchyObject;
     let c1: AbstractContext;
     let c2: AbstractContext;
     let c3: AbstractContext;
     let c4: AbstractContext;
-    let mc1: ModelContainer;
-    let mc2: ModelContainer;
-    let mc3: ModelContainer;
-    let mc4: ModelContainer;
-    let v1: AbstractMediator;
+    let mc1: HierarchyObjectContainer<IHierarchyObject, IHierarchyObjectImmutable>;
+    let mc2: HierarchyObjectContainer<IHierarchyObject, IHierarchyObjectImmutable>;
+    let mc3: HierarchyObjectContainer<IHierarchyObject, IHierarchyObjectImmutable>;
+    let mc4: HierarchyObjectContainer<IHierarchyObject, IHierarchyObjectImmutable>;
+    let v1: AbstractHierarchyObject;
 
     let factory: IFactory;
 
@@ -61,21 +56,21 @@ describe('BubbleMessageTest', function (this: Suite)
         c2 = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
         c3 = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
         c4 = factory.instantiateValueUnmapped<MockContext1>(MockContext1);
-        mc1 = factory.instantiateValueUnmapped<ModelContainer>(ModelContainer);
-        mc2 = factory.instantiateValueUnmapped<ModelContainer>(ModelContainer);
-        mc3 = factory.instantiateValueUnmapped<ModelContainer>(ModelContainer);
-        mc4 = factory.instantiateValueUnmapped<ModelContainer>(ModelContainer);
+        mc1 = factory.instantiateValueUnmapped<HierarchyObjectContainer<IHierarchyObject, IHierarchyObjectImmutable>>(HierarchyObjectContainer);
+        mc2 = factory.instantiateValueUnmapped<HierarchyObjectContainer<IHierarchyObject, IHierarchyObjectImmutable>>(HierarchyObjectContainer);
+        mc3 = factory.instantiateValueUnmapped<HierarchyObjectContainer<IHierarchyObject, IHierarchyObjectImmutable>>(HierarchyObjectContainer);
+        mc4 = factory.instantiateValueUnmapped<HierarchyObjectContainer<IHierarchyObject, IHierarchyObjectImmutable>>(HierarchyObjectContainer);
         m1 = factory.instantiateValueUnmapped<MockModel1>(MockModel1);
         v1 = factory.instantiateValueUnmapped<MockMediator1>(MockMediator1);
 
-        mc2.addModel(m1);
-        mc1.addModel(mc2);
+        mc2.add(m1);
+        mc1.add(mc2);
         c4.addModel(mc4);
         c3.addModel(mc3);
         c2.addModel(mc1);
-        c1.add(c2);
-        c1.add(c3);
-        c1.add(c4);
+        c1.addModel(c2);
+        c1.addModel(c3);
+        c1.addModel(c4);
         c1.addMediator(v1);
     });
 
@@ -171,6 +166,7 @@ describe('BubbleMessageTest', function (this: Suite)
     it('testHierarchy', () =>
     {
         expect(mc3.parent).equals(c3);
+        expect(mc3.root).equals(c3);
         expect(mc4.parent).equals(c4);
         expect(m1.parent).equals(mc2);
         expect(m1.parent).not.equals(mc1);

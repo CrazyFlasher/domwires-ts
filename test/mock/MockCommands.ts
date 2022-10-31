@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import {
-    AbstractCommand, AbstractModel,
+    AbstractCommand, AbstractHierarchyObject,
     Enum,
     ICommand,
     ICommandMapper,
@@ -32,7 +32,7 @@ export class MockVo2
     public olo!: string;
 }
 
-export class MockVoBase extends AbstractModel
+export class MockVoBase extends AbstractHierarchyObject
 {
     private static serviceIdentifier = "MockVoBase";
 

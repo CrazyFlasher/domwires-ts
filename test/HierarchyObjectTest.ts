@@ -4,11 +4,7 @@ import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
 import {MockHierarchyObject} from "./mock/mvc/MockHierarchyObject";
-import {IHierarchyObject} from "../src";
-import {
-    HierarchyObjectContainer,
-    IHierarchyObjectContainer
-} from "../src";
+import {HierarchyObjectContainer, IHierarchyObject, IHierarchyObjectContainer} from "../src";
 
 describe('HierarchyObjectTest', function (this: Suite)
 {

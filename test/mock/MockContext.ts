@@ -157,7 +157,7 @@ export class MockContext5 extends AbstractContext
         this.v.dispatch();
     }
 
-    public getModel(): MockModel4
+    public getModel4(): MockModel4
     {
         return this.m;
     }

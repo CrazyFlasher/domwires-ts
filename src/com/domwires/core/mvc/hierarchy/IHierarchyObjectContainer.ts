@@ -1,75 +1,135 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import {IHierarchyObject, IHierarchyObjectImmutable} from "./IHierarchyObject";
 import {IMessage} from "../message/IMessageDispatcher";
 import {AbstractHierarchyObject} from "./AbstractHierarchyObject";
 import ArrayUtils from "../../utils/ArrayUtils";
-import {setDefaultImplementation} from "../../Global";
+import {instanceOf, setDefaultImplementation} from "../../Global";
 
-export interface IHierarchyObjectContainerImmutable extends IHierarchyObjectImmutable
+export interface IHierarchyObjectContainerImmutable<TChildImmutable = IHierarchyObjectImmutable>
+    extends IHierarchyObjectImmutable
 {
-    get childrenImmutable(): ReadonlyArray<IHierarchyObjectImmutable>;
+    get numChildren(): number;
 
-    contains(child: IHierarchyObjectImmutable): boolean;
+    contains(child: TChildImmutable): boolean;
+
+    contains(id: string): boolean;
+
+    getImmutable(id: string): TChildImmutable | undefined;
+
+    getImmutable(index: number): TChildImmutable | undefined;
+
+    get id(): string | undefined;
+
+    isIHierarchyObjectContainer(): void;
 }
 
-export interface IHierarchyObjectContainer extends IHierarchyObjectContainerImmutable, IHierarchyObject
+export interface IHierarchyObjectContainer<TChild extends IHierarchyObject = IHierarchyObject, TChildImmutable extends IHierarchyObjectImmutable = IHierarchyObjectImmutable>
+    extends IHierarchyObjectContainerImmutable<TChildImmutable>, IHierarchyObject
 {
-    get children(): ReadonlyArray<IHierarchyObject>;
+    get(id: string): TChild | undefined;
 
-    add(child: IHierarchyObject, index?: number): boolean;
+    get(index: number): TChild | undefined;
 
-    remove(child: IHierarchyObject, dispose?: boolean): boolean;
+    add(child: TChild): boolean;
 
-    removeAll(dispose?: boolean): IHierarchyObjectContainer;
+    add(child: TChild, index: number): boolean;
 
-    dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, filter?: (child: IHierarchyObject) => boolean): IHierarchyObjectContainer;
+    add(child: TChild, id: string): boolean;
+
+    remove(child: TChild, dispose?: boolean): boolean;
+
+    remove(id: string, dispose?: boolean): boolean;
+
+    removeAll(dispose?: boolean): IHierarchyObjectContainer<TChild, TChildImmutable>;
+
+    dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, filter?: (child: TChild) => boolean): IHierarchyObjectContainer<TChild, TChildImmutable>;
+
+    setId(value: string): IHierarchyObjectContainer<TChild, TChildImmutable>;
 }
 
-export class HierarchyObjectContainer extends AbstractHierarchyObject implements IHierarchyObjectContainer
+export class HierarchyObjectContainer<TChild extends TChildImmutable & IHierarchyObject, TChildImmutable extends IHierarchyObjectImmutable>
+    extends AbstractHierarchyObject implements IHierarchyObjectContainer<TChild, TChildImmutable>
 {
-    private _childrenList: IHierarchyObject[] = [];
-    private _childrenListImmutable: IHierarchyObjectImmutable[] = [];
+    private _childrenList: TChild[] = [];
+    private _childrenMap: Map<string, TChild> = new Map<string, TChild>();
+
+    private _id: string | undefined;
+
+    public isIHierarchyObjectContainer(): void
+    {
+    }
 
     public override dispose()
     {
         this.removeAll(true);
 
         // this._childrenList = null;
-        // this._childrenListImmutable = null;
+        // this._childrenMap = null;
 
         super.dispose();
     }
 
-    public add(child: IHierarchyObject, index?: number): boolean
+    public get id(): string | undefined
+    {
+        return this._id;
+    }
+
+    public setId(value: string): IHierarchyObjectContainer<TChild, TChildImmutable>
+    {
+        this._id = value;
+
+        return this;
+    }
+
+    public add(child: TChild, index: number): boolean;
+    public add(child: TChild, id: string): boolean;
+    public add(child: TChild): boolean;
+    public add(child: TChild, indexOrId?: number | string): boolean;
+    public add(child: TChild, indexOrId?: number | string): boolean
     {
         let success = false;
+        let index: number | undefined;
+        let id: string | undefined;
+
+        if (typeof indexOrId === "number")
+        {
+            index = indexOrId;
+        } else
+        if (typeof indexOrId === "string")
+        {
+            id = indexOrId;
+        }
 
         if (index !== undefined && index > this._childrenList.length)
         {
             throw new Error("Invalid child index! Index shouldn't be bigger that children list length!");
         }
 
-        const contains: boolean = this._childrenList.indexOf(child) !== -1;
+        const contains = this.contains(child);
 
         if (index !== undefined)
         {
             if (contains)
             {
                 ArrayUtils.remove(this._childrenList, child);
-                ArrayUtils.remove(this._childrenListImmutable, child);
             }
 
             this._childrenList.splice(index, 0, child);
-            this._childrenListImmutable.splice(index, 0, child);
-
-            success = true;
         }
 
         if (!contains)
         {
             if (index === undefined)
             {
-                this._childrenList.push(child);
-                this._childrenListImmutable.push(child);
+                if (!id)
+                {
+                    this._childrenList.push(child);
+                } else
+                {
+                    this._childrenMap.set(id, child);
+                }
             }
 
             if (child.parent)
@@ -78,27 +138,56 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
             }
 
             child.setParent(this);
+
+            success = true;
         }
 
         return success;
     }
 
-    public get children(): ReadonlyArray<IHierarchyObject>
+    public get(id: string): TChild | undefined;
+    public get(index: number): TChild | undefined;
+    public get(indexOrId: number | string): TChild | undefined;
+    public get(indexOrId: number | string): TChild | undefined
     {
-        return this._childrenList;
+        return typeof indexOrId === "string" ? this._childrenMap.get(indexOrId) : this._childrenList[indexOrId];
     }
 
-    public get childrenImmutable(): ReadonlyArray<IHierarchyObjectImmutable>
+    public getImmutable(id: string): TChildImmutable | undefined;
+    public getImmutable(index: number): TChildImmutable | undefined;
+    public getImmutable(indexOrId: number | string): TChildImmutable | undefined;
+    public getImmutable(indexOrId: number | string): TChildImmutable | undefined
     {
-        return this._childrenListImmutable;
+        return this.get(indexOrId);
     }
 
-    public contains(child: IHierarchyObjectImmutable): boolean
+    public contains(child: TChildImmutable): boolean;
+    public contains(id: string): boolean;
+    public contains(childOrId: TChildImmutable | string): boolean;
+    public contains(childOrId: TChildImmutable | string): boolean
     {
-        return this._childrenListImmutable && this._childrenListImmutable.indexOf(child) !== -1;
+        if (typeof childOrId === "string")
+        {
+            return this._childrenMap.has(childOrId);
+        }
+
+        if (this._childrenList.indexOf(childOrId as TChild) !== -1)
+        {
+            return true;
+        }
+
+        for (const [key, value] of this._childrenMap)
+        {
+            if (value == childOrId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    public dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, filter?: (child: IHierarchyObject) => boolean): IHierarchyObjectContainer
+    public dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, filter?: (child: TChild) => boolean): IHierarchyObjectContainer<TChild, TChildImmutable>
     {
         for (const child of this._childrenList)
         {
@@ -106,8 +195,11 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
             {
                 if (message.previousTarget !== child)
                 {
-                    if (HierarchyObjectContainer.instanceOfIHierarchyObjectContainer(child))
+                    if (instanceOf(child, "IHierarchyObjectContainer") && !instanceOf(child, "IContext"))
                     {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        // we check above
                         child.dispatchMessageToChildren(message, data);
                     }
                     else
@@ -121,11 +213,6 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return this;
     }
 
-    private static instanceOfIHierarchyObjectContainer(object: IHierarchyObject): object is IHierarchyObjectContainer
-    {
-        return 'dispatchMessageToChildren' in object;
-    }
-
     public override onMessageBubbled<DataType>(message: IMessage, data?: DataType): boolean
     {
         this.handleMessage(message, data);
@@ -133,14 +220,34 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return true;
     }
 
-    public remove(child: IHierarchyObject, dispose?: boolean): boolean
+    public remove(child: TChild, dispose?: boolean): boolean;
+    public remove(id: string, dispose?: boolean): boolean;
+    public remove(childOrId: TChild | string, dispose?: boolean): boolean;
+    public remove(childOrId: TChild | string, dispose?: boolean): boolean
     {
         let success = false;
 
-        if (this.contains(child))
+        let child: TChild | undefined;
+        let id: string | undefined;
+
+        if (typeof childOrId === "string")
         {
-            ArrayUtils.remove(this._childrenList, child);
-            ArrayUtils.remove(this._childrenListImmutable, child);
+            id = childOrId;
+            child = this.get(id);
+        } else
+        {
+            child = childOrId;
+        }
+
+        if (child && this.contains(child))
+        {
+            if (id)
+            {
+                this._childrenMap.delete(id);
+            } else
+            {
+                ArrayUtils.remove(this._childrenList, child);
+            }
 
             if (dispose)
             {
@@ -157,26 +264,30 @@ export class HierarchyObjectContainer extends AbstractHierarchyObject implements
         return success;
     }
 
-    public removeAll(dispose?: boolean): IHierarchyObjectContainer
+    public removeAll(dispose?: boolean): IHierarchyObjectContainer<TChild, TChildImmutable>
     {
-        if (this._childrenList)
+        for (const child of this._childrenList)
         {
-            for (const child of this._childrenList)
+            if (dispose)
             {
-                if (dispose)
-                {
-                    child.dispose();
-                }
-                else
-                {
-                    child.setParent(undefined);
-                }
+                child.dispose();
             }
-
-            ArrayUtils.clear(this._childrenList);
-            ArrayUtils.clear(this._childrenListImmutable);
+            else
+            {
+                child.setParent(undefined);
+            }
         }
+
+        ArrayUtils.clear(this._childrenList);
+
+        this._childrenMap.clear();
+
         return this;
+    }
+
+    public get numChildren(): number
+    {
+        return this._childrenList.length + this._childrenMap.size;
     }
 }
 

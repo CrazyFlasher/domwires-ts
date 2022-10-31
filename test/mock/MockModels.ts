@@ -1,16 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {AbstractModel} from "../../src";
 import {MockMessageType, MockMessageType2} from "./MockMessageType";
 import {inject, injectable, named} from "inversify";
-import {definableFromString, setDefaultImplementation} from "../../src";
+import {AbstractHierarchyObject, definableFromString, setDefaultImplementation} from "../../src";
 
 export type MockTypeDef = {
     readonly a: string;
     readonly b: number;
 };
 
-export class MockModel0 extends AbstractModel
+export class MockModel0 extends AbstractHierarchyObject
 {
     @inject("number")
     private n1!: number;
@@ -19,22 +18,22 @@ export class MockModel0 extends AbstractModel
     private n2!: number;
 }
 
-export class MockModel1 extends AbstractModel
+export class MockModel1 extends AbstractHierarchyObject
 {
 
 }
 
-export class MockModel2 extends AbstractModel
-{
-    public testVar = 0;
-}
-
-export class MockModel3 extends AbstractModel
+export class MockModel2 extends AbstractHierarchyObject
 {
     public testVar = 0;
 }
 
-export class MockModel4 extends AbstractModel
+export class MockModel3 extends AbstractHierarchyObject
+{
+    public testVar = 0;
+}
+
+export class MockModel4 extends AbstractHierarchyObject
 {
     private _testVar = 0;
 
@@ -51,7 +50,7 @@ export class MockModel4 extends AbstractModel
     }
 }
 
-export class MockModel6 extends AbstractModel
+export class MockModel6 extends AbstractHierarchyObject
 {
     public v = 0;
 
@@ -94,7 +93,7 @@ export class Default implements IDefault
 
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 // need to define type for injection from config
-export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
+export class SuperCoolModel extends AbstractHierarchyObject implements ISuperCoolModel
 {
     @inject("boolean") @named("myBool")
     private _myBool: boolean = true;
@@ -145,7 +144,7 @@ export class SuperCoolModel extends AbstractModel implements ISuperCoolModel
     }
 }
 
-export class MockAsyncModel extends AbstractModel
+export class MockAsyncModel extends AbstractHierarchyObject
 {
     public timePassed = 0;
     public completeCount = 0;

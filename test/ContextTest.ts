@@ -10,8 +10,6 @@ import {MockCommand10, MockCommand13, MockCommand14, MockCommand15} from "./mock
 import {MockObj1} from "./mock/IMockObject";
 import {MockMessageType} from "./mock/MockMessageType";
 import {MockModel1} from "./mock/MockModels";
-import "../src/com/domwires/core/mvc/model/IModelContainer";
-import "../src/com/domwires/core/mvc/mediator/IMediatorContainer";
 import "../src/com/domwires/core/mvc/command/ICommandMapper";
 
 describe('ContextTest', function (this: Suite)
@@ -45,6 +43,33 @@ describe('ContextTest', function (this: Suite)
         f.dispose();
     });
 
+    it('testAddRemoveGet', () =>
+    {
+        c.removeAll();
+
+        const mo1 = f.getInstance<MockModel1>(MockModel1);
+        const mo2 = f.getInstance<MockModel1>(MockModel1);
+        const mo3 = f.getInstance<MockModel1>(MockModel1);
+
+        c.addModel(mo1);
+        c.addModel(mo2, "mo");
+        c.addModel(mo3);
+
+        expect(c.getModel("mo")).equals(mo2);
+
+        const m1 = f.getInstance<MockMediator1>(MockMediator1);
+        const m2 = f.getInstance<MockMediator1>(MockMediator1);
+        const m3 = f.getInstance<MockMediator1>(MockMediator1);
+
+        c.addMediator(m1);
+        c.addMediator(m2, "mo");
+        c.addMediator(m3);
+
+        expect(c.getMediator("mo")).equals(m2);
+
+        expect(c.getModel("mo")).not.equals(c.getMediator("mo"));
+    });
+
     it('testDisposeWithAllChildren', () =>
     {
         c.dispose();
@@ -54,14 +79,14 @@ describe('ContextTest', function (this: Suite)
 
     it('testExecuteCommandFromBubbledMessage', () =>
     {
-        const c1: MockContext2 = f.instantiateValueUnmapped<MockContext2>(MockContext2);
-        const c2: MockContext3 = f.instantiateValueUnmapped<MockContext3>(MockContext3);
-        c.addModel(c1);
+        const c2: MockContext2 = f.instantiateValueUnmapped<MockContext2>(MockContext2);
+        const c3: MockContext3 = f.instantiateValueUnmapped<MockContext3>(MockContext3);
         c.addModel(c2);
+        c.addModel(c3);
 
-        c2.ready();
+        c3.ready();
 
-        expect(c1.getTestModel().testVar).equals(1);
+        expect(c2.getTestModel().testVar).equals(1);
     });
 
     it('testBubbledMessageNotRedirectedToContextItCameFrom', () =>
@@ -80,7 +105,7 @@ describe('ContextTest', function (this: Suite)
     {
         MockMediator4.val = 0;
         const c: MockContext5 = f.instantiateValueUnmapped<MockContext5>(MockContext5);
-        expect(c.getModel().testVar).equals(1);
+        expect(c.getModel4().testVar).equals(1);
         expect(MockMediator4.val).equals(1);
     });
 
