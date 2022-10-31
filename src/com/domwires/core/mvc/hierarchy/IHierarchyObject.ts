@@ -6,6 +6,8 @@ export interface IHierarchyObjectImmutable extends IMessageDispatcherImmutable
     get parentImmutable(): IHierarchyObjectContainerImmutable | undefined;
 
     get rootImmutable(): IHierarchyObjectContainerImmutable | undefined;
+
+    isIHierarchyObject(): void;
 }
 
 export interface IHierarchyObject extends IHierarchyObjectImmutable, IMessageDispatcher

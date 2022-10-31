@@ -392,6 +392,17 @@ export class MockCommand23 extends AbstractCommand
     }
 }
 
+export class MockCommand24 extends AbstractCommand
+{
+    @lazyInjectNamed("MockModel2", "target")
+    private target!: MockModel2;
+
+    public override execute()
+    {
+        this.target.testVar = 5;
+    }
+}
+
 export class MockAsyncCommand extends AbstractAsyncCommand
 {
     @inject(MockAsyncModel)

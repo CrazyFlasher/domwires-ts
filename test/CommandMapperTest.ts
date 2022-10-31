@@ -33,7 +33,7 @@ import {
 } from "./mock/MockGuards";
 import "../src/com/domwires/core/mvc/command/ICommandMapper";
 import {MockAsyncModel, MockModel2} from "./mock/MockModels";
-import {MockContext9} from "./mock/MockContext";
+import {MockContext10, MockContext9} from "./mock/MockContext";
 
 describe('CommandMapperTest', function (this: Suite)
 {
@@ -530,5 +530,11 @@ describe('CommandMapperTest', function (this: Suite)
 
         expect(c.vo1.value).equals(3);
         expect(c.vo2.value).equals(7);
+    });
+
+    it('testInjectMessageInitialTarget', () =>
+    {
+        const c = factory.getInstance<MockContext10>(MockContext10);
+        expect(c.getTestModel().testVar).equals(5);
     });
 });

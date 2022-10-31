@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 import {IHierarchyObject} from "./IHierarchyObject";
 import {IHierarchyObjectContainer, IHierarchyObjectContainerImmutable} from "./IHierarchyObjectContainer";
 import {MessageDispatcher} from "../message/IMessageDispatcher";
@@ -6,6 +8,10 @@ import {instanceOf} from "../../Global";
 export abstract class AbstractHierarchyObject extends MessageDispatcher implements IHierarchyObject
 {
     private _parent: IHierarchyObjectContainer | undefined;
+
+    public isIHierarchyObject(): void
+    {
+    }
 
     public override dispose()
     {

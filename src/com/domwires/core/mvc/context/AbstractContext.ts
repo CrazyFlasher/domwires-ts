@@ -7,7 +7,7 @@ import {HierarchyObjectContainer, IHierarchyObjectContainer} from "../hierarchy/
 import {IContext, IContextImmutable} from "./IContext";
 import {ICommandMapper, MappingConfig, MappingConfigList} from "../command/ICommandMapper";
 import {Enum} from "../../Enum";
-import {IMessage, IMessageDispatcher} from "../message/IMessageDispatcher";
+import {IMessage, IMessageDispatcher, IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
 import {Class, instanceOf} from "../../Global";
 import {ICommand} from "../command/ICommand";
 import {IGuards} from "../command/IGuards";
@@ -281,7 +281,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
     {
         super.handleMessage(message, data);
 
-        this.tryToExecuteCommand(message.type, data);
+        this.tryToExecuteCommand(message.type, data, message.initialTarget);
 
         const initialTarget = message.initialTarget as IHierarchyObject;
 
@@ -369,11 +369,11 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
         return this.commandMapper.hasMapping(messageType);
     }
 
-    public tryToExecuteCommand<T>(messageType: Enum, messageData?: T): void
+    public tryToExecuteCommand<T>(messageType: Enum, messageData?: T, messageInitialTarget?: IMessageDispatcherImmutable): void
     {
         this.checkIfDisposed();
 
-        this.commandMapper.tryToExecuteCommand(messageType, messageData);
+        this.commandMapper.tryToExecuteCommand(messageType, messageData, messageInitialTarget);
     }
 
     private finalFilter(typeFilter: (child: IHierarchyObject) => boolean,

@@ -10,6 +10,7 @@ import {AbstractDisposable} from "../../common/AbstractDisposable";
 import {IFactory} from "../../factory/IFactory";
 import ArrayUtils from "../../utils/ArrayUtils";
 import {IAsyncCommand} from "./IAsyncCommand";
+import {IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
 
 export type CommandMapperConfig = {
     readonly singletonCommands: boolean;
@@ -154,7 +155,7 @@ export interface ICommandMapper extends ICommandMapperImmutable, IDisposable
 
     unmapAll(messageType: Enum): ICommandMapper;
 
-    tryToExecuteCommand<T>(messageType: Enum, messageData?: T): void;
+    tryToExecuteCommand<T>(messageType: Enum, messageData?: T, messageInitialTarget?: IMessageDispatcherImmutable): void;
 
     executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[],
                       guardNotList?: Class<IGuards>[]): Promise<void>;
@@ -201,7 +202,8 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         {
             list = [mappingConfig];
             this.commandMap.set(messageType, list);
-        } else
+        }
+        else
         {
             list.push(mappingConfig);
         }
@@ -301,7 +303,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return this;
     }
 
-    public async tryToExecuteCommand<T>(messageType: Enum, messageData?: T)
+    public async tryToExecuteCommand<T>(messageType: Enum, messageData?: T, messageInitialTarget?: IMessageDispatcherImmutable)
     {
         const mappedToMessageCommands = this.commandMap.get(messageType);
 
@@ -324,10 +326,13 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
 
                 if (commandClass.prototype.executeAsync)
                 {
-                    await this.executeCommand(commandClass, injectionData, mappingVo.guardList, mappingVo.oppositeGuardList);
-                } else
+                    await this.executeCommand(commandClass, injectionData, mappingVo.guardList, mappingVo.oppositeGuardList,
+                        messageInitialTarget);
+                }
+                else
                 {
-                    this.executeCommand(commandClass, injectionData, mappingVo.guardList, mappingVo.oppositeGuardList);
+                    this.executeCommand(commandClass, injectionData, mappingVo.guardList, mappingVo.oppositeGuardList,
+                        messageInitialTarget);
                 }
 
                 if (this.lastCommandExecutionAllowed)
@@ -362,7 +367,8 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return messageData;
     }
 
-    public async executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[], guardNotList?: Class<IGuards>[]): Promise<void>
+    public async executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[],
+                                   guardNotList?: Class<IGuards>[], target?: IMessageDispatcherImmutable): Promise<void>
     {
         if (this.config.singletonCommands)
         {
@@ -373,6 +379,11 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         if (data)
         {
             this.mapValues(data);
+        }
+
+        if (target && (!data || !Reflect.get(data as any, "target")))
+        {
+            this.mapPropertyValue(target, "target");
         }
 
         this.lastCommandExecutionAllowed = false;
@@ -404,9 +415,10 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
                     (command as ICommand).execute();
                 }
 
-                if (!this.config.singletonCommands && data)
+                if (!this.config.singletonCommands)
                 {
-                    this.mapValues(data, false);
+                    if (data) this.mapValues(data, false);
+                    if (target) this.mapPropertyValue(target, "target", false);
                 }
             } catch (e)
             {
@@ -473,6 +485,11 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
     {
         const value = Reflect.get(data as any, propertyName);
 
+        this.mapPropertyValue(value, propertyName, map);
+    }
+
+    private mapPropertyValue(value: any, propertyName: string, map = true): void
+    {
         const serviceIdentifier: string = value.constructor.serviceIdentifier ? value.constructor.serviceIdentifier
             : value.constructor.name;
 

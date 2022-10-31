@@ -10,7 +10,7 @@ import {
     MockCommand16,
     MockCommand20,
     MockCommand21,
-    MockCommand23,
+    MockCommand23, MockCommand24,
     MockVo5,
     MockVo6
 } from "./MockCommands";
@@ -257,5 +257,29 @@ export class MockContext9 extends AbstractContext
         this.map(MockMessageType.SHALOM, MockCommand23, {vo1: this.vo1, vo2: this.vo2}).addGuards(MockTargetIsMockVo2);
 
         this.executeCommand(MockCommand20, {vo: this.vo1});
+    }
+}
+
+export class MockContext10 extends AbstractContext
+{
+    private testModel!: MockModel2;
+
+    protected override init(): void
+    {
+        super.init();
+
+        this.testModel = this.factory.instantiateValueUnmapped<MockModel2>(MockModel2);
+        this.addModel(this.testModel);
+
+        this.factory.mapToValue<MockModel2>(MockModel2, this.testModel);
+
+        this.map(MockMessageType.HELLO, MockCommand24);
+
+        this.testModel.dispatchMessage(MockMessageType.HELLO);
+    }
+
+    public getTestModel(): MockModel2
+    {
+        return this.testModel;
     }
 }
