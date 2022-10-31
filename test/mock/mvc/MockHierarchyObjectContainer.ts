@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {HierarchyObjectContainer} from "../../../src";
+import {HierarchyObjectContainer, IHierarchyObject, IHierarchyObjectImmutable} from "../../../src";
 
-export class MockHierarchyObjectContainer extends HierarchyObjectContainer
+export class MockHierarchyObjectContainer extends HierarchyObjectContainer<IHierarchyObject, IHierarchyObjectImmutable>
 {
     private value!: boolean;
 

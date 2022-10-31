@@ -26,6 +26,17 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
 
     public get root(): IHierarchyObjectContainer | undefined
     {
+        if (instanceOf(this, "IContext"))
+        {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            // we check above
+            return this;
+        }
+
+        // type is not "never" here
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         let parent: IHierarchyObjectContainer | undefined = this.parent;
 
         while (parent && !instanceOf(parent, "IContext"))

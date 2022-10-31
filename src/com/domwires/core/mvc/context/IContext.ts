@@ -5,13 +5,13 @@ import {IHierarchyObjectContainer} from "../hierarchy/IHierarchyObjectContainer"
 
 export interface IContextImmutable extends IHierarchyObjectImmutable, ICommandMapperImmutable
 {
-    containsModel(value: IHierarchyObject): boolean;
-
-    containsMediator(value: IHierarchyObject): boolean;
-
     get modelsImmutable(): ReadonlyArray<IHierarchyObjectImmutable>;
 
     get mediatorsImmutable(): ReadonlyArray<IHierarchyObjectImmutable>;
+
+    getModelImmutable(id: string): IHierarchyObjectImmutable | undefined;
+
+    getMediatorImmutable(id: string): IHierarchyObjectImmutable | undefined;
 
     isModel(child: IHierarchyObject): boolean;
 
@@ -26,13 +26,29 @@ export interface IContext extends IContextImmutable, IHierarchyObjectContainer, 
 
     dispatchMessageToModels<DataType>(message: IMessage, data?: DataType, filter?: (child: IHierarchyObject) => boolean): IContext;
 
-    addModel(value: IHierarchyObject, index?: number): IContext;
+    addModel(value: IHierarchyObject): IContext;
 
-    addMediator(value: IHierarchyObject, index?: number): IContext;
+    addModel(value: IHierarchyObject): IContext;
+
+    addModel(value: IHierarchyObject, id: string): IContext;
+
+    addMediator(value: IHierarchyObject): IContext;
+
+    addMediator(value: IHierarchyObject): IContext;
+
+    addMediator(value: IHierarchyObject, id: string): IContext;
 
     removeModel(value: IHierarchyObject, dispose?: boolean): IContext;
 
+    removeModel(id: string, dispose?: boolean): IContext;
+
     removeMediator(value: IHierarchyObject, dispose?: boolean): IContext;
+
+    removeMediator(id: string, dispose?: boolean): IContext;
+
+    getModel(id: string): IHierarchyObject | undefined;
+
+    getMediator(id: string): IHierarchyObject | undefined;
 
     get models(): ReadonlyArray<IHierarchyObject>;
 

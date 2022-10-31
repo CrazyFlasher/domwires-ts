@@ -4,13 +4,9 @@ import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
 import {MockHierarchyObject} from "./mock/mvc/MockHierarchyObject";
-import {
-    HierarchyObjectContainer,
-    IHierarchyObjectContainer
-} from "../src";
+import {HierarchyObjectContainer, IHierarchyObject, IHierarchyObjectContainer} from "../src";
 import {MockMessageType} from "./mock/MockMessageType";
 import {MockHierarchyObjectContainer} from "./mock/mvc/MockHierarchyObjectContainer";
-import {IHierarchyObject} from "../src";
 
 describe('HierarchyObjectContainerTest', function (this: Suite)
 {
@@ -45,12 +41,17 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
 
     it('testAdd', () =>
     {
-        expect(hoc.children.length).equals(0);
+        expect(hoc.numChildren).equals(0);
 
-        hoc.add(new MockHierarchyObject());
-        hoc.add(new MockHierarchyObject());
+        const child2 = new MockHierarchyObject();
+        const child1 = new MockHierarchyObject();
 
-        expect(hoc.children.length).equals(2);
+        hoc.add(child1);
+        hoc.add(child2, "olo");
+
+        expect(hoc.numChildren).equals(2);
+        expect(hoc.get("olo")).equals(child2);
+        expect(hoc.get(0)).equals(child1);
     });
 
     it('testDisposeWithAllChildren', () =>
@@ -79,7 +80,7 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
         hoc.dispose();
 
         expect(hoc.isDisposed).true;
-        expect(hoc.children.length).equals(0);
+        expect(hoc.numChildren).equals(0);
         expect(ho_1.isDisposed).true;
         expect(ho_2.isDisposed).true;
     });
@@ -89,12 +90,17 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
         const ho_1: IHierarchyObject = new MockHierarchyObject();
         const ho_2: IHierarchyObject = new MockHierarchyObject();
         hoc.add(ho_1);
-        hoc.add(ho_2);
+        hoc.add(ho_2, "olo");
 
         expect(ho_1.parent).equals(hoc);
+
         hoc.remove(ho_1);
         expect(ho_1.parent).not.exist;
-        expect(hoc.children.length).equals(1);
+        expect(hoc.numChildren).equals(1);
+
+        hoc.remove("olo");
+        expect(ho_2.parent).not.exist;
+        expect(hoc.numChildren).equals(0);
     });
 
     it('testRemoveMessageListener', () =>
@@ -115,7 +121,7 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
         hoc.add(new MockHierarchyObject());
         hoc.add(new MockHierarchyObject());
         hoc.removeAll();
-        expect(hoc.children.length).equals(0);
+        expect(hoc.numChildren).equals(0);
     });
 
     it('testRemoveAllMessageListeners', () =>
@@ -146,13 +152,13 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
         hoc.add(ho_1);
 
         expect(ho_1.parent).equals(hoc);
-        expect(hoc.children.length).equals(1);
+        expect(hoc.numChildren).equals(1);
 
         const hoc_2: IHierarchyObjectContainer = new HierarchyObjectContainer();
         hoc_2.add(ho_1);
 
         expect(ho_1.parent).equals(hoc_2);
-        expect(hoc.children.length).equals(0);
+        expect(hoc.numChildren).equals(0);
     });
 
     it('testAddAt', () =>
@@ -165,9 +171,9 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
         hoc.add(ho_2);
         hoc.add(ho_3);
 
-        expect(hoc.children.indexOf(ho_1)).equals(0);
-        expect(hoc.children.indexOf(ho_2)).equals(1);
-        expect(hoc.children.indexOf(ho_3)).equals(2);
+        expect(hoc.get(0)).equals(ho_1);
+        expect(hoc.get(1)).equals(ho_2);
+        expect(hoc.get(2)).equals(ho_3);
 
         expect(ho_1.parent).equals(hoc);
         expect(ho_2.parent).equals(hoc);
@@ -175,7 +181,9 @@ describe('HierarchyObjectContainerTest', function (this: Suite)
 
         hoc.add(ho_3, 0);
 
-        expect(hoc.children.indexOf(ho_3)).equals(0);
+        expect(hoc.get(0)).equals(ho_3);
+        expect(hoc.get(1)).equals(ho_1);
+        expect(hoc.get(2)).equals(ho_2);
 
         expect(ho_3.parent).equals(hoc);
     });

@@ -43,6 +43,33 @@ describe('ContextTest', function (this: Suite)
         f.dispose();
     });
 
+    it('testAddRemoveGet', () =>
+    {
+        c.removeAll();
+
+        const mo1 = f.getInstance<MockModel1>(MockModel1);
+        const mo2 = f.getInstance<MockModel1>(MockModel1);
+        const mo3 = f.getInstance<MockModel1>(MockModel1);
+
+        c.addModel(mo1);
+        c.addModel(mo2, "mo");
+        c.addModel(mo3);
+
+        expect(c.getModel("mo")).equals(mo2);
+
+        const m1 = f.getInstance<MockMediator1>(MockMediator1);
+        const m2 = f.getInstance<MockMediator1>(MockMediator1);
+        const m3 = f.getInstance<MockMediator1>(MockMediator1);
+
+        c.addMediator(m1);
+        c.addMediator(m2, "mo");
+        c.addMediator(m3);
+
+        expect(c.getMediator("mo")).equals(m2);
+
+        expect(c.getModel("mo")).not.equals(c.getMediator("mo"));
+    });
+
     it('testDisposeWithAllChildren', () =>
     {
         c.dispose();
@@ -78,7 +105,7 @@ describe('ContextTest', function (this: Suite)
     {
         MockMediator4.val = 0;
         const c: MockContext5 = f.instantiateValueUnmapped<MockContext5>(MockContext5);
-        expect(c.getModel().testVar).equals(1);
+        expect(c.getModel4().testVar).equals(1);
         expect(MockMediator4.val).equals(1);
     });
 
