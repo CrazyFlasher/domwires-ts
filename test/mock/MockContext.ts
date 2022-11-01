@@ -90,45 +90,6 @@ export class MockContext3 extends AbstractContext
     }
 }
 
-export class MockContext4 extends AbstractContext
-{
-    private testMediator!: MockMediator2;
-    private testModel2!: MockModel3;
-
-    protected override init(): void
-    {
-        super.init();
-
-        this.testMediator = this.factory.instantiateValueUnmapped<MockMediator2>(MockMediator2);
-        this.addMediator(this.testMediator);
-
-        this.testModel2 = this.factory.instantiateValueUnmapped<MockModel3>(MockModel3);
-        this.addModel(this.testModel2);
-
-        this.factory.mapToValue<MockModel3>(MockModel3, this.testModel2);
-
-        this.map(MockMessageType.HELLO, MockCommand11);
-    }
-
-    public getTestModel(): MockModel3
-    {
-        return this.testModel2;
-    }
-
-    public ready(): void
-    {
-        this.testMediator.dispatch();
-    }
-
-    public override onMessageBubbled(message: IMessage): boolean
-    {
-        super.onMessageBubbled(message);
-
-        // to pass message to parent context
-        return true;
-    }
-}
-
 export class MockContext5 extends AbstractContext
 {
     private v!: MockMediator3;
@@ -282,4 +243,9 @@ export class MockContext10 extends AbstractContext
     {
         return this.testModel;
     }
+}
+
+export class MockContext11 extends AbstractContext
+{
+
 }

@@ -14,6 +14,7 @@ import {
     MockCommand19,
     MockCommand19Ex,
     MockCommand2,
+    MockCommand24,
     MockCommand2_1,
     MockCommand3,
     MockCommand4,
@@ -32,8 +33,8 @@ import {
     MockValuesNotSingletonGuards
 } from "./mock/MockGuards";
 import "../src/com/domwires/core/mvc/command/ICommandMapper";
-import {MockAsyncModel, MockModel2} from "./mock/MockModels";
-import {MockContext10, MockContext9} from "./mock/MockContext";
+import {MockAsyncModel, MockModel1, MockModel2} from "./mock/MockModels";
+import {MockContext10, MockContext11, MockContext9} from "./mock/MockContext";
 
 describe('CommandMapperTest', function (this: Suite)
 {
@@ -536,5 +537,49 @@ describe('CommandMapperTest', function (this: Suite)
     {
         const c = factory.getInstance<MockContext10>(MockContext10);
         expect(c.getTestModel().testVar).equals(5);
+    });
+
+    it('testTargetEqualsGuards', () =>
+    {
+        // Expecting no errors (check logs, because error in async won't crash app)
+
+        MockCommand24.executedTimes = 0;
+
+        const c = factory.getInstance<MockContext11>(MockContext11);
+        const m1 = factory.getInstance<MockModel1>(MockModel1);
+        const m2 = factory.getInstance<MockModel2>(MockModel2);
+
+        c.addModel(m1).addModel(m2);
+
+        c.map(MockMessageType.HELLO, MockCommand24).addTargetGuards(m2);
+
+        m1.dispatchMessage(MockMessageType.HELLO);
+        m2.dispatchMessage(MockMessageType.HELLO);
+
+        expect(m2.testVar).equals(5);
+        expect(MockCommand24.executedTimes).equals(1);
+    });
+
+    it('testTargetNotEqualGuards', () =>
+    {
+        // Expecting no errors (check logs, because error in async won't crash app)
+
+        MockCommand24.executedTimes = 0;
+
+        const c = factory.getInstance<MockContext11>(MockContext11);
+        const m1 = factory.getInstance<MockModel1>(MockModel1);
+        const m2 = factory.getInstance<MockModel2>(MockModel2);
+        const m3 = factory.getInstance<MockModel2>(MockModel2);
+
+        c.addModel(m1).addModel(m2).addModel(m3);
+
+        c.map(MockMessageType.HELLO, MockCommand24).addTargetGuards(m1, false);
+
+        m1.dispatchMessage(MockMessageType.HELLO);
+        m2.dispatchMessage(MockMessageType.HELLO);
+        m3.dispatchMessage(MockMessageType.HELLO);
+
+        expect(m2.testVar).equals(5);
+        expect(MockCommand24.executedTimes).equals(2);
     });
 });

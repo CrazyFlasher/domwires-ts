@@ -394,11 +394,14 @@ export class MockCommand23 extends AbstractCommand
 
 export class MockCommand24 extends AbstractCommand
 {
+    public static executedTimes = 0;
+
     @lazyInjectNamed("MockModel2", "target")
     private target!: MockModel2;
 
     public override execute()
     {
+        MockCommand24.executedTimes++;
         this.target.testVar = 5;
     }
 }

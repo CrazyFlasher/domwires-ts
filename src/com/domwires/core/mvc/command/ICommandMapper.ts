@@ -26,12 +26,21 @@ export class MappingConfig<T>
     private _oppositeGuardList!: Class<IGuards>[];
     private readonly _stopOnExecute: boolean;
 
+    private _verifyTarget!: {target: unknown; equals: boolean};
+
     public constructor(commandClass: Class<ICommand>, data?: T, once = false, stopOnExecute = false)
     {
         this._commandClass = commandClass;
         this._data = data;
         this._once = once;
         this._stopOnExecute = stopOnExecute;
+    }
+
+    public addTargetGuards(target: unknown, equals = true): MappingConfig<T>
+    {
+        this._verifyTarget = {target, equals};
+
+        return this;
     }
 
     public addGuards(value: Class<IGuards>): MappingConfig<T>
@@ -74,6 +83,11 @@ export class MappingConfig<T>
     public get guardList(): Class<IGuards>[]
     {
         return this._guardList;
+    }
+
+    public get verifyTarget(): { target: unknown; equals: boolean }
+    {
+        return this._verifyTarget;
     }
 
     public get stopOnExecute(): boolean
@@ -327,12 +341,12 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
                 if (commandClass.prototype.executeAsync)
                 {
                     await this.executeCommand(commandClass, injectionData, mappingVo.guardList, mappingVo.oppositeGuardList,
-                        messageInitialTarget);
+                        messageInitialTarget, mappingVo.verifyTarget);
                 }
                 else
                 {
                     this.executeCommand(commandClass, injectionData, mappingVo.guardList, mappingVo.oppositeGuardList,
-                        messageInitialTarget);
+                        messageInitialTarget, mappingVo.verifyTarget);
                 }
 
                 if (this.lastCommandExecutionAllowed)
@@ -368,7 +382,8 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
     }
 
     public async executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[],
-                                   guardNotList?: Class<IGuards>[], target?: IMessageDispatcherImmutable): Promise<void>
+                                   guardNotList?: Class<IGuards>[], target?: IMessageDispatcherImmutable,
+                                   verifyTarget?: {target: unknown; equals: boolean}): Promise<void>
     {
         if (this.config.singletonCommands)
         {
@@ -390,7 +405,8 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
 
         if (
             (!guardList || this.guardsAllow(guardList)) &&
-            (!guardNotList || this.guardsAllow(guardNotList, true))
+            (!guardNotList || this.guardsAllow(guardNotList, true)) &&
+            this.targetAllow(verifyTarget, target)
         )
         {
             if (this.config.singletonCommands)
@@ -428,6 +444,15 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
 
             this.lastCommandExecutionAllowed = true;
         }
+    }
+
+    private targetAllow(verifyTarget?: {target: unknown; equals: boolean}, target?: IMessageDispatcherImmutable): boolean
+    {
+        if (!verifyTarget) return true;
+
+        if (verifyTarget.equals) return verifyTarget.target === target;
+
+        return verifyTarget.target !== target;
     }
 
     private guardsAllow(guardList: Class<IGuards>[], opposite?: boolean): boolean
