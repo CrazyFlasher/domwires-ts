@@ -22,7 +22,8 @@ import {
     MockCommand8,
     MockNestedCmd,
     MockVo,
-    MockVo2
+    MockVo2,
+    MockVoWithId
 } from "./mock/MockCommands";
 import {MockObj1} from "./mock/IMockObject";
 import {
@@ -40,7 +41,7 @@ describe('CommandMapperTest', function (this: Suite)
 {
     let factory: IFactory;
     let commandMapper: ICommandMapper;
-    const logger = new Logger(LogLevel.INFO);
+    const logger = new Logger(LogLevel.VERBOSE);
 
     beforeEach(() =>
     {
@@ -189,9 +190,7 @@ describe('CommandMapperTest', function (this: Suite)
     {
         commandMapper.map(MockMessageType.GOODBYE, MockCommand2_1);
 
-        MockVo.serviceIdentifier = "someName";
-
-        const vo: MockVo = new MockVo();
+        const vo: MockVoWithId = new MockVoWithId();
         const itemId = "lol";
 
         commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {vo, itemId, e: MockMessageType.HELLO});
@@ -458,7 +457,7 @@ describe('CommandMapperTest', function (this: Suite)
         {
             const timeStarted = new Date().getTime();
 
-            const f: IFactory = new Factory(new Logger(LogLevel.INFO));
+            const f: IFactory = new Factory(new Logger(LogLevel.VERBOSE));
             f.mapToValue("IFactory", f);
             f.mapToValue("CommandMapperConfig", config);
 

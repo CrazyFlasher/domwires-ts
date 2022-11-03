@@ -19,7 +19,7 @@ describe('ContextTest', function (this: Suite)
 
     beforeEach(() =>
     {
-        f = new Factory(new Logger(LogLevel.INFO));
+        f = new Factory(new Logger(LogLevel.VERBOSE));
         f.mapToType<IContext>("IContext", MockContext1);
         f.mapToValue<IFactory>("IFactory", f);
 
@@ -111,7 +111,7 @@ describe('ContextTest', function (this: Suite)
 
     it('testMapToInterface', () =>
     {
-        const factory: IFactory = new Factory(new Logger(LogLevel.INFO));
+        const factory: IFactory = new Factory(new Logger(LogLevel.VERBOSE));
         factory.mapToValue("IFactory", factory);
         factory.mapToValue("Class<ICommand>", MockCommand10);
         const c: MockContext7 = factory.getInstance<MockContext7>(MockContext7);

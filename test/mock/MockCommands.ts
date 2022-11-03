@@ -14,13 +14,21 @@ import {MockObj1} from "./IMockObject";
 import {MockAsyncModel, MockModel2, MockModel3, MockModel4, MockModel6} from "./MockModels";
 import {AbstractAsyncCommand} from "../../src/com/domwires/core/mvc/command/AbstractAsyncCommand";
 import {MockMessageType} from "./MockMessageType";
+import {serviceIdentifier} from "../../src/com/domwires/core/Decorators";
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
 export class MockVo
 {
-    public static serviceIdentifier: string | undefined = undefined;
+    public name!: string;
+    public age!: number;
+    public str!: string;
+    public e!: Enum;
+}
 
+@serviceIdentifier("someName")
+export class MockVoWithId
+{
     public name!: string;
     public age!: number;
     public str!: string;
@@ -32,9 +40,10 @@ export class MockVo2
     public olo!: string;
 }
 
+@serviceIdentifier("MockVoBase")
 export class MockVoBase extends AbstractHierarchyObject
 {
-    private static serviceIdentifier = "MockVoBase";
+    // private static serviceIdentifier = "MockVoBase";
 
     public value!: number;
 }

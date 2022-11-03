@@ -11,6 +11,7 @@ import {IFactory} from "../../factory/IFactory";
 import ArrayUtils from "../../utils/ArrayUtils";
 import {IAsyncCommand} from "./IAsyncCommand";
 import {IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
+import {SERVICE_IDENTIFIER} from "../../Decorators";
 
 export type CommandMapperConfig = {
     readonly singletonCommands: boolean;
@@ -113,6 +114,16 @@ export class MappingConfigList<T>
     public push(item: MappingConfig<T>): void
     {
         this.list.push(item);
+    }
+
+    public addTargetGuards(target: unknown, equals = true): MappingConfigList<T>
+    {
+        for (const mappingConfig of this.list)
+        {
+            mappingConfig.addTargetGuards(target, equals);
+        }
+
+        return this;
     }
 
     public addGuards(value: Class<IGuards>): MappingConfigList<T>
@@ -515,8 +526,8 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
 
     private mapPropertyValue(value: any, propertyName: string, map = true): void
     {
-        const serviceIdentifier: string = value.constructor.serviceIdentifier ? value.constructor.serviceIdentifier
-            : value.constructor.name;
+        const idFromMeta: string = Reflect.getMetadata(SERVICE_IDENTIFIER, value.constructor);
+        const serviceIdentifier: string = idFromMeta ? idFromMeta : value.constructor.name;
 
         if (this.config.singletonCommands)
         {

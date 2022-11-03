@@ -66,7 +66,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
 
         if (!this.factory)
         {
-            this.factory = new Factory(new Logger(LogLevel.INFO));
+            this.factory = new Factory(new Logger(LogLevel.VERBOSE));
             this.factory.mapToValue("IFactory", this.factory);
         }
 

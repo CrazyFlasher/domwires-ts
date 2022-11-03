@@ -32,7 +32,7 @@ import {Logger} from "../src";
 
 describe('BubbleMessageTest', function (this: Suite)
 {
-    const logger = new Logger(LogLevel.INFO);
+    const logger = new Logger(LogLevel.VERBOSE);
 
     let m1: AbstractHierarchyObject;
     let c1: AbstractContext;

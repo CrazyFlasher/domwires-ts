@@ -293,11 +293,11 @@ export class Factory extends AbstractDisposable implements IFactory
                     {
                         if (!name)
                         {
-                            this.warn(typeName + " is already mapped to " + toName + ". Remapping...");
+                            this.verbose(typeName + " is already mapped to " + toName + ". Remapping...");
                         }
                         else
                         {
-                            this.warn(typeName + " is already mapped to " + toName + " with name \"" + name + "\". Remapping...");
+                            this.verbose(typeName + " is already mapped to " + toName + " with name \"" + name + "\". Remapping...");
                         }
 
                         unmapMethod(type, name);
@@ -362,7 +362,7 @@ export class Factory extends AbstractDisposable implements IFactory
 
         if (this._safePool && this.getAllPoolItemsAreBusy(type))
         {
-            this.warn("All pool items are busy for class '" + Factory.getTypeName(type) + "'. Extending pool...");
+            this.info("All pool items are busy for class '" + Factory.getTypeName(type) + "'. Extending pool...");
 
             this.increasePoolCapacity(type, 1);
 
@@ -474,7 +474,7 @@ export class Factory extends AbstractDisposable implements IFactory
 
             if (defaultImpl)
             {
-                this.info("Mapping to default implementation '" + defaultImpl.name + "'.");
+                this.verbose("Mapping to default implementation '" + defaultImpl.name + "'.");
 
                 this.mapToType(type, defaultImpl);
             }
@@ -685,7 +685,7 @@ export class Factory extends AbstractDisposable implements IFactory
 
                 if (value.value != undefined)
                 {
-                    this.warn("Mapping value from config:", "'" + interfaceDefinition + "'", "to", "'" + value.value + "'"
+                    this.info("Mapping value from config:", "'" + interfaceDefinition + "'", "to", "'" + value.value + "'"
                         + (name ? " with name '" + name + "'" : ""));
 
                     if (name)
@@ -701,7 +701,7 @@ export class Factory extends AbstractDisposable implements IFactory
                 {
                     if (value.implementation)
                     {
-                        this.warn("Mapping type from config:", "'" + interfaceDefinition + "'", "to", "'" + value.implementation + "'"
+                        this.info("Mapping type from config:", "'" + interfaceDefinition + "'", "to", "'" + value.implementation + "'"
                             + (name ? " with name '" + name + "'" : ""));
 
                         this.mapToType(interfaceDefinition, getClassFromString(value.implementation), name);
@@ -709,7 +709,7 @@ export class Factory extends AbstractDisposable implements IFactory
 
                     if (value.newInstance)
                     {
-                        this.warn("Creating new instance and mapping to value: '" + interfaceDefinition + "'" +
+                        this.info("Creating new instance and mapping to value: '" + interfaceDefinition + "'" +
                             (name ? " with name '" + name + "'" : ""));
 
                         this.mapToValue(interfaceDefinition, this.getInstance(interfaceDefinition), name);

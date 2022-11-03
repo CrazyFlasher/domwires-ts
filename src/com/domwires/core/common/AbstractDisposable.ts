@@ -39,6 +39,13 @@ export abstract class AbstractDisposable implements IDisposable, ILogger
         return this;
     }
 
+    public verbose(...args: unknown[]): ILogger
+    {
+        if (this.logger) this.callLogger(this.logger.verbose.bind(this.logger), ...args);
+
+        return this;
+    }
+
     public info(...args: unknown[]): ILogger
     {
         if (this.logger) this.callLogger(this.logger.info.bind(this.logger), ...args);

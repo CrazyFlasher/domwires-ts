@@ -7,6 +7,7 @@ import {Enum} from "../core/Enum";
 
 export class LogLevel extends Enum
 {
+    public static readonly VERBOSE:LogLevel = new LogLevel(4);
     public static readonly INFO:LogLevel = new LogLevel(3);
     public static readonly WARN:LogLevel = new LogLevel(2);
     public static readonly ERROR:LogLevel = new LogLevel(1);
@@ -34,6 +35,8 @@ export interface ILoggerImmutable extends IDisposableImmutable
 
 export interface ILogger extends ILoggerImmutable, IDisposable
 {
+    verbose(...args: unknown[]): ILogger;
+
     info(...args: unknown[]): ILogger;
 
     warn(...args: unknown[]): ILogger;
@@ -90,6 +93,17 @@ export class Logger extends AbstractDisposable implements ILogger
         {
             console.error(Logger.paintPrefix(this.caller(args), this.t) + " " +
                 Logger.paintArgs(Color.TP_ANSI_BG_RED, ...args));
+        }
+
+        return this;
+    }
+
+    public override verbose(...args: unknown[]): ILogger
+    {
+        if (this.loglevel.level >= LogLevel.VERBOSE.level)
+        {
+            console.info(Logger.paintPrefix(this.caller(args), this.t) + " " +
+                Logger.paintArgs(Color.TP_ANSI_FG_LIGHT_GRAY, ...args));
         }
 
         return this;
