@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-
 import {IHierarchyObject} from "./IHierarchyObject";
 import {IHierarchyObjectContainer, IHierarchyObjectContainerImmutable} from "./IHierarchyObjectContainer";
 import {MessageDispatcher} from "../message/IMessageDispatcher";
@@ -9,9 +7,8 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
 {
     private _parent: IHierarchyObjectContainer | undefined;
 
-    public isIHierarchyObject(): void
-    {
-    }
+    /* eslint-disable-next-line @typescript-eslint/no-empty-function */
+    public isIHierarchyObject(): void {}
 
     public override dispose()
     {
@@ -79,14 +76,14 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
         return this;
     }
 
+    /* eslint-disable @typescript-eslint/no-empty-function */
     protected removedFromHierarchy(): void
     {
-        /* eslint-disable @typescript-eslint/no-empty-function */
     }
 
+    /* eslint-disable @typescript-eslint/no-empty-function */
     protected addedToHierarchy(): void
     {
-        /* eslint-disable @typescript-eslint/no-empty-function */
     }
 
 }

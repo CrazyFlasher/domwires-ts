@@ -4,8 +4,6 @@ import {ICommand} from "./ICommand";
 @injectable()
 export abstract class AbstractCommand implements ICommand
 {
-    public execute(): void
-    {
-        /* eslint-disable @typescript-eslint/no-empty-function */
-    }
+    /* eslint-disable-next-line @typescript-eslint/no-empty-function */
+    public execute(): void {}
 }

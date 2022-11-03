@@ -2,7 +2,7 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "plugins": [
-    "@typescript-eslint"
+    "@typescript-eslint", "no-type-assertion"
   ],
   "extends": [
     "eslint:recommended",
@@ -14,6 +14,8 @@
     "no-empty": "off",
     "@typescript-eslint/semi": ["error"],
     "@typescript-eslint/member-delimiter-style": "error",
-    "@typescript-eslint/explicit-member-accessibility": "error"
+    "@typescript-eslint/explicit-member-accessibility": "error",
+    "@typescript-eslint/no-empty-interface": "off",
+    "no-type-assertion/no-type-assertion": "error"
   }
 }

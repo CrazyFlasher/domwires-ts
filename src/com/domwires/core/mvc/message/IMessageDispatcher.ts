@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import {IDisposable, IDisposableImmutable} from "../../common/IDisposable";
@@ -104,6 +103,7 @@ class Message implements IMessage
 
 export class MessageDispatcher extends AbstractDisposable implements IMessageDispatcher
 {
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private _messageMap: Map<Enum, Listener<any>[]> | undefined;
     private _message!: Message;
 
@@ -210,7 +210,6 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         this.isBubbling = false;
     }
 
-    /* eslint-disable @typescript-eslint/no-unused-vars */
     public onMessageBubbled(message: IMessage): boolean
     {
         return false;

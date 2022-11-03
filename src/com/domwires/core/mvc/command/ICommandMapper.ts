@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-type-assertion/no-type-assertion */
 
 import {IDisposable, IDisposableImmutable} from "../../common/IDisposable";
 import {Enum} from "../../Enum";

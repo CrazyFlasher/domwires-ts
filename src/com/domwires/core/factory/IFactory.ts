@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-type-assertion/no-type-assertion */
 
 import {Container} from "inversify";
 import getDecorators from "inversify-inject-decorators";

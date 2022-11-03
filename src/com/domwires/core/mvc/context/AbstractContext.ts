@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import {inject, optional, postConstruct} from "inversify";
@@ -283,6 +282,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
 
         this.tryToExecuteCommand(message.type, data, message.initialTarget);
 
+        /* eslint-disable-next-line no-type-assertion/no-type-assertion */
         const initialTarget = message.initialTarget as IHierarchyObject;
 
         if (instanceOf(initialTarget.root, "IContext"))
@@ -290,7 +290,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             // we check above, that initialTarget.root is IContext
-            const context = initialTarget.root as IContextImmutable;
+            const context = initialTarget.root as IContextImmutable; // eslint-disable-line no-type-assertion/no-type-assertion
 
             if (context.isModel(initialTarget))
             {
@@ -417,9 +417,8 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
         return this.commandMapper.executeCommand(commandClass, data, guardList, guardNotList);
     }
 
-    public isIContext(): void
-    {
-    }
+    /* eslint-disable-next-line @typescript-eslint/no-empty-function */
+    public isIContext(): void {}
 
     protected checkIfDisposed(): void
     {

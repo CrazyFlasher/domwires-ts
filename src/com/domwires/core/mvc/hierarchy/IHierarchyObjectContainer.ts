@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import {IHierarchyObject, IHierarchyObjectImmutable} from "./IHierarchyObject";
@@ -57,9 +56,8 @@ export class HierarchyObjectContainer<TChild extends TChildImmutable & IHierarch
 
     private _id: string | undefined;
 
-    public isIHierarchyObjectContainer(): void
-    {
-    }
+    /* eslint-disable-next-line @typescript-eslint/no-empty-function */
+    public isIHierarchyObjectContainer(): void {}
 
     public override dispose()
     {
@@ -171,6 +169,7 @@ export class HierarchyObjectContainer<TChild extends TChildImmutable & IHierarch
             return this._childrenMap.has(childOrId);
         }
 
+        /* eslint-disable-next-line no-type-assertion/no-type-assertion */
         if (this._childrenList.indexOf(childOrId as TChild) !== -1)
         {
             return true;

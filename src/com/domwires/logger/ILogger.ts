@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-interface */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import {IDisposable, IDisposableImmutable} from "../core/common/IDisposable";
 import {AbstractDisposable} from "../core/common/AbstractDisposable";
 import {Enum} from "../core/Enum";
@@ -120,6 +117,7 @@ export class Logger extends AbstractDisposable implements ILogger
         return this;
     }
 
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private caller(...args: any[]): string
     {
         let firstArgClassName = "";
@@ -134,6 +132,7 @@ export class Logger extends AbstractDisposable implements ILogger
                 }
             });
 
+            /* eslint-disable-next-line no-type-assertion/no-type-assertion */
             const firstArg = args[0][0] as string;
 
             try
@@ -157,6 +156,7 @@ export class Logger extends AbstractDisposable implements ILogger
         {
             if (e instanceof Error)
             {
+                /* eslint-disable-next-line no-type-assertion/no-type-assertion */
                 const stack = (e as Error).stack;
 
                 if (!stack) return firstArgClassName;

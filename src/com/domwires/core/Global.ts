@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-type-assertion/no-type-assertion */
 
 import {Logger, LogLevel} from "../logger/ILogger";
 
@@ -13,6 +14,7 @@ const defaultImplMap: Map<string | Class<any>, Class<any>> = new Map<string | Cl
 export function definableFromString<T>(clazz: Class<T>, alias?: string): void
 {
     logger.info("Manually defined classes: " + clazz.name + (alias ? " to alias: " + alias : ""));
+
     (global as any)[alias ? alias : clazz.name] = clazz;
 }
 

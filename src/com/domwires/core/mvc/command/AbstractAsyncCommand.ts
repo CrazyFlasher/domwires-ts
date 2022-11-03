@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-/* eslint-disable @typescript-eslint/no-this-alias */
-
 import {AbstractCommand} from "./AbstractCommand";
 import {IAsyncCommand} from "./IAsyncCommand";
 
@@ -10,6 +7,7 @@ export class AbstractAsyncCommand extends AbstractCommand implements IAsyncComma
 
     public executeAsync(): Promise<void>
     {
+        /* eslint-disable-next-line @typescript-eslint/no-this-alias */
         const that = this;
 
         return new Promise<void>((resolve: () => void) =>
@@ -20,7 +18,6 @@ export class AbstractAsyncCommand extends AbstractCommand implements IAsyncComma
         });
     }
 
-    public isIAsyncCommand(): void
-    {
-    }
+    /* eslint-disable-next-line @typescript-eslint/no-empty-function */
+    public isIAsyncCommand(): void {}
 }
