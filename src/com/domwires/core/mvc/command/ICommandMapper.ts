@@ -13,6 +13,7 @@ import ArrayUtils from "../../utils/ArrayUtils";
 import {IAsyncCommand} from "./IAsyncCommand";
 import {IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
 import {SERVICE_IDENTIFIER} from "../../Decorators";
+import {ILogger} from "../../../logger/ILogger";
 
 export type CommandMapperConfig = {
     readonly singletonCommands: boolean;
@@ -339,16 +340,16 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
             let injectionData: T;
             for (const mappingVo of mappedToMessageCommands)
             {
+                commandClass = mappingVo.commandClass;
+
                 if (!this.config.mergeMessageDataAndMappingData)
                 {
                     injectionData = !messageData ? mappingVo.data : messageData;
                 }
                 else
                 {
-                    injectionData = CommandMapper.mergeData(messageData, mappingVo.data);
+                    injectionData = CommandMapper.mergeData(messageData, mappingVo.data, this, mappingVo.commandClass);
                 }
-
-                commandClass = mappingVo.commandClass;
 
                 if (commandClass.prototype.executeAsync)
                 {
@@ -377,20 +378,41 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         }
     }
 
-    private static mergeData<T>(messageData: T, mappingData: T): T
+    private static mergeData<T>(messageData: T, mappingData: T, logger: ILogger, commandClass: Class<ICommand>): T
     {
+        if (!messageData && !mappingData) return messageData;
         if (messageData && !mappingData) return messageData;
         if (!messageData && mappingData) return mappingData;
 
-        if (messageData && mappingData)
+        const resultData = {};
+
+        let printResult = false;
+
+        for (const propName of Object.keys(messageData))
         {
-            for (const propName of Object.keys(mappingData))
-            {
-                Reflect.set(messageData as any, propName, Reflect.get(mappingData as any, propName));
-            }
+            Reflect.set(resultData as any, propName, Reflect.get(messageData as any, propName));
         }
 
-        return messageData;
+        for (const propName of Object.keys(mappingData))
+        {
+            if (logger && Reflect.get(resultData as any, propName) != undefined)
+            {
+                if (!printResult) printResult = true;
+
+                logger.warn("WARNING: Property in message data will be overwritten by property in mapping data:", propName, commandClass.name);
+            }
+
+            Reflect.set(resultData as any, propName, Reflect.get(mappingData as any, propName));
+        }
+
+        if (printResult)
+        {
+            logger.warn("Message data:", messageData);
+            logger.warn("Mapping data:", mappingData);
+            logger.warn("Result data:", mappingData);
+        }
+
+        return resultData as T;
     }
 
     public async executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[],
@@ -527,6 +549,8 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
 
     private mapPropertyValue(value: any, propertyName: string, map = true): void
     {
+        if (value === undefined) return;
+
         const idFromMeta: string = Reflect.getMetadata(SERVICE_IDENTIFIER, value.constructor);
         const serviceIdentifier: string = idFromMeta ? idFromMeta : value.constructor.name;
 
