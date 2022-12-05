@@ -1,4 +1,4 @@
-export default class ArrayUtils
+export class ArrayUtils
 {
     /**
      * Clears array.

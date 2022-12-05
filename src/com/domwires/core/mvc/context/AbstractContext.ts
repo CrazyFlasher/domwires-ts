@@ -12,7 +12,7 @@ import {ICommand} from "../command/ICommand";
 import {IGuards} from "../command/IGuards";
 import {Logger, LogLevel} from "../../../logger/ILogger";
 import {IHierarchyObject, IHierarchyObjectImmutable} from "../hierarchy/IHierarchyObject";
-import ArrayUtils from "../../utils/ArrayUtils";
+import {ArrayUtils} from "../../utils/ArrayUtils";
 
 export type ContextConfig = {
     readonly forwardMessageFromMediatorsToModels: boolean;

@@ -3,8 +3,8 @@
 import {IHierarchyObject, IHierarchyObjectImmutable} from "./IHierarchyObject";
 import {IMessage} from "../message/IMessageDispatcher";
 import {AbstractHierarchyObject} from "./AbstractHierarchyObject";
-import ArrayUtils from "../../utils/ArrayUtils";
 import {instanceOf, setDefaultImplementation} from "../../Global";
+import {ArrayUtils} from "../../utils/ArrayUtils";
 
 export interface IHierarchyObjectContainerImmutable<TChildImmutable = IHierarchyObjectImmutable>
     extends IHierarchyObjectImmutable

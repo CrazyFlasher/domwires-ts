@@ -9,7 +9,8 @@
     "emitDecoratorMetadata": true,
     "outDir": "./dist",
     "noImplicitOverride": true,
-    "strict": true
+    "strict": true,
+    "baseUrl": "."
   },
   "include": [
     "src/**/*"

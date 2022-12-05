@@ -2,9 +2,9 @@
 
 import {IDisposable, IDisposableImmutable} from "../../common/IDisposable";
 import {Enum} from "../../Enum";
-import ArrayUtils from "../../utils/ArrayUtils";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
 import {setDefaultImplementation} from "../../Global";
+import {ArrayUtils} from "../../utils/ArrayUtils";
 
 export class MessageType<DataType = void> extends Enum
 {

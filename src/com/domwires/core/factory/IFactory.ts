@@ -3,12 +3,12 @@
 
 import {Container} from "inversify";
 import getDecorators from "inversify-inject-decorators";
-import ArrayUtils from "../utils/ArrayUtils";
 import {IDisposable, IDisposableImmutable} from "../common/IDisposable";
 import {AbstractDisposable} from "../common/AbstractDisposable";
 import {Class, getClassFromString, getDefaultImplementation, Type} from "../Global";
 import {getBindingDictionary} from "inversify/lib/planning/planner";
 import {ILogger} from "../../logger/ILogger";
+import {ArrayUtils} from "../utils/ArrayUtils";
 
 const lazyContainer: Container = new Container();
 

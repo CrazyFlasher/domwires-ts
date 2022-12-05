@@ -9,11 +9,11 @@ import {IGuards} from "./IGuards";
 import {inject, optional, postConstruct} from "inversify";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
 import {IFactory} from "../../factory/IFactory";
-import ArrayUtils from "../../utils/ArrayUtils";
 import {IAsyncCommand} from "./IAsyncCommand";
 import {IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
 import {SERVICE_IDENTIFIER} from "../../Decorators";
 import {ILogger} from "../../../logger/ILogger";
+import {ArrayUtils} from "../../utils/ArrayUtils";
 
 export type CommandMapperConfig = {
     readonly singletonCommands: boolean;
