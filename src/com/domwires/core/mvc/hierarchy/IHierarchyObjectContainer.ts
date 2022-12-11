@@ -46,6 +46,10 @@ export interface IHierarchyObjectContainer<TChild extends IHierarchyObject = IHi
     dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, filter?: (child: TChild) => boolean): IHierarchyObjectContainer<TChild, TChildImmutable>;
 
     setId(value: string): IHierarchyObjectContainer<TChild, TChildImmutable>;
+
+    get childrenMap():Map<string, TChild>;
+
+    get childrenList():TChild[];
 }
 
 export class HierarchyObjectContainer<TChild extends TChildImmutable & IHierarchyObject, TChildImmutable extends IHierarchyObjectImmutable>
@@ -79,6 +83,16 @@ export class HierarchyObjectContainer<TChild extends TChildImmutable & IHierarch
         this._id = value;
 
         return this;
+    }
+
+    public get childrenList(): TChild[]
+    {
+        return this._childrenList;
+    }
+
+    public get childrenMap(): Map<string, TChild>
+    {
+        return this._childrenMap;
     }
 
     public add(child: TChild, index: number): boolean;
