@@ -4,19 +4,13 @@
     "noImplicitAny": true,
     "module": "commonjs",
     "sourceMap": true,
-    "target": "es2020",
+    "target": "ES2015",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "outDir": "./dist",
+    "esModuleInterop": true,
     "noImplicitOverride": true,
-    "strict": true,
-    "baseUrl": ".",
-    "esModuleInterop": true
-  },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "moduleResolution": "Node",
+    "outDir": "./dist",
+    "strict": true
+  }
 }

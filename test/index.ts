@@ -1,6 +1,6 @@
+export * from "./AppTest";
 export * from "./ArrayUtilsTest";
 export * from "./BubbleMessageTest";
-export * from "./ClientAppTest";
 export * from "./CommandMapperTest";
 export * from "./ContextTest";
 export * from "./EnumTest";
