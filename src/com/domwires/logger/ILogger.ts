@@ -89,7 +89,7 @@ export class Logger extends AbstractDisposable implements ILogger
         if (this.loglevel.level >= LogLevel.ERROR.level)
         {
             console.error(Logger.paintPrefix(this.caller(args), this.t) + " " +
-                Logger.paintArgs(Color.TP_ANSI_BG_CYAN, ...args));
+                Logger.paintArgs(Color.TP_ANSI_FG_RED, ...args));
         }
 
         return this;

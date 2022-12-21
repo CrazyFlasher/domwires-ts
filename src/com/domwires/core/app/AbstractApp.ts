@@ -30,11 +30,17 @@ export abstract class AbstractApp<TAppConfig = unknown> extends MessageDispatche
             }
             else
             {
-                fetch(configPath).then(() =>
+                fetch(configPath).then((value) =>
                 {
-                    if (configLoaded) configLoaded(true);
-                }).catch(() =>
+                    value.text().then(jsonStr =>
+                    {
+                        this._appConfigJson = JSON.parse(jsonStr);
+
+                        if (configLoaded) configLoaded(true);
+                    });
+                }).catch(e =>
                 {
+                    this.fatal(e);
                     if (configLoaded) configLoaded(false);
                 });
             }

@@ -10,16 +10,25 @@ describe('AppTest', function (this: Suite)
     {
     }
 
-    it('testAppConfig', async () =>
+    it('testAppConfig', (done) =>
     {
         const f = new Factory(new Logger(LogLevel.VERBOSE));
         const app = f.getInstance<MockApp>(MockApp);
 
         app.loadConfig(success =>
         {
-            expect(success).true;
-            expect(app.appConfigJson.name).equals("Anton");
-            expect(app.appConfigJson.age).equals(36);
+            try
+            {
+                expect(success).true;
+                expect(app.appConfigJson.name).equals("Anton");
+                expect(app.appConfigJson.age).equals(36);
+
+                done();
+            } catch (e)
+            {
+                console.error(e);
+                throw e;
+            }
         });
     });
 });
