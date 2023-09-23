@@ -7,7 +7,7 @@ export type Class<T> = new(...args: T[]) => T;
 
 export type Type<T = any> = string | Class<T>;
 
-const logger = new Logger(LogLevel.INFO);
+export const logger = new Logger(LogLevel.INFO);
 
 const defaultImplMap: Map<string | Class<any>, Class<any>> = new Map<string | Class<any>, Class<any>>();
 
