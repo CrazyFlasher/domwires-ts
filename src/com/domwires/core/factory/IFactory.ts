@@ -168,6 +168,8 @@ export interface IFactoryImmutable extends IDisposableImmutable
 {
     getInstance<T>(type: Type<T>, name?: string, ignorePool?: boolean): T;
 
+    instantiateValueUnmapped<T>(type: Type<T>): T;
+
     hasTypeMapping<T>(type: Type<T>, name?: string): boolean;
 
     hasValueMapping<T>(type: Type<T>, name?: string): boolean;
@@ -192,8 +194,6 @@ export interface IFactory extends IFactoryImmutable, IDisposable
     unmapFromType<T>(type: Type<T>, name?: string): IFactory;
 
     unmapFromValue<T>(type: Type<T>, name?: string): IFactory;
-
-    instantiateValueUnmapped<T>(type: Type<T>): T;
 
     clear(): IFactory;
 
