@@ -14,13 +14,13 @@ import {
     MockCommand19,
     MockCommand19Ex,
     MockCommand2,
-    MockCommand24,
+    MockCommand24, MockCommand25,
     MockCommand2_1,
     MockCommand3,
     MockCommand4,
     MockCommand5,
     MockCommand8,
-    MockNestedCmd,
+    MockNestedCmd, MockType,
     MockVo,
     MockVo2,
     MockVoWithId
@@ -184,6 +184,17 @@ describe('CommandMapperTest', function (this: Suite)
         expect(vo.age).equals(11);
         expect(vo.name).equals("hi");
         expect(vo.str).equals("lol");
+    });
+
+    it('testInjectMessageDataFromType', () =>
+    {
+        commandMapper.map(MockMessageType.GOODBYE, MockCommand25);
+
+        const vo: MockType = {name: "olo"};
+
+        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {vo});
+
+        expect(vo.name).equals("hi");
     });
 
     it('testInjectMessageDataWidthCustomConstructorName', () =>

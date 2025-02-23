@@ -18,6 +18,11 @@ import {serviceIdentifier} from "../../src/com/domwires/core/Decorators";
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
+export type MockType =
+{
+    name: string;
+}
+
 export class MockVo
 {
     public name!: string;
@@ -412,6 +417,17 @@ export class MockCommand24 extends AbstractCommand
     {
         MockCommand24.executedTimes++;
         this.target.testVar = 5;
+    }
+}
+
+export class MockCommand25 extends AbstractCommand
+{
+    @lazyInjectNamed("any", "vo")
+    private vo!: MockType;
+
+    public override execute()
+    {
+        this.vo.name = "hi";
     }
 }
 
