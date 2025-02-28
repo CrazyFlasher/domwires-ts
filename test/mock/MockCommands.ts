@@ -21,7 +21,7 @@ import {serviceIdentifier} from "../../src/com/domwires/core/Decorators";
 export type MockType =
 {
     name: string;
-}
+};
 
 export class MockVo
 {
