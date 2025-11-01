@@ -2,16 +2,15 @@
 /* eslint-disable no-type-assertion/no-type-assertion */
 
 import {Logger, LogLevel} from "../logger/ILogger";
-import * as process from "process";
-import * as dotenv from "dotenv";
 
-dotenv.config();
+// dotenv.config();
 
 export type Class<T> = new(...args: T[]) => T;
 
 export type Type<T = any> = string | Class<T>;
 
-const logger = new Logger(!process.env.DEBUG ? LogLevel.ERROR : LogLevel.INFO);
+// const logger = new Logger(!process.env.DEBUG ? LogLevel.ERROR : LogLevel.INFO);
+const logger = new Logger(LogLevel.INFO);
 
 const defaultImplMap: Map<string | Class<any>, Class<any>> = new Map<string | Class<any>, Class<any>>();
 

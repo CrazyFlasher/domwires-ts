@@ -1,6 +1,6 @@
 {
   "name": "domwires",
-  "version": "0.9.129",
+  "version": "0.9.130",
   "description": "Flexible and extensible MVC framework",
   "repository": {
     "type": "git",
@@ -45,7 +45,7 @@
     "test-node": "mocha -r ts-node/register test/*.ts --timeout=2000 --exclude test/index.ts",
     "eslint-setup": "npm install eslint --save-dev",
     "eslint-run": "eslint . --ext .ts",
-    "test-browser": "ts-node --project browser/tsconfig.json browser/build.ts && http-server ./dist_client -a localhost -p 1234 -o /test.html",
+    "test-browser": "ts-node --project browser/tsconfig.json browser/build.ts && http-server ./dist_client -a localhost -p 1234 -o ./test.html",
     "clean": "rimraf dist/ && rimraf dist_client/",
     "copy-files": "copyfiles -u 1 dev.json dist/"
   }
