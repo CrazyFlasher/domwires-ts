@@ -304,8 +304,65 @@ await context.settle();   // waits for all commands, rejects if one of them fail
 ```
 
 An error of a command is never lost: it is reported through the logger and rejects `settle()`.
-A command may be asynchronous by extending `AbstractAsyncCommand` and calling `this.resolve()` when
-it is done; the order of the mapped commands is kept in that case.
+
+### Async commands
+
+A command, that does not finish right away (a request, a file, an animation), extends
+`AbstractAsyncCommand`: `execute()` starts the work and `resolve()` tells the framework, that the
+command is done.
+
+```ts
+// LoadUserCommand.ts
+import {AbstractAsyncCommand, lazyInject, lazyInjectNamed} from "domwires";
+import {IUserModel} from "./UserModel";
+
+export class LoadUserCommand extends AbstractAsyncCommand
+{
+    @lazyInjectNamed("string", "id")
+    private id!: string;
+
+    @lazyInject("IUserModel")
+    private model!: IUserModel;
+
+    public override execute(): void
+    {
+        fetch("/api/users/" + this.id)
+            .then((response: Response) => response.json())
+            .then((user: IUser) => this.complete(user))
+            .catch((e: unknown) =>
+            {
+                console.error("Cannot load the user:", e);
+
+                // resolve() is called on the error path as well, see the note below
+                this.resolve();
+            });
+    }
+
+    private complete(user: IUser): void
+    {
+        this.model.setUser(user);
+        this.resolve();
+    }
+}
+```
+
+```ts
+context.map(AppMessage.LOAD_USER, LoadUserCommand);
+
+mediator.dispatchMessage(AppMessage.LOAD_USER, {id: "7"});   // returns immediately
+await context.settle();                                      // the command is done here
+```
+
+Notes:
+
+* `dispatchMessage()` stays synchronous: it starts the command and returns, the caller decides
+  whether to wait with `settle()`, `tryToExecuteCommand()` or `executeCommand()`;
+* the mapper awaits an async command, so the order of the mapped commands is kept, including a mix
+  of synchronous and asynchronous ones, and `stopOnExecute` works as expected;
+* `AbstractAsyncCommand` has no "reject" hook: on a failure call `resolve()` anyway and report the
+  error yourself, otherwise the command never finishes and `settle()` waits forever;
+* an exception, thrown by `execute()` before the first `await`, rejects the command promise and is
+  reported like an error of a synchronous command.
 
 ### Guards
 
