@@ -331,10 +331,8 @@ export class LoadUserCommand extends AbstractAsyncCommand
             .then((user: IUser) => this.complete(user))
             .catch((e: unknown) =>
             {
-                console.error("Cannot load the user:", e);
-
-                // resolve() is called on the error path as well, see the note below
-                this.resolve();
+                // the command fails: settle() rejects with this error, the context reports it
+                this.reject(e);
             });
     }
 
@@ -359,8 +357,11 @@ Notes:
   whether to wait with `settle()`, `tryToExecuteCommand()` or `executeCommand()`;
 * the mapper awaits an async command, so the order of the mapped commands is kept, including a mix
   of synchronous and asynchronous ones, and `stopOnExecute` works as expected;
-* `AbstractAsyncCommand` has no "reject" hook: on a failure call `resolve()` anyway and report the
-  error yourself, otherwise the command never finishes and `settle()` waits forever;
+* on a failure call `this.reject(error)`: `settle()` rejects with that error and the context reports
+  it, exactly like an error of a synchronous command. A command, that calls neither `resolve()` nor
+  `reject()`, never finishes and `settle()` waits for it;
+* a class may implement `IAsyncCommand` without extending `AbstractAsyncCommand`: the mapper only
+  needs `executeAsync()` to be there, and the command is awaited the same way;
 * an exception, thrown by `execute()` before the first `await`, rejects the command promise and is
   reported like an error of a synchronous command.
 

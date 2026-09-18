@@ -4,17 +4,17 @@ import {IAsyncCommand} from "./IAsyncCommand";
 export class AbstractAsyncCommand extends AbstractCommand implements IAsyncCommand
 {
     protected resolve!: () => void;
+    protected reject!: (reason?: unknown) => void;
 
     public executeAsync(): Promise<void>
     {
-        /* eslint-disable-next-line @typescript-eslint/no-this-alias */
-        const that = this;
-
-        return new Promise<void>((resolve: () => void) =>
+        return new Promise<void>((resolve: () => void, reject: (reason?: unknown) => void) =>
         {
-            that.resolve = resolve;
+            this.resolve = resolve;
+            this.reject = reject;
 
-            that.execute();
+            // an exception, thrown by execute(), rejects the promise as well
+            this.execute();
         });
     }
 }
