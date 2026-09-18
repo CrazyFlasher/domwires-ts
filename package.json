@@ -28,11 +28,13 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "clean": "rimraf dist/ dist-test/ dist_client/",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "clean": "rimraf dist/ dist-test/ dist_client/ dist_example/",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.examples.json",
     "build": "rimraf dist/ && tsc -p tsconfig.json",
     "test": "rimraf dist-test/ && tsc -p tsconfig.test.json && mocha \"dist-test/test/**/*.js\" --timeout=3000",
     "test-browser": "node browser/build.mjs && http-server ./dist_client -a localhost -p 1234 -o ./test.html",
+    "example:build": "node examples/build.mjs",
+    "example": "npm run example:build && http-server ./dist_example -a localhost -p 1235 -o ./index.html",
     "lint": "oxlint src test browser",
     "copy-files": "copyfiles -u 1 dev.json dist/"
   },

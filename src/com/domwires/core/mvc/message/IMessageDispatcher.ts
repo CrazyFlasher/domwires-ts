@@ -15,7 +15,11 @@ export class MessageType<DataType = void> extends Enum
 
 }
 
-export type MessageListener<DataType> = (message?: IMessage, data?: DataType) => void;
+/**
+ * A message is always passed to a listener, so only the data is optional: a message without data
+ * gives undefined here.
+ */
+export type MessageListener<DataType> = (message: IMessage, data?: DataType) => void;
 
 export interface IMessageDispatcherImmutable extends IDisposableImmutable
 {

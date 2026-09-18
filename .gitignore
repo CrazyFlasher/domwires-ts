@@ -2,5 +2,6 @@ node_modules/
 dist/
 dist-test/
 dist_client/
+dist_example/
 .idea/
 *.log
