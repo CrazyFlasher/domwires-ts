@@ -1,6 +1,8 @@
-import {inject, injectable, optional} from "inversify";
+import {inject, injectable, optional} from "../di/Decorators";
 import {IDisposable} from "./IDisposable";
-import {ILogger} from "../../logger/ILogger";
+import {ILogger, markAsOwner} from "../../logger/ILogger";
+
+type LogMethod = "verbose" | "info" | "warn" | "error" | "fatal";
 
 @injectable()
 export abstract class AbstractDisposable implements IDisposable, ILogger
@@ -27,45 +29,48 @@ export abstract class AbstractDisposable implements IDisposable, ILogger
 
     public error(...args: unknown[]): ILogger
     {
-        if (this.logger) this.callLogger(this.logger.error.bind(this.logger), ...args);
+        this.callLogger("error", args);
 
         return this;
     }
 
     public fatal(...args: unknown[]): ILogger
     {
-        if (this.logger) this.callLogger(this.logger.fatal.bind(this.logger), ...args);
+        this.callLogger("fatal", args);
 
         return this;
     }
 
     public verbose(...args: unknown[]): ILogger
     {
-        if (this.logger) this.callLogger(this.logger.verbose.bind(this.logger), ...args);
+        this.callLogger("verbose", args);
 
         return this;
     }
 
     public info(...args: unknown[]): ILogger
     {
-        if (this.logger) this.callLogger(this.logger.info.bind(this.logger), ...args);
+        this.callLogger("info", args);
 
         return this;
     }
 
     public warn(...args: unknown[]): ILogger
     {
-        if (this.logger) this.callLogger(this.logger.warn.bind(this.logger), ...args);
+        this.callLogger("warn", args);
 
         return this;
     }
 
-    private callLogger(method: (...args: unknown[]) => void, ...args: unknown[]): void
+    private callLogger(method: LogMethod, args: unknown[]): void
     {
-        if (!this.logger) return;
+        const logger: ILogger | undefined = this.logger;
 
-        if (args) args.unshift("__<!$" + this.constructor.name + "$>!__");
+        if (!logger)
+        {
+            return;
+        }
 
-        method(...args);
+        logger[method](markAsOwner(this.constructor.name), ...args);
     }
 }

@@ -1,4 +1,4 @@
-import {injectable} from "inversify";
+import {injectable} from "../../di/Decorators";
 import {ICommand} from "./ICommand";
 
 @injectable()

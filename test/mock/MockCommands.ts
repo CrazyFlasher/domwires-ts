@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {
     AbstractCommand, AbstractHierarchyObject,
     Enum,
@@ -9,7 +8,7 @@ import {
     lazyInjectNamed,
     setDefaultImplementation
 } from "../../src";
-import {inject, named, optional} from "inversify";
+import {inject, named, optional} from "../../src";
 import {MockObj1} from "./IMockObject";
 import {MockAsyncModel, MockModel2, MockModel3, MockModel4, MockModel6} from "./MockModels";
 import {AbstractAsyncCommand} from "../../src/com/domwires/core/mvc/command/AbstractAsyncCommand";

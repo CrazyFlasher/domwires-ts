@@ -15,7 +15,7 @@ import {
     MockVo6
 } from "./MockCommands";
 import {MockMediator2, MockMediator3, MockMediator4} from "./MockMediators";
-import {inject, postConstruct} from "inversify";
+import {inject, postConstruct} from "../../src";
 import {MockTargetIsMockVo1, MockTargetIsMockVo2} from "./MockGuards";
 
 export class MockContext1 extends AbstractContext

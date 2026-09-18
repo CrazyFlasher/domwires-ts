@@ -6,19 +6,17 @@ jobs:
   build:
     strategy:
       matrix:
-        node: [16.17.0]
+        node: [20.x, 22.x, 24.x]
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
       - run: npm install
-      - run: npm i -g typescript@4.7.4
-      - run: npm run test-node
-      - run: npm run eslint-setup
+      - run: npm run typecheck
+      - run: npm run test
       - run: npm run eslint-run
-      - run: tsc -v
-      - run: tsc
+      - run: npm run build

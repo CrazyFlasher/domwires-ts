@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {inject, injectable, named, postConstruct} from "inversify";
+import {inject, injectable, named, postConstruct} from "../../src";
 import {IDisposable} from "../../src";
 import {AbstractDisposable} from "../../src";
 import {setDefaultImplementation} from "../../src";

@@ -1,21 +1,20 @@
 import {IDisposable, IDisposableImmutable} from "../core/common/IDisposable";
-import {AbstractDisposable} from "../core/common/AbstractDisposable";
 import {Enum} from "../core/Enum";
 
 export class LogLevel extends Enum
 {
-    public static readonly VERBOSE:LogLevel = new LogLevel(4);
-    public static readonly INFO:LogLevel = new LogLevel(3);
-    public static readonly WARN:LogLevel = new LogLevel(2);
-    public static readonly ERROR:LogLevel = new LogLevel(1);
-    public static readonly NONE:LogLevel = new LogLevel();
-    
+    public static readonly VERBOSE: LogLevel = new LogLevel(4);
+    public static readonly INFO: LogLevel = new LogLevel(3);
+    public static readonly WARN: LogLevel = new LogLevel(2);
+    public static readonly ERROR: LogLevel = new LogLevel(1);
+    public static readonly NONE: LogLevel = new LogLevel();
+
     private readonly _level: number;
-    
+
     private constructor(level = 0)
     {
         super();
-        
+
         this._level = level;
     }
 
@@ -23,6 +22,17 @@ export class LogLevel extends Enum
     {
         return this._level;
     }
+}
+
+const OWNER_PREFIX = "__<!$";
+const OWNER_SUFFIX = "$>!__";
+
+/**
+ * Marks the first argument of a log message as the name of the object, the message came from.
+ */
+export function markAsOwner(name: string): string
+{
+    return OWNER_PREFIX + name + OWNER_SUFFIX;
 }
 
 export interface ILoggerImmutable extends IDisposableImmutable
@@ -43,218 +53,188 @@ export interface ILogger extends ILoggerImmutable, IDisposable
     fatal(...args: unknown[]): ILogger;
 }
 
-export class Logger extends AbstractDisposable implements ILogger
+/**
+ * Logger with the level based filtering: filtered out messages cost nothing, because nothing
+ * is evaluated for them. Creation of a stack trace (to detect a call site) is opt-in, because
+ * it is the most expensive part of logging.
+ */
+export class Logger implements ILogger
 {
-    private readonly loglevel:LogLevel;
-    
-    public constructor(loglevel:LogLevel = LogLevel.NONE)
+    private _level: LogLevel;
+    private _colors = true;
+    private _traceCaller = false;
+    private _isDisposed = false;
+
+    public constructor(level: LogLevel = LogLevel.NONE)
     {
-        super();
-        
-        this.loglevel = loglevel;
+        this._level = level;
     }
-    
-    private get t(): string
+
+    public setLevel(value: LogLevel): Logger
     {
-        const date = new Date();
+        this._level = value;
+
+        return this;
+    }
+
+    public setColors(value: boolean): Logger
+    {
+        this._colors = value;
+
+        return this;
+    }
+
+    /**
+     * Turns on detection of a call site. It costs a creation of an Error instance for every message,
+     * that is not filtered out by the level, so it should be used for debugging only.
+     */
+    public setTraceCaller(value: boolean): Logger
+    {
+        this._traceCaller = value;
+
+        return this;
+    }
+
+    public get level(): LogLevel
+    {
+        return this._level;
+    }
+
+    public get isDisposed(): boolean
+    {
+        return this._isDisposed;
+    }
+
+    public dispose(): void
+    {
+        this._isDisposed = true;
+    }
+
+    public verbose(...args: unknown[]): ILogger
+    {
+        if (this._level.level >= LogLevel.VERBOSE.level)
+        {
+            console.debug(this.format(Color.TP_ANSI_FG_LIGHT_GRAY, args));
+        }
+
+        return this;
+    }
+
+    public info(...args: unknown[]): ILogger
+    {
+        if (this._level.level >= LogLevel.INFO.level)
+        {
+            console.info(this.format(Color.TP_ANSI_FG_GREEN, args));
+        }
+
+        return this;
+    }
+
+    public warn(...args: unknown[]): ILogger
+    {
+        if (this._level.level >= LogLevel.WARN.level)
+        {
+            console.warn(this.format(Color.TP_ANSI_FG_YELLOW, args));
+        }
+
+        return this;
+    }
+
+    public error(...args: unknown[]): ILogger
+    {
+        if (this._level.level >= LogLevel.ERROR.level)
+        {
+            console.error(this.format(Color.TP_ANSI_FG_RED, args));
+        }
+
+        return this;
+    }
+
+    public fatal(...args: unknown[]): ILogger
+    {
+        if (this._level.level >= LogLevel.ERROR.level)
+        {
+            console.error(this.format(Color.TP_ANSI_BG_RED, args));
+        }
+
+        return this;
+    }
+
+    private format(color: string, args: readonly unknown[]): string
+    {
+        let from = 0;
+        let owner = "";
+
+        const first: unknown = args[0];
+
+        if (typeof first === "string" && first.startsWith(OWNER_PREFIX) && first.endsWith(OWNER_SUFFIX))
+        {
+            owner = " [" + first.slice(OWNER_PREFIX.length, first.length - OWNER_SUFFIX.length) + "]";
+            from = 1;
+        }
+
+        const parts: string[] = [];
+
+        for (let i = from; i < args.length; i++)
+        {
+            parts.push(Logger.stringify(args[i]));
+        }
+
+        const result: string = this.timestamp() + owner + (this._traceCaller ? this.caller() : "") + " " + parts.join(" ");
+
+        return this._colors ? "\x1b[" + color + "m" + result + "\x1b[0m" : result;
+    }
+
+    private timestamp(): string
+    {
+        const date: Date = new Date();
 
         return "[" + date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear() + " - " +
             date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "]";
     }
 
-    public override warn(...args: unknown[]): ILogger
+    private caller(): string
     {
-        if (this.loglevel.level >= LogLevel.WARN.level)
-        {
-            console.warn(Logger.paintPrefix(this.caller(args), this.t) + " " +
-                Logger.paintArgs(Color.TP_ANSI_FG_YELLOW, ...args));
-        }
+        const stack: string[] = (new Error().stack ?? "").split("\n");
+        const line: string | undefined = stack[3];
 
-        return this;
+        return line === undefined ? "" : " " + line.trim();
     }
 
-    public override error(...args: unknown[]): ILogger
+    private static stringify(value: unknown): string
     {
-        if (this.loglevel.level >= LogLevel.ERROR.level)
+        if (value === undefined || value === null || typeof value === "string" || typeof value === "number" ||
+            typeof value === "boolean" || typeof value === "bigint" || typeof value === "symbol")
         {
-            console.error(Logger.paintPrefix(this.caller(args), this.t) + " " +
-                Logger.paintArgs(Color.TP_ANSI_FG_RED, ...args));
+            return String(value);
         }
 
-        return this;
-    }
-
-    public override fatal(...args: unknown[]): ILogger
-    {
-        if (this.loglevel.level >= LogLevel.ERROR.level)
+        if (typeof value === "function")
         {
-            console.error(Logger.paintPrefix(this.caller(args), this.t) + " " +
-                Logger.paintArgs(Color.TP_ANSI_FG_RED, ...args));
+            return value.name ? "[function " + value.name + "]" : "[function]";
         }
 
-        return this;
-    }
-
-    public override verbose(...args: unknown[]): ILogger
-    {
-        if (this.loglevel.level >= LogLevel.VERBOSE.level)
+        if (value instanceof Error)
         {
-            console.info(Logger.paintPrefix(this.caller(args), this.t) + " " +
-                Logger.paintArgs(Color.TP_ANSI_FG_LIGHT_GRAY, ...args));
-        }
-
-        return this;
-    }
-
-    public override info(...args: unknown[]): ILogger
-    {
-        if (this.loglevel.level >= LogLevel.INFO.level)
-        {
-            console.info(Logger.paintPrefix(this.caller(args), this.t) + " " +
-                Logger.paintArgs(Color.TP_ANSI_FG_GREEN, ...args));
-        }
-
-        return this;
-    }
-
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    private caller(...args: any[]): string
-    {
-        let firstArgClassName = "";
-
-        if (args && args.length > 0 && args[0] && args[0] instanceof Array && args[0].length > 0)
-        {
-            args[0].map(value => {
-                if (value && value.constructor && value.constructor.name === "Object")
-                {
-                    const index = args[0].indexOf(value);
-                    args[0].splice(index, 1, JSON.stringify(value));
-                }
-            });
-
-            /* eslint-disable-next-line no-type-assertion/no-type-assertion */
-            const firstArg = args[0][0] as string;
-
-            try
-            {
-                if (firstArg && firstArg.indexOf("__<!$") === 0 && firstArg.lastIndexOf("$>!__") === firstArg.length - 5)
-                {
-                    firstArgClassName = firstArg.replace("__<!$", "").replace("$>!__", "");
-
-                    args[0].splice(0, 1);
-                }
-            } catch (e)
-            {
-                console.log("First arg parse error:", firstArg);
-            }
+            return value.stack ?? String(value);
         }
 
         try
         {
-            throw new Error();
-        } catch (e)
-        {
-            if (e instanceof Error)
-            {
-                /* eslint-disable-next-line no-type-assertion/no-type-assertion */
-                const stack = (e as Error).stack;
-
-                if (!stack) return firstArgClassName;
-
-                const arr = stack.split("\n");
-                let result = "";
-
-                if (firstArgClassName === "")
-                {
-                    result = arr.length > 3 ? arr[3] : "";
-                } else
-                {
-                    let found = false;
-
-                    for (const line of arr)
-                    {
-                        if (line.indexOf(firstArgClassName + ".ts:") != -1)
-                        {
-                            result = line;
-
-                            found = true;
-
-                            break;
-                        }
-                    }
-
-                    if (!found)
-                    {
-                        for (const line of arr.reverse())
-                        {
-                            if (line.indexOf(" at " + firstArgClassName + ".") != -1)
-                            {
-                                result = line;
-
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (result.length > 4)
-                {
-                    let splittedResult = result.split("(");
-                    if (splittedResult.length > 1)
-                    {
-                        result = splittedResult[1].split(")")[0];
-                    } else
-                    {
-                        splittedResult = result.split(" at ");
-                        if (splittedResult.length > 1)
-                        {
-                            result = splittedResult[1];
-                        }
-                    }
-                }
-
-                return result;
-            }
-
-            return firstArgClassName;
+            return JSON.stringify(value) ?? String(value);
         }
-    }
-
-    private static paintPrefix(prefix: string, time: string): string
-    {
-        return "\x1b[" + Color.TP_ANSI_FG_LIGHT_GRAY + "m" + prefix + "\x1b[0m" + " " + "\x1b[" + Color.TP_ANSI_FG_WHITE + "m" + time + "\x1b[0m";
-    }
-
-    private static paintArgs(color: string, ...args: unknown[]): string
-    {
-        let argsStr = "";
-        args.map(value => argsStr += value + " ");
-
-        return '\x1b[' + color + 'm' + argsStr + '\x1b[0m';
+        catch
+        {
+            return String(value);
+        }
     }
 }
 
 class Color
 {
-    public static readonly TP_ANSI_RESET: string = "0";
-    public static readonly TP_ANSI_BOLD_ON: string = "1";
-    public static readonly TP_ANSI_INVERSE_ON: string = "7";
-    public static readonly TP_ANSI_BOLD_OFF: string = "22";
-    public static readonly TP_ANSI_FG_BLACK: string = "30";
     public static readonly TP_ANSI_FG_RED: string = "31";
     public static readonly TP_ANSI_FG_GREEN: string = "32";
     public static readonly TP_ANSI_FG_YELLOW: string = "33";
-    public static readonly TP_ANSI_FG_BLUE: string = "34";
-    public static readonly TP_ANSI_FG_MAGENTA: string = "35";
-    public static readonly TP_ANSI_FG_CYAN: string = "36";
-    public static readonly TP_ANSI_FG_WHITE: string = "37";
-    public static readonly TP_ANSI_BG_RED: string = "41";
-    public static readonly TP_ANSI_BG_GREEN: string = "42";
-    public static readonly TP_ANSI_BG_YELLOW: string = "43";
-    public static readonly TP_ANSI_BG_BLUE: string = "44";
-    public static readonly TP_ANSI_BG_MAGENTA: string = "45";
-    public static readonly TP_ANSI_BG_CYAN: string = "46";
-    public static readonly TP_ANSI_BG_WHITE: string = "47";
     public static readonly TP_ANSI_FG_LIGHT_GRAY: string = "90";
-    public static readonly TP_ANSI_BG_LIGHT_GRAY: string = "100";
+    public static readonly TP_ANSI_BG_RED: string = "41";
 }

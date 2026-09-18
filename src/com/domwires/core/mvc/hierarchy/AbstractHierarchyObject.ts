@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {IHierarchyObject} from "./IHierarchyObject";
 import {IHierarchyObjectContainer, IHierarchyObjectContainerImmutable} from "./IHierarchyObjectContainer";
 import {MessageDispatcher} from "../message/IMessageDispatcher";
-import {instanceOf} from "../../Global";
+import {IS_HIERARCHY_OBJECT, isContext} from "../../Global";
 
 export abstract class AbstractHierarchyObject extends MessageDispatcher implements IHierarchyObject
 {
@@ -29,24 +31,15 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
 
     public get root(): IHierarchyObjectContainer | undefined
     {
-        if (instanceOf(this, "IContext"))
+        if (isContext(this))
         {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            // we check above
             return this;
         }
 
-        // type is not "never" here
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         let parent: IHierarchyObjectContainer | undefined = this.parent;
 
-        while (parent && !instanceOf(parent, "IContext"))
+        while (parent && !isContext(parent))
         {
-            // type is not "never" here
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
             parent = parent.parent;
         }
 
@@ -87,3 +80,5 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
     }
 
 }
+
+Reflect.set(AbstractHierarchyObject.prototype, IS_HIERARCHY_OBJECT, true);

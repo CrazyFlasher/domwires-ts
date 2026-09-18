@@ -13,9 +13,9 @@ export interface IContextImmutable extends IHierarchyObjectImmutable, ICommandMa
 
     getMediatorImmutable(id: string): IHierarchyObjectImmutable | undefined;
 
-    isModel(child: IHierarchyObject): boolean;
+    isModel(child: IHierarchyObjectImmutable): boolean;
 
-    isMediator(child: IHierarchyObject): boolean;
+    isMediator(child: IHierarchyObjectImmutable): boolean;
 
     isIContext(): void;
 }
@@ -26,23 +26,19 @@ export interface IContext extends IContextImmutable, IHierarchyObjectContainer, 
 
     dispatchMessageToModels<DataType>(message: IMessage, data?: DataType, filter?: (child: IHierarchyObject) => boolean): IContext;
 
-    addModel(value: IHierarchyObject): IContext;
+    addModel(child: IHierarchyObject): IContext;
 
-    addModel(value: IHierarchyObject): IContext;
+    addModel(child: IHierarchyObject, id: string): IContext;
 
-    addModel(value: IHierarchyObject, id: string): IContext;
+    addMediator(child: IHierarchyObject): IContext;
 
-    addMediator(value: IHierarchyObject): IContext;
+    addMediator(child: IHierarchyObject, id: string): IContext;
 
-    addMediator(value: IHierarchyObject): IContext;
-
-    addMediator(value: IHierarchyObject, id: string): IContext;
-
-    removeModel(value: IHierarchyObject, dispose?: boolean): IContext;
+    removeModel(child: IHierarchyObject, dispose?: boolean): IContext;
 
     removeModel(id: string, dispose?: boolean): IContext;
 
-    removeMediator(value: IHierarchyObject, dispose?: boolean): IContext;
+    removeMediator(child: IHierarchyObject, dispose?: boolean): IContext;
 
     removeMediator(id: string, dispose?: boolean): IContext;
 
@@ -57,4 +53,9 @@ export interface IContext extends IContextImmutable, IHierarchyObjectContainer, 
     removeAllModels(dispose?: boolean): IContext;
 
     removeAllMediators(dispose?: boolean): IContext;
+
+    /**
+     * Waits until all commands, that were started by received messages, are executed.
+     */
+    settle(): Promise<void>;
 }

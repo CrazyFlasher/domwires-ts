@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import {expect} from "chai";
 import {Suite} from "mocha";
 import {ArrayUtils} from "../src";

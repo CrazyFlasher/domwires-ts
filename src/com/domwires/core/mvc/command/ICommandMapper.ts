@@ -4,12 +4,11 @@
 import {IDisposable, IDisposableImmutable} from "../../common/IDisposable";
 import {Enum} from "../../Enum";
 import {ICommand} from "./ICommand";
-import {Class, instanceOf, setDefaultImplementation} from "../../Global";
+import {Class} from "../../Global";
 import {IGuards} from "./IGuards";
-import {inject, optional, postConstruct} from "inversify";
+import {inject, optional, postConstruct} from "../../di/Decorators";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
 import {IFactory} from "../../factory/IFactory";
-import {IAsyncCommand} from "./IAsyncCommand";
 import {IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
 import {SERVICE_IDENTIFIER} from "../../Decorators";
 import {ILogger} from "../../../logger/ILogger";
@@ -182,7 +181,7 @@ export interface ICommandMapper extends ICommandMapperImmutable, IDisposable
 
     unmapAll(messageType: Enum): ICommandMapper;
 
-    tryToExecuteCommand<T>(messageType: Enum, messageData?: T, messageInitialTarget?: IMessageDispatcherImmutable): void;
+    tryToExecuteCommand<T>(messageType: Enum, messageData?: T, messageInitialTarget?: IMessageDispatcherImmutable): Promise<void>;
 
     executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[],
                       guardNotList?: Class<IGuards>[]): Promise<void>;
@@ -330,52 +329,62 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return this;
     }
 
-    public async tryToExecuteCommand<T>(messageType: Enum, messageData?: T, messageInitialTarget?: IMessageDispatcherImmutable)
+    public async tryToExecuteCommand<T>(messageType: Enum, messageData?: T,
+                                        messageInitialTarget?: IMessageDispatcherImmutable): Promise<void>
     {
         const mappedToMessageCommands = this.commandMap.get(messageType);
 
-        if (mappedToMessageCommands)
+        if (!mappedToMessageCommands)
         {
-            let commandClass: Class<ICommand>;
-            let injectionData: T;
-            for (const mappingVo of mappedToMessageCommands)
+            return;
+        }
+
+        const executions: Promise<void>[] = [];
+
+        for (const mappingVo of mappedToMessageCommands)
+        {
+            const commandClass: Class<ICommand> = mappingVo.commandClass;
+            const injectionData: T | undefined = !this.config.mergeMessageDataAndMappingData
+                ? (!messageData ? mappingVo.data : messageData)
+                : CommandMapper.mergeData(messageData, mappingVo.data, this, commandClass);
+
+            const execution: Promise<void> = this.executeCommand(commandClass, injectionData, mappingVo.guardList,
+                mappingVo.oppositeGuardList, messageInitialTarget, mappingVo.verifyTarget);
+
+            executions.push(execution);
+
+            if (CommandMapper.isAsyncCommandClass(commandClass))
             {
-                commandClass = mappingVo.commandClass;
+                // an async command is awaited, otherwise the execution order and stopOnExecute break
+                await execution;
+            }
+            else
+            {
+                // a synchronous command is already executed here; the error is not lost: it is reported
+                // by the caller of this promise
+                execution.catch(() => undefined);
+            }
 
-                if (!this.config.mergeMessageDataAndMappingData)
+            if (this.lastCommandExecutionAllowed)
+            {
+                if (mappingVo.once)
                 {
-                    injectionData = !messageData ? mappingVo.data : messageData;
-                }
-                else
-                {
-                    injectionData = CommandMapper.mergeData(messageData, mappingVo.data, this, mappingVo.commandClass);
-                }
-
-                if (commandClass.prototype.executeAsync)
-                {
-                    await this.executeCommand(commandClass, injectionData, mappingVo.guardList, mappingVo.oppositeGuardList,
-                        messageInitialTarget, mappingVo.verifyTarget);
-                }
-                else
-                {
-                    this.executeCommand(commandClass, injectionData, mappingVo.guardList, mappingVo.oppositeGuardList,
-                        messageInitialTarget, mappingVo.verifyTarget);
+                    this.unmap(messageType, commandClass);
                 }
 
-                if (this.lastCommandExecutionAllowed)
+                if (mappingVo.stopOnExecute)
                 {
-                    if (mappingVo.once)
-                    {
-                        this.unmap(messageType, commandClass);
-                    }
-
-                    if (mappingVo.stopOnExecute)
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
         }
+
+        await Promise.all(executions);
+    }
+
+    private static isAsyncCommandClass(commandClass: Class<ICommand>): boolean
+    {
+        return typeof Reflect.get(commandClass.prototype, "executeAsync") === "function";
     }
 
     private static mergeData<T>(messageData: T, mappingData: T, logger: ILogger, commandClass: Class<ICommand>): T
@@ -388,28 +397,28 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
 
         let printResult = false;
 
-        for (const propName of Object.keys(messageData))
+        for (const propName of Object.keys(Object(messageData)))
         {
-            Reflect.set(resultData as any, propName, Reflect.get(messageData as any, propName));
+            Reflect.set(resultData, propName, Reflect.get(Object(messageData), propName));
         }
 
-        for (const propName of Object.keys(mappingData))
+        for (const propName of Object.keys(Object(mappingData)))
         {
-            if (logger && Reflect.get(resultData as any, propName) != undefined)
+            if (logger && Reflect.get(resultData, propName) != undefined)
             {
                 if (!printResult) printResult = true;
 
                 logger.warn("WARNING: Property in message data will be overwritten by property in mapping data:", propName, commandClass.name);
             }
 
-            Reflect.set(resultData as any, propName, Reflect.get(mappingData as any, propName));
+            Reflect.set(resultData, propName, Reflect.get(Object(mappingData), propName));
         }
 
         if (printResult)
         {
             logger.warn("Message data:", messageData);
             logger.warn("Mapping data:", mappingData);
-            logger.warn("Result data:", mappingData);
+            logger.warn("Result data:", resultData);
         }
 
         return resultData as T;
@@ -430,7 +439,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
             this.mapValues(data);
         }
 
-        if (target && (!data || !Reflect.get(data as any, "target")))
+        if (target && (!data || !Reflect.get(Object(data), "target")))
         {
             this.mapPropertyValue(target, "target");
         }
@@ -455,14 +464,15 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
             {
                 const command: ICommand = this.factory.getInstance(commandClass);
 
-                if (instanceOf(command, "IAsyncCommand"))
+                const executeAsync: unknown = Reflect.get(command, "executeAsync");
+
+                if (typeof executeAsync === "function")
                 {
-                    const asyncCommand: IAsyncCommand = command as IAsyncCommand;
-                    await asyncCommand.executeAsync();
+                    await executeAsync.call(command);
                 }
                 else
                 {
-                    (command as ICommand).execute();
+                    command.execute();
                 }
 
                 if (!this.config.singletonCommands)
@@ -491,10 +501,6 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
 
     private guardsAllow(guardList: Class<IGuards>[], opposite?: boolean): boolean
     {
-        let guards: IGuards;
-
-        const guardsAllow = true;
-
         for (const guardClass of guardList)
         {
             try
@@ -507,7 +513,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
                     }
                 }
 
-                guards = this.factory.getInstance(guardClass);
+                const guards: IGuards = this.factory.getInstance(guardClass);
 
                 const allows: boolean = !opposite ? guards.allows : !guards.allows;
 
@@ -517,24 +523,26 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
                 }
             } catch (e)
             {
-                this.error(this.error("Guards class:", guardClass.name, e));
+                this.error("Guards class:", guardClass.name, e);
+
                 throw e;
             }
         }
 
-        return guardsAllow;
+        return true;
     }
 
     private mapValues<T>(data: T, map = true): void
     {
-        for (const propName of Object.keys(data))
+        for (const propName of Object.keys(Object(data)))
         {
             try
             {
                 this.mapProperty(data, propName, map);
             } catch (e)
             {
-                this.error(this.error("Cannot map or unmap value to command:", data, propName));
+                this.error("Cannot map or unmap value to command:", data, propName, e);
+
                 throw e;
             }
         }
@@ -542,7 +550,7 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
 
     private mapProperty<T>(data: T, propertyName: string, map = true): void
     {
-        const value = Reflect.get(data as any, propertyName);
+        const value = Reflect.get(Object(data), propertyName);
 
         this.mapPropertyValue(value, propertyName, map);
     }
@@ -551,8 +559,11 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
     {
         if (value === undefined) return;
 
-        const idFromMeta: string = Reflect.getMetadata(SERVICE_IDENTIFIER, value.constructor);
-        const serviceIdentifier: string = idFromMeta ? idFromMeta : value.constructor.name;
+        const constructor: unknown = Reflect.get(Object(value), "constructor");
+        const idFromMeta: unknown = constructor === undefined ? undefined : Reflect.get(Object(constructor), SERVICE_IDENTIFIER);
+        const serviceIdentifier: string = typeof idFromMeta === "string" && idFromMeta
+            ? idFromMeta
+            : String(Reflect.get(Object(constructor), "name"));
 
         if (this.config.singletonCommands)
         {
@@ -602,5 +613,3 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return undefined;
     }
 }
-
-setDefaultImplementation<ICommandMapper>("ICommandMapper", CommandMapper);

@@ -1,16 +1,26 @@
 {
   "compilerOptions": {
     "declaration": true,
+    "declarationMap": true,
     "noImplicitAny": true,
-    "module": "commonjs",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "sourceMap": true,
-    "target": "es2020",
+    "target": "es2022",
+    "lib": [
+      "es2022",
+      "dom"
+    ],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
+    "emitDecoratorMetadata": false,
     "outDir": "./dist",
     "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
     "strict": true,
-    "baseUrl": ".",
+    "skipLibCheck": true,
+    "types": [
+      "node"
+    ],
     "esModuleInterop": true
   },
   "include": [

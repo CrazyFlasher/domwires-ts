@@ -1,8 +1,12 @@
-import "reflect-metadata";
-
 export const SERVICE_IDENTIFIER = "serviceIdentifier";
 
-export function serviceIdentifier(value: string)
+/**
+ * Overrides the service identifier of a class: by default the name of the class is used.
+ */
+export function serviceIdentifier(value: string): ClassDecorator
 {
-    return Reflect.metadata(SERVICE_IDENTIFIER, value);
+    return (target: object): void =>
+    {
+        Reflect.set(target, SERVICE_IDENTIFIER, value);
+    };
 }

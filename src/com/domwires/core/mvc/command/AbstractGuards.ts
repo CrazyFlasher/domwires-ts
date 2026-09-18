@@ -1,5 +1,5 @@
 import {IGuards} from "./IGuards";
-import {injectable} from "inversify";
+import {injectable} from "../../di/Decorators";
 
 @injectable()
 export class AbstractGuards implements IGuards

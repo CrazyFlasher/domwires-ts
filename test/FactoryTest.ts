@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import {Suite} from "mocha";
 import {Factory, IFactory, Logger, LogLevel} from "../src";
 import {expect} from "chai";

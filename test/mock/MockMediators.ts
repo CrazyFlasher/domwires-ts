@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {MockMessageType} from "./MockMessageType";
-import {postConstruct} from "inversify";
+import {postConstruct} from "../../src";
 import {AbstractHierarchyObject} from "../../src";
 
 export class MockMediator1 extends AbstractHierarchyObject

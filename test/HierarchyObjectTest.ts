@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
 import {MockHierarchyObject} from "./mock/mvc/MockHierarchyObject";

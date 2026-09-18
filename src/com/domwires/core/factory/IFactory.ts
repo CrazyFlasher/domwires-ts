@@ -1,40 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-type-assertion/no-type-assertion */
 
-import {Container} from "inversify";
-import getDecorators from "inversify-inject-decorators";
 import {IDisposable, IDisposableImmutable} from "../common/IDisposable";
 import {AbstractDisposable} from "../common/AbstractDisposable";
 import {Class, getClassFromString, getDefaultImplementation, Type} from "../Global";
-import {getBindingDictionary} from "inversify/lib/planning/planner";
 import {ILogger} from "../../logger/ILogger";
 import {ArrayUtils} from "../utils/ArrayUtils";
-
-const lazyContainer: Container = new Container();
-
-export const {lazyInject, lazyInjectNamed} = getDecorators(lazyContainer, false);
-
-function clearLazyOne(): void
-{
-    lazyContainer.unbindAll();
-}
-
-function mergeIntoLazyOne(from: Container): void
-{
-    const origin = getBindingDictionary(from);
-    const destination = getBindingDictionary(lazyContainer);
-    origin.traverse((key, value) =>
-    {
-        value.forEach((binding) =>
-        {
-            if (destination.hasKey(binding.serviceIdentifier))
-            {
-                destination.remove(binding.serviceIdentifier);
-            }
-            destination.add(binding.serviceIdentifier, binding.clone());
-        });
-    });
-}
+import {DependencyContainer} from "../di/DependencyContainer";
+import {IDependencyContainer} from "../di/IDependencyContainer";
+import {clearLazyBindings, setLazyBinding} from "../di/LazyRegistry";
 
 export type FactoryConfig = Map<string, {
     value?: string | boolean | number | object;
@@ -47,13 +21,19 @@ type MappingData<T = any> = {
     readonly name?: string;
 };
 
+export type PoolConfig = {
+    readonly capacity?: number;
+    readonly instantiateNow?: boolean;
+    readonly isBusyFlagGetterName?: string;
+};
+
 class PoolModel
 {
-    private list: any[] = [];
+    private readonly list: any[] = [];
     private _capacity: number;
 
     private currentIndex = 0;
-    private factory: IFactory;
+    private readonly factory: Factory;
     private readonly isBusyFlagGetterName: string | undefined;
 
     public constructor(factory: Factory, capacity: number, isBusyFlagGetterName?: string)
@@ -65,36 +45,30 @@ class PoolModel
 
     public get<T>(type: Type<T>, createNewIfNeeded = true): T
     {
-        let instance: T;
-
         if (this.list.length < this._capacity && createNewIfNeeded)
         {
-
-            instance = this.factory.getInstance(type, undefined, true);
-
-            this.list.push(instance);
+            return this.createAndStore(type);
         }
-        else
+
+        if (this.list.length === 0)
         {
-            instance = this.list[this.currentIndex];
+            throw new Error("Pool for '" + Factory.getTypeName(type) + "' is empty and creating of new instances is disabled!");
+        }
 
-            this.currentIndex++;
+        // scan for a not busy item, starting from the current index; the scan is bounded by the list length,
+        // so it always terminates, even if all items are busy
+        for (let i = 0; i < this.list.length; i++)
+        {
+            const instance: T = this.next();
 
-            if (this.currentIndex === this._capacity || this.currentIndex === this.list.length)
+            if (!this.isBusy(instance))
             {
-                this.currentIndex = 0;
-            }
-
-            if (this.isBusyFlagGetterName)
-            {
-                if ((instance as any)[this.isBusyFlagGetterName])
-                {
-                    return this.get(type, createNewIfNeeded);
-                }
+                return instance;
             }
         }
 
-        return instance;
+        throw new Error("All items of pool '" + Factory.getTypeName(type) + "' are busy! " +
+            "Increase the pool capacity or enable the safe pool mode.");
     }
 
     public increaseCapacity(value: number): void
@@ -104,8 +78,10 @@ class PoolModel
 
     public dispose(): void
     {
-        // this.list = undefined;
-        // this.factory = undefined;
+        ArrayUtils.clear(this.list);
+
+        this.currentIndex = 0;
+        this._capacity = 0;
     }
 
     public get capacity(): number
@@ -124,18 +100,15 @@ class PoolModel
         {
             return false;
         }
+
         if (!this.isBusyFlagGetterName)
         {
             return false;
         }
 
-        let instance: any;
-
         for (let i = 0; i < this._capacity; i++)
         {
-            instance = this.list[i];
-
-            if (!(instance as any)[this.isBusyFlagGetterName])
+            if (!this.isBusy(this.list[i]))
             {
                 return false;
             }
@@ -152,15 +125,45 @@ class PoolModel
         }
 
         let count = 0;
+
         for (const instance of this.list)
         {
-            if ((instance as any)[this.isBusyFlagGetterName])
+            if (this.isBusy(instance))
             {
                 count++;
             }
         }
 
         return count;
+    }
+
+    private createAndStore<T>(type: Type<T>): T
+    {
+        const instance: T = this.factory.getInstance(type, undefined, true);
+
+        this.list.push(instance);
+
+        return instance;
+    }
+
+    private next(): any
+    {
+        const instance: any = this.list[this.currentIndex];
+
+        this.currentIndex++;
+
+        if (this.currentIndex === this._capacity || this.currentIndex >= this.list.length)
+        {
+            this.currentIndex = 0;
+        }
+
+        return instance;
+    }
+
+    private isBusy(instance: any): boolean
+    {
+        return this.isBusyFlagGetterName != undefined && instance != undefined &&
+            Boolean(instance[this.isBusyFlagGetterName]);
     }
 }
 
@@ -213,18 +216,18 @@ export interface IFactory extends IFactoryImmutable, IDisposable
     mergeIntoLazy(): IFactory;
 
     clearLazy(): IFactory;
+
+    get injector(): IDependencyContainer;
 }
 
 export class Factory extends AbstractDisposable implements IFactory
 {
-    private injector: Container = new Container();
+    private readonly _injector: IDependencyContainer = new DependencyContainer();
 
-    private typeMap: Map<Type, MappingData[]> = new Map<Type, MappingData[]>();
-    private valueMap: Map<Type, MappingData[]> = new Map<Type, MappingData[]>();
+    private readonly typeMap: Map<Type, MappingData[]> = new Map<Type, MappingData[]>();
+    private readonly valueMap: Map<Type, MappingData[]> = new Map<Type, MappingData[]>();
 
-    private autoMapAfterUnmap = false;
-
-    private poolModelMap: Map<Type, PoolModel> = new Map<Type, PoolModel>();
+    private readonly poolModelMap: Map<Type, PoolModel> = new Map<Type, PoolModel>();
 
     private _safePool = true;
 
@@ -237,6 +240,11 @@ export class Factory extends AbstractDisposable implements IFactory
             this.logger = logger;
             this.mapToValue("ILogger", logger);
         }
+    }
+
+    public get injector(): IDependencyContainer
+    {
+        return this._injector;
     }
 
     private static includesName(list?: MappingData[], name?: string): MappingData | undefined
@@ -254,6 +262,14 @@ export class Factory extends AbstractDisposable implements IFactory
         return undefined;
     }
 
+    /**
+     * Internal helper: returns a readable name of a type.
+     */
+    public static getTypeName<T>(type: Type<T>): string
+    {
+        return typeof type === "string" ? type : type.name;
+    }
+
     public override dispose()
     {
         this.clear();
@@ -261,96 +277,89 @@ export class Factory extends AbstractDisposable implements IFactory
         super.dispose();
     }
 
-    private static getTypeForType<T>(type: Type<T>): string
+    private addMapping<T>(map: Map<Type, MappingData[]>, type: Type<T>, to: T | Class<T>, name?: string): void
     {
-        return "__$" + Factory.getTypeName(type) + "$__";
-    }
+        let list: MappingData[] | undefined = map.get(type);
 
-    private map<T>(type: Type<T>, to: T | Class<T>, name: string | undefined, map: Map<any, MappingData[]>, unmapMethod: (type: Type<T>, name?: string) => void): boolean
-    {
-        let mappedToTypeOrValueList = map.get(type);
-        let mapOrRemap = true;
-
-        if (!this.autoMapAfterUnmap)
+        if (!list)
         {
-            if (mappedToTypeOrValueList)
+            list = [];
+
+            map.set(type, list);
+        }
+
+        const currentMapping: MappingData | undefined = Factory.includesName(list, name);
+
+        if (currentMapping)
+        {
+            if (currentMapping.typeOrValue === to)
             {
-                const currentMapping = Factory.includesName(mappedToTypeOrValueList, name);
-
-                if (currentMapping)
-                {
-                    const typeName = Factory.getTypeName(type);
-
-                    let toName = Factory.getTypeName(to as Class<T>);
-                    if (!toName) toName = (to as Type<T>).constructor.name;
-
-                    if (currentMapping.typeOrValue === to)
-                    {
-                        // "type" is already mapped to "to". No need to remap
-
-                        mapOrRemap = false;
-                    }
-                    else
-                    {
-                        if (!name)
-                        {
-                            this.verbose(typeName + " is already mapped to " + toName + ". Remapping...");
-                        }
-                        else
-                        {
-                            this.verbose(typeName + " is already mapped to " + toName + " with name \"" + name + "\". Remapping...");
-                        }
-
-                        unmapMethod(type, name);
-                    }
-                }
+                // the type is already mapped to the given value, there is nothing to remap
+                return;
             }
 
-            if (mapOrRemap)
+            const typeName: string = Factory.getTypeName(type);
+            const toName: string = typeof to === "string" ? to
+                : (typeof to === "function" ? (to as Class<T>).name : String(to));
+
+            this.verbose(typeName + " is already mapped to " + toName +
+                (name ? " with name \"" + name + "\"" : "") + ". Remapping...");
+
+            ArrayUtils.remove(list, currentMapping);
+        }
+
+        list.push({typeOrValue: to, name: name});
+    }
+
+    private removeMapping<T>(map: Map<Type, MappingData[]>, type: Type<T>, name?: string): void
+    {
+        const list: MappingData[] | undefined = map.get(type);
+
+        if (!list)
+        {
+            return;
+        }
+
+        const mapping: MappingData | undefined = Factory.includesName(list, name);
+
+        if (!mapping)
+        {
+            return;
+        }
+
+        ArrayUtils.remove(list, mapping);
+
+        if (list.length === 0)
+        {
+            map.delete(type);
+        }
+    }
+
+    /**
+     * Rebuilds bindings of the given type from the type and value mappings.
+     * A value binding takes precedence over a type binding, as before.
+     */
+    private syncBindings<T>(type: Type<T>): void
+    {
+        this._injector.unbind(type);
+
+        const typeMappingList: MappingData[] | undefined = this.typeMap.get(type);
+
+        if (typeMappingList)
+        {
+            for (const mapping of typeMappingList)
             {
-                if (!mappedToTypeOrValueList)
-                {
-                    mappedToTypeOrValueList = [];
-                }
-
-                if (!map.has(type))
-                {
-                    map.set(type, mappedToTypeOrValueList);
-                }
-
-                mappedToTypeOrValueList.push({typeOrValue: to, name});
+                this._injector.bindToType(type, mapping.typeOrValue, mapping.name);
             }
         }
 
-        return mapOrRemap;
-    }
+        const valueMappingList: MappingData[] | undefined = this.valueMap.get(type);
 
-    private unmap<T>(type: Type<T>, name: string | undefined, map: Map<any, MappingData[]>, mapMethod: (type: Type<T>, to: any, name?: string) => IFactory)
-    {
-        const mappingList = map.get(type);
-        if (mappingList)
+        if (valueMappingList)
         {
-            const mapping = Factory.includesName(mappingList, name);
-            if (mapping)
+            for (const mapping of valueMappingList)
             {
-                ArrayUtils.remove(mappingList, mapping);
-                this.injector.unbind(map === this.typeMap ? Factory.getTypeForType(type) : type);
-
-                if (mappingList.length)
-                {
-                    for (const currentMapping of mappingList)
-                    {
-                        this.autoMapAfterUnmap = true;
-
-                        mapMethod(type, currentMapping.typeOrValue, currentMapping.name);
-
-                        this.autoMapAfterUnmap = false;
-                    }
-                }
-                else
-                {
-                    map.delete(type);
-                }
+                this._injector.bindToValue(type, mapping.typeOrValue, mapping.name);
             }
         }
     }
@@ -359,20 +368,22 @@ export class Factory extends AbstractDisposable implements IFactory
     {
         this.checkPoolHasType(type);
 
-        const poolModel = this.poolModelMap.get(type);
+        const poolModel: PoolModel | undefined = this.poolModelMap.get(type);
 
-        if (this._safePool && this.getAllPoolItemsAreBusy(type))
+        if (!poolModel)
+        {
+            throw new Error("Pool '" + Factory.getTypeName(type) + "' is not registered! Call registerPool.");
+        }
+
+        if (this._safePool && poolModel.allItemsAreBusy)
         {
             this.info("All pool items are busy for class '" + Factory.getTypeName(type) + "'. Extending pool...");
 
-            this.increasePoolCapacity(type, 1);
+            poolModel.increaseCapacity(1);
 
             this.info("Pool capacity for '" + Factory.getTypeName(type) + "' increased!");
         }
 
-        // poolModel cannot be undefined here
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         return poolModel.get(type, createNewIfNeeded);
     }
 
@@ -385,7 +396,7 @@ export class Factory extends AbstractDisposable implements IFactory
         return this;
     }
 
-    private checkPoolHasType<T>(type: Type<T>)
+    private checkPoolHasType<T>(type: Type<T>): void
     {
         if (!this.poolModelMap.has(type))
         {
@@ -393,85 +404,50 @@ export class Factory extends AbstractDisposable implements IFactory
         }
     }
 
-    private static getTypeName<T>(type: Type<T>): string
-    {
-        return typeof type === "string" ? type : type.name;
-    }
-
     public mapToType<T>(type: Type<T>, to: Class<T>, name?: string): IFactory
     {
-        const mapSuccess: boolean = this.map(type, to, name, this.typeMap, this.unmapFromType.bind(this));
-
-        if (mapSuccess)
-        {
-            const bs = this.injector.bind(Factory.getTypeForType(type)).to(to);
-
-            if (name)
-            {
-                bs.whenTargetNamed(name);
-            }
-        }
+        this.addMapping(this.typeMap, type, to, name);
+        this.syncBindings(type);
 
         return this;
     }
 
     public mapToValue<T>(type: Type<T>, to: T, name?: string): IFactory
     {
-        const mapSuccess: boolean = this.map(type, to, name, this.valueMap, this.unmapFromValue.bind(this));
-
-        if (mapSuccess)
-        {
-            const bs = this.injector.bind(type).toConstantValue(to);
-
-            if (name)
-            {
-                bs.whenTargetNamed(name);
-            }
-            else
-            {
-                bs.whenTargetIsDefault();
-            }
-        }
+        this.addMapping(this.valueMap, type, to, name);
+        this.syncBindings(type);
 
         return this;
     }
 
     public instantiateValueUnmapped<T>(type: Type<T>): T
     {
-        const mappingData = Factory.includesName(this.valueMap.get(type));
+        const mappingData: MappingData | undefined = Factory.includesName(this.valueMap.get(type));
 
-        if (mappingData)
+        if (!mappingData)
         {
-            this.unmapFromValue(type);
+            return this.getInstance(type);
         }
 
-        const instance = this.getInstance(type);
+        this.unmapFromValue(type);
 
-        if (mappingData)
-        {
-            this.mapToValue(type, mappingData.typeOrValue);
-        }
+        const instance: T = this.getInstance(type);
+
+        this.mapToValue(type, mappingData.typeOrValue);
 
         return instance;
     }
 
     public getInstance<T>(type: Type<T>, name?: string, ignorePool?: boolean): T
     {
-        if (!ignorePool)
+        if (!ignorePool && this.hasPoolForType(type))
         {
-            if (this.hasPoolForType(type))
-            {
-                return this.getFromPool(type);
-            }
+            return this.getFromPool(type);
         }
 
-        const hasValue: boolean = this.hasValueMapping(type, name);
-        const hasType: boolean = this.hasTypeMapping(type, name);
-        let resolvedType: Type<T> = type;
-
-        if (!hasValue && !hasType)
+        if (!this.hasValueMapping(type, name) && !this.hasTypeMapping(type, name))
         {
-            const defaultImpl = getDefaultImplementation(type);
+            const defaultImpl: Class<any> | undefined = getDefaultImplementation(type);
 
             if (defaultImpl)
             {
@@ -481,12 +457,7 @@ export class Factory extends AbstractDisposable implements IFactory
             }
         }
 
-        if (!hasValue)
-        {
-            resolvedType = Factory.getTypeForType(type);
-        }
-
-        return name ? this.injector.getNamed(resolvedType, name) : this.injector.get(resolvedType);
+        return name ? this._injector.resolve(type, name) : this._injector.resolve(type);
     }
 
     public hasTypeMapping<T>(type: Type<T>, name?: string): boolean
@@ -501,27 +472,23 @@ export class Factory extends AbstractDisposable implements IFactory
 
     public unmapFromType<T>(type: Type<T>, name?: string): IFactory
     {
-        if (this.hasTypeMapping(type, name))
-        {
-            this.unmap(type, name, this.typeMap, this.mapToType.bind(this));
-        }
+        this.removeMapping(this.typeMap, type, name);
+        this.syncBindings(type);
 
         return this;
     }
 
     public unmapFromValue<T>(type: Type<T>, name?: string): IFactory
     {
-        if (this.hasValueMapping(type, name))
-        {
-            this.unmap(type, name, this.valueMap, this.mapToValue.bind(this));
-        }
+        this.removeMapping(this.valueMap, type, name);
+        this.syncBindings(type);
 
         return this;
     }
 
     public clear(): IFactory
     {
-        this.injector.unbindAll();
+        this._injector.unbindAll();
         this.typeMap.clear();
         this.valueMap.clear();
 
@@ -532,30 +499,27 @@ export class Factory extends AbstractDisposable implements IFactory
 
     public mapValueToLazy<T>(type: Type<T>, to: T, name?: string): IFactory
     {
-        const bs = lazyContainer.bind(type).toConstantValue(to);
-
-        if (name)
-        {
-            bs.whenTargetNamed(name);
-        }
-        else
-        {
-            bs.whenTargetIsDefault();
-        }
+        setLazyBinding(type, to, name);
 
         return this;
     }
 
     public mergeIntoLazy(): IFactory
     {
-        mergeIntoLazyOne(this.injector);
+        for (const [type, mappingList] of this.valueMap)
+        {
+            for (const mapping of mappingList)
+            {
+                setLazyBinding(type, mapping.typeOrValue, mapping.name);
+            }
+        }
 
         return this;
     }
 
     public clearLazy(): IFactory
     {
-        clearLazyOne();
+        clearLazyBindings();
 
         return this;
     }
@@ -564,40 +528,28 @@ export class Factory extends AbstractDisposable implements IFactory
     {
         this.checkPoolHasType(type);
 
-        // cannot be undefined here
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return this.poolModelMap.get(type).allItemsAreBusy;
+        return (this.poolModelMap.get(type) as PoolModel).allItemsAreBusy;
     }
 
     public getPoolBusyInstanceCount<T>(type: Type<T>): number
     {
         this.checkPoolHasType(type);
 
-        // cannot be undefined here
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return this.poolModelMap.get(type).busyItemsCount;
+        return (this.poolModelMap.get(type) as PoolModel).busyItemsCount;
     }
 
     public getPoolCapacity<T>(type: Type<T>): number
     {
         this.checkPoolHasType(type);
 
-        // cannot be undefined here
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return this.poolModelMap.get(type).capacity;
+        return (this.poolModelMap.get(type) as PoolModel).capacity;
     }
 
     public getPoolInstanceCount<T>(type: Type<T>): number
     {
         this.checkPoolHasType(type);
 
-        // cannot be undefined here
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return this.poolModelMap.get(type).instanceCount;
+        return (this.poolModelMap.get(type) as PoolModel).instanceCount;
     }
 
     public hasPoolForType<T>(type: Type<T>): boolean
@@ -609,10 +561,7 @@ export class Factory extends AbstractDisposable implements IFactory
     {
         this.checkPoolHasType(type);
 
-        // cannot be undefined here
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        this.poolModelMap.get(type).increaseCapacity(additionalCapacity);
+        (this.poolModelMap.get(type) as PoolModel).increaseCapacity(additionalCapacity);
 
         return this;
     }
@@ -644,6 +593,20 @@ export class Factory extends AbstractDisposable implements IFactory
         return this;
     }
 
+    public unregisterPool<T>(type: Type<T>): IFactory
+    {
+        const poolModel: PoolModel | undefined = this.poolModelMap.get(type);
+
+        if (poolModel)
+        {
+            poolModel.dispose();
+
+            this.poolModelMap.delete(type);
+        }
+
+        return this;
+    }
+
     public setSafePool(value: boolean): IFactory
     {
         this._safePool = value;
@@ -653,26 +616,25 @@ export class Factory extends AbstractDisposable implements IFactory
 
     public appendMappingConfig(config: FactoryConfig): IFactory
     {
-        let name: string | undefined;
-        let splitted: string[];
-        let interfaceDefinition: string | undefined;
-
         for (const [key, value] of config)
         {
-            interfaceDefinition = key;
-            name = undefined;
+            let name: string | undefined = undefined;
+            let interfaceDefinition: string = key;
 
             if (value)
             {
-                splitted = interfaceDefinition.split("$");
-                if (splitted.length > 1)
+                const splitted: string[] = interfaceDefinition.split("$");
+                const head: string | undefined = splitted[0];
+
+                if (splitted.length > 1 && head != undefined)
                 {
                     name = splitted[1];
-                    interfaceDefinition = splitted[0];
+                    interfaceDefinition = head;
                 }
                 else if (value.value != undefined)
                 {
-                    const type = typeof value.value;
+                    const type: string = typeof value.value;
+
                     if (type != "object")
                     {
                         interfaceDefinition = type;
@@ -717,21 +679,6 @@ export class Factory extends AbstractDisposable implements IFactory
                     }
                 }
             }
-        }
-
-        return this;
-    }
-
-    public unregisterPool<T>(type: Type<T>): IFactory
-    {
-        if (this.poolModelMap.has(type))
-        {
-            // cannot be undefined here
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            this.poolModelMap.get(type).dispose();
-
-            this.poolModelMap.delete(type);
         }
 
         return this;

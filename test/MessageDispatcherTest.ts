@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
-import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
 import {IMessageDispatcher, IMessageDispatcherImmutable, MessageDispatcher, MessageType} from "../src";

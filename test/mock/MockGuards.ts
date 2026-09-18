@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {AbstractGuards, lazyInjectNamed} from "../../src";
-import {inject, named} from "inversify";
+import {inject, named} from "../../src";
 import {MockVo5, MockVo6, MockVoBase} from "./MockCommands";
 
 export class MockValuesGuards extends AbstractGuards

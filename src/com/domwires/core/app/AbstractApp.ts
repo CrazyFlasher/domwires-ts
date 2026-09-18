@@ -1,12 +1,19 @@
-import {MessageDispatcher} from "../mvc/message/IMessageDispatcher";
-import fs from "fs";
-import * as dotenv from "dotenv";
-import {isNode} from "browser-or-node";
+/* eslint-disable no-type-assertion/no-type-assertion */
 
-dotenv.config();
+import {MessageDispatcher} from "../mvc/message/IMessageDispatcher";
+import {inject, optional} from "../di/Decorators";
+
+/**
+ * Loads a config of the application. Implementations can be platform specific: the default one uses
+ * fetch, the node implementation reads a file from the file system.
+ */
+export type AppConfigLoader = (path: string) => Promise<unknown>;
 
 export abstract class AbstractApp<TAppConfig = unknown> extends MessageDispatcher
 {
+    @inject("AppConfigLoader") @optional()
+    protected configLoader: AppConfigLoader | undefined;
+
     protected _appConfigJson!: TAppConfig;
 
     public get appConfigJson(): TAppConfig
@@ -14,41 +21,39 @@ export abstract class AbstractApp<TAppConfig = unknown> extends MessageDispatche
         return this._appConfigJson;
     }
 
-    public loadConfig(configLoaded?: (success: boolean) => void): void
+    /**
+     * Loads and parses the config. The injected "AppConfigLoader" is used, if it is mapped,
+     * otherwise the config is loaded with fetch.
+     */
+    public async loadConfig(configPath = "./dev.json"): Promise<TAppConfig>
     {
-        const configPath = process.env.CONFIG || "./dev" + ".json";
+        this.info("Loading app config:", configPath);
+
+        const loader: AppConfigLoader = this.configLoader ?? AbstractApp.loadByFetch;
 
         try
         {
-            this.warn("Loading app config:", configPath);
-
-            if (isNode)
-            {
-                this._appConfigJson = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-
-                if (configLoaded) configLoaded(true);
-            }
-            else
-            {
-                fetch(configPath).then((value) =>
-                {
-                    value.text().then(jsonStr =>
-                    {
-                        this._appConfigJson = JSON.parse(jsonStr);
-
-                        if (configLoaded) configLoaded(true);
-                    });
-                }).catch(e =>
-                {
-                    this.fatal(e);
-                    if (configLoaded) configLoaded(false);
-                });
-            }
-        } catch (e)
-        {
-            this.warn("Failed to load app config:", configPath);
-
-            if (configLoaded) configLoaded(false);
+            this._appConfigJson = await loader(configPath) as TAppConfig;
         }
+        catch (e)
+        {
+            this.fatal("Failed to load app config:", configPath, e);
+
+            throw e;
+        }
+
+        return this._appConfigJson;
+    }
+
+    private static async loadByFetch(path: string): Promise<unknown>
+    {
+        const response: Response = await fetch(path);
+
+        if (!response.ok)
+        {
+            throw new Error("Cannot load config '" + path + "': " + response.status + " " + response.statusText);
+        }
+
+        return response.json();
     }
 }

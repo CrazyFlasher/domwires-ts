@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import "reflect-metadata";
 import {Suite} from "mocha";
 import {Enum, HierarchyObjectContainer, MessageDispatcher, MessageType} from "../src";
 import {expect} from "chai";

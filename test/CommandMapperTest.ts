@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import {Done, Suite} from "mocha";
 import {expect} from "chai";
 import {Class, CommandMapperConfig, Enum, Factory, ICommand, ICommandMapper, IFactory, Logger, LogLevel} from "../src";

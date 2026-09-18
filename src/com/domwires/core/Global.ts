@@ -2,28 +2,62 @@
 /* eslint-disable no-type-assertion/no-type-assertion */
 
 import {Logger, LogLevel} from "../logger/ILogger";
+import type {IHierarchyObject} from "./mvc/hierarchy/IHierarchyObject";
+import type {IHierarchyObjectContainer} from "./mvc/hierarchy/IHierarchyObjectContainer";
+import type {IContext} from "./mvc/context/IContext";
 
-// dotenv.config();
-
-export type Class<T> = new(...args: T[]) => T;
+export type Class<T> = new(...args: any[]) => T;
 
 export type Type<T = any> = string | Class<T>;
 
-// const logger = new Logger(!process.env.DEBUG ? LogLevel.ERROR : LogLevel.INFO);
-const logger = new Logger(LogLevel.INFO);
+/**
+ * Runtime brands. They are set on prototypes of the framework classes and allow fast
+ * and safe checks instead of duck typing by method names.
+ */
+export const IS_HIERARCHY_OBJECT = Symbol("domwires:isHierarchyObject");
+export const IS_HIERARCHY_OBJECT_CONTAINER = Symbol("domwires:isHierarchyObjectContainer");
+export const IS_CONTEXT = Symbol("domwires:isContext");
+
+export function isHierarchyObject(value: unknown): value is IHierarchyObject
+{
+    return value != undefined && Reflect.get(Object(value), IS_HIERARCHY_OBJECT) === true;
+}
+
+export function isHierarchyObjectContainer(value: unknown): value is IHierarchyObjectContainer
+{
+    return value != undefined && Reflect.get(Object(value), IS_HIERARCHY_OBJECT_CONTAINER) === true;
+}
+
+export function isContext(value: unknown): value is IContext
+{
+    return value != undefined && Reflect.get(Object(value), IS_CONTEXT) === true;
+}
+
+let logger: Logger = new Logger(LogLevel.NONE);
+
+/**
+ * Sets the level of the global logger, that is used by the framework itself (for example,
+ * while mapping classes from a config).
+ */
+export function setGlobalLogLevel(value: LogLevel): void
+{
+    logger = new Logger(value);
+}
 
 const defaultImplMap: Map<string | Class<any>, Class<any>> = new Map<string | Class<any>, Class<any>>();
 
 export function definableFromString<T>(clazz: Class<T>, alias?: string): void
 {
-    logger.info("Manually defined classes: " + clazz.name + (alias ? " to alias: " + alias : ""));
+    logger.verbose("Manually defined classes: " + clazz.name + (alias ? " to alias: " + alias : ""));
 
-    (global as any)[alias ? alias : clazz.name] = clazz;
+    const targets: any = globalThis;
+
+    targets[alias ? alias : clazz.name] = clazz;
 }
 
 export function getClassFromString<T>(value: string): Class<T>
 {
-    const clazz = (global as any)[value];
+    const clazz = (globalThis as any)[value];
 
     if (!clazz)
     {
@@ -48,17 +82,3 @@ export function getDefaultImplementation(key: string | Class<any>): Class<any> |
     return typeof key === "string" ? defaultImplMap.get(key) : key;
 }
 
-export function instanceOf<T>(object: T, typeName?: string, methodName?: string): object is T
-{
-    if (typeName)
-    {
-        return 'is' + typeName in object;
-    }
-
-    if (methodName)
-    {
-        return methodName in object;
-    }
-
-    throw new Error("typeName and/or methodName should be specified!");
-}

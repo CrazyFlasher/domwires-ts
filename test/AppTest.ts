@@ -1,8 +1,7 @@
-import "reflect-metadata";
 import {Suite} from "mocha";
 import {expect} from "chai";
-import {Factory, Logger, LogLevel} from "../src";
-import {AbstractApp} from "../src/com/domwires/core/app/AbstractApp";
+import {AbstractApp, Factory, Logger, LogLevel} from "../src";
+import {createNodeConfigLoader} from "../src/com/domwires/node/NodeConfigLoader";
 
 describe('AppTest', function (this: Suite)
 {
@@ -10,25 +9,17 @@ describe('AppTest', function (this: Suite)
     {
     }
 
-    it('testAppConfig', (done) =>
+    it('testAppConfig', async () =>
     {
         const f = new Factory(new Logger(LogLevel.VERBOSE));
-        const app = f.getInstance<MockApp>(MockApp);
 
-        app.loadConfig(success =>
-        {
-            try
-            {
-                expect(success).true;
-                expect(app.appConfigJson.name).equals("Anton");
-                expect(app.appConfigJson.age).equals(36);
+        f.mapToValue("AppConfigLoader", createNodeConfigLoader());
 
-                done();
-            } catch (e)
-            {
-                console.error(e);
-                throw e;
-            }
-        });
+        const app: MockApp = f.getInstance<MockApp>(MockApp);
+        const config: {name: string; age: number} = await app.loadConfig("./dev.json");
+
+        expect(config.name).equals("Anton");
+        expect(config.age).equals(36);
+        expect(app.appConfigJson).equals(config);
     });
 });

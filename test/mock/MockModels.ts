@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {MockMessageType, MockMessageType2} from "./MockMessageType";
-import {inject, injectable, named} from "inversify";
+import {inject, injectable, named} from "../../src";
 import {AbstractHierarchyObject, definableFromString, setDefaultImplementation} from "../../src";
 
 export type MockTypeDef = {

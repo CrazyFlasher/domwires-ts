@@ -3,7 +3,7 @@
 import {IHierarchyObject, IHierarchyObjectImmutable} from "./IHierarchyObject";
 import {IMessage} from "../message/IMessageDispatcher";
 import {AbstractHierarchyObject} from "./AbstractHierarchyObject";
-import {instanceOf, setDefaultImplementation} from "../../Global";
+import {IS_HIERARCHY_OBJECT_CONTAINER, isContext, isHierarchyObjectContainer} from "../../Global";
 import {ArrayUtils} from "../../utils/ArrayUtils";
 
 export interface IHierarchyObjectContainerImmutable<TChildImmutable = IHierarchyObjectImmutable>
@@ -183,15 +183,17 @@ export class HierarchyObjectContainer<TChild extends TChildImmutable & IHierarch
             return this._childrenMap.has(childOrId);
         }
 
-        /* eslint-disable-next-line no-type-assertion/no-type-assertion */
-        if (this._childrenList.indexOf(childOrId as TChild) !== -1)
+        for (const child of this._childrenList)
         {
-            return true;
+            if (Object.is(child, childOrId))
+            {
+                return true;
+            }
         }
 
-        for (const [key, value] of this._childrenMap)
+        for (const child of this._childrenMap.values())
         {
-            if (value == childOrId)
+            if (Object.is(child, childOrId))
             {
                 return true;
             }
@@ -204,22 +206,28 @@ export class HierarchyObjectContainer<TChild extends TChildImmutable & IHierarch
     {
         for (const child of this._childrenList)
         {
-            if (!filter || filter(child))
+            if (message.isPropagationStopped)
             {
-                if (message.previousTarget !== child)
-                {
-                    if (instanceOf(child, "IHierarchyObjectContainer") && !instanceOf(child, "IContext"))
-                    {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        // we check above
-                        child.dispatchMessageToChildren(message, data);
-                    }
-                    else
-                    {
-                        child.handleMessage(message, data);
-                    }
-                }
+                break;
+            }
+
+            if (filter && !filter(child))
+            {
+                continue;
+            }
+
+            // do not send the message back to the object, it came from
+            if (message.previousTarget === child)
+            {
+                continue;
+            }
+
+            child.handleMessage(message, data);
+
+            // a nested container delivers the message to its own children as well
+            if (isHierarchyObjectContainer(child) && !isContext(child))
+            {
+                child.dispatchMessageToChildren(message, data);
             }
         }
 
@@ -291,6 +299,19 @@ export class HierarchyObjectContainer<TChild extends TChildImmutable & IHierarch
             }
         }
 
+        // children with an id are stored in the map, they should be detached as well
+        for (const child of this._childrenMap.values())
+        {
+            if (dispose)
+            {
+                child.dispose();
+            }
+            else
+            {
+                child.setParent(undefined);
+            }
+        }
+
         ArrayUtils.clear(this._childrenList);
 
         this._childrenMap.clear();
@@ -304,4 +325,4 @@ export class HierarchyObjectContainer<TChild extends TChildImmutable & IHierarch
     }
 }
 
-setDefaultImplementation<IHierarchyObjectContainer>("IHierarchyObjectContainer", HierarchyObjectContainer);
+Reflect.set(HierarchyObjectContainer.prototype, IS_HIERARCHY_OBJECT_CONTAINER, true);

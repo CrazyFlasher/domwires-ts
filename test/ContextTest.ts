@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import "reflect-metadata";
 import {Suite} from "mocha";
 import {ContextConfigBuilder, Factory, IContext, IFactory, Logger, LogLevel} from "../src";
 import {expect} from "chai";

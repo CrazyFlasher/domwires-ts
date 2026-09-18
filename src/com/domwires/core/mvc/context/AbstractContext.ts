@@ -1,13 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import {inject, optional, postConstruct} from "inversify";
+import {inject, optional, postConstruct} from "../../di/Decorators";
 import {Factory, IFactory} from "../../factory/IFactory";
-import {HierarchyObjectContainer, IHierarchyObjectContainer} from "../hierarchy/IHierarchyObjectContainer";
+import {
+    HierarchyObjectContainer,
+    IHierarchyObjectContainer,
+    IHierarchyObjectContainerImmutable
+} from "../hierarchy/IHierarchyObjectContainer";
 import {IContext, IContextImmutable} from "./IContext";
 import {ICommandMapper, MappingConfig, MappingConfigList} from "../command/ICommandMapper";
 import {Enum} from "../../Enum";
 import {IMessage, IMessageDispatcher, IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
-import {Class, instanceOf} from "../../Global";
+import {Class, isContext, IS_CONTEXT, isHierarchyObject} from "../../Global";
 import {ICommand} from "../command/ICommand";
 import {IGuards} from "../command/IGuards";
 import {Logger, LogLevel} from "../../../logger/ILogger";
@@ -20,6 +24,8 @@ export type ContextConfig = {
     readonly forwardMessageFromModelsToMediators: boolean;
     readonly forwardMessageFromModelsToModels: boolean;
 };
+
+type ChildRole = "model" | "mediator" | undefined;
 
 export class ContextConfigBuilder
 {
@@ -55,6 +61,12 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
     private modelList: IHierarchyObject[] = [];
     private mediatorList: IHierarchyObject[] = [];
 
+    /**
+     * Commands are executed asynchronously, while dispatchMessage() stays synchronous.
+     * Every started command is tracked here, so it can be awaited with settle().
+     */
+    private pendingCommands: Promise<void>[] = [];
+
     @postConstruct()
     protected init(): void
     {
@@ -79,12 +91,56 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
 
     public isMediator(child: IHierarchyObject): boolean
     {
-        return this.contains(child) && this.mediatorList.indexOf(child) != -1;
+        return this.contains(child) && AbstractContext.containsIdentity(this.mediatorList, child);
     }
 
     public isModel(child: IHierarchyObject): boolean
     {
-        return this.contains(child) && this.modelList.indexOf(child) != -1;
+        return this.contains(child) && AbstractContext.containsIdentity(this.modelList, child);
+    }
+
+    private static containsIdentity(list: IHierarchyObject[], child: IHierarchyObject): boolean
+    {
+        for (const item of list)
+        {
+            if (Object.is(item, child))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Defines, what role the object, that dispatched the message, plays in the given context:
+     * the object itself can be deeply nested, so the direct child of the context is used.
+     */
+    private static getChildRole(context: IContextImmutable, initialTarget: IHierarchyObjectImmutable): ChildRole
+    {
+        let current: IHierarchyObjectImmutable | undefined = initialTarget;
+
+        while (current && !Object.is(current.parentImmutable, context))
+        {
+            current = current.parentImmutable;
+        }
+
+        if (!current)
+        {
+            return undefined;
+        }
+
+        if (context.isModel(current))
+        {
+            return "model";
+        }
+
+        if (context.isMediator(current))
+        {
+            return "mediator";
+        }
+
+        return undefined;
     }
 
     private _add(list: IHierarchyObject[], child: IHierarchyObject, indexOrId?: number | string): boolean
@@ -282,23 +338,24 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
 
         this.tryToExecuteCommand(message.type, data, message.initialTarget);
 
-        /* eslint-disable-next-line no-type-assertion/no-type-assertion */
-        const initialTarget = message.initialTarget as IHierarchyObject;
+        const initialTarget: IMessageDispatcherImmutable = message.initialTarget;
 
-        if (instanceOf(initialTarget.root, "IContext"))
+        if (isHierarchyObject(initialTarget))
         {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            // we check above, that initialTarget.root is IContext
-            const context = initialTarget.root as IContextImmutable; // eslint-disable-line no-type-assertion/no-type-assertion
+            const root: IHierarchyObjectContainerImmutable | undefined = initialTarget.rootImmutable;
 
-            if (context.isModel(initialTarget))
+            if (isContext(root))
             {
-                this.forwardMessageFromModel(message, data);
-            }
-            else if (context.isMediator(initialTarget))
-            {
-                this.forwardMessageFromMediator(message, data);
+                const role: ChildRole = AbstractContext.getChildRole(root, initialTarget);
+
+                if (role === "model")
+                {
+                    this.forwardMessageFromModel(message, data);
+                }
+                else if (role === "mediator")
+                {
+                    this.forwardMessageFromMediator(message, data);
+                }
             }
         }
 
@@ -369,11 +426,42 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
         return this.commandMapper.hasMapping(messageType);
     }
 
-    public tryToExecuteCommand<T>(messageType: Enum, messageData?: T, messageInitialTarget?: IMessageDispatcherImmutable): void
+    public tryToExecuteCommand<T>(messageType: Enum, messageData?: T,
+                                  messageInitialTarget?: IMessageDispatcherImmutable): Promise<void>
     {
         this.checkIfDisposed();
 
-        this.commandMapper.tryToExecuteCommand(messageType, messageData, messageInitialTarget);
+        const command: Promise<void> = this.commandMapper.tryToExecuteCommand(messageType, messageData, messageInitialTarget);
+
+        // the promise is tracked, so it can be awaited with settle(); the error is reported here and
+        // is still available for the caller of settle()
+        const tracked: Promise<void> = command.catch((e: unknown) =>
+        {
+            this.error("Command execution failed:", e);
+
+            throw e;
+        });
+
+        tracked.catch(() => undefined);
+
+        this.pendingCommands.push(tracked);
+
+        return tracked;
+    }
+
+    /**
+     * Waits, until all commands, that were started by received messages, are executed.
+     */
+    public async settle(): Promise<void>
+    {
+        while (this.pendingCommands.length)
+        {
+            const pending: Promise<void>[] = this.pendingCommands;
+
+            this.pendingCommands = [];
+
+            await Promise.all(pending);
+        }
     }
 
     private finalFilter(typeFilter: (child: IHierarchyObject) => boolean,
@@ -428,3 +516,5 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
         }
     }
 }
+
+Reflect.set(AbstractContext.prototype, IS_CONTEXT, true);
