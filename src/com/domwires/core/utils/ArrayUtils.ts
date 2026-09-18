@@ -12,19 +12,6 @@ export class ArrayUtils
     }
 
     /**
-     * Checks if element is the last in input array.
-     * @param array input array
-     * @param element element to check
-     * @return true, if element is the last
-     */
-    public static isLast<T>(array: ReadonlyArray<T>, element: T): boolean
-    {
-        if (!array) throw new Error("Array does not exist!!");
-
-        return array.length !== 0 && array.lastIndexOf(element) === array.length - 1;
-    }
-
-    /**
      * Checks if input array contains element.
      * @param array input array
      * @param element element to check

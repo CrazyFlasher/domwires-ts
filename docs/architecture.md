@@ -122,6 +122,9 @@ almost nothing in production. The name of the object, that wrote the message, is
 argument by `AbstractDisposable`; a call site trace is optional (`setTraceCaller(true)`) because it
 requires a stack trace per message.
 
+The framework keeps a second, global logger for its own messages (for example, when a class is
+registered by name). It is silent until `setGlobalLogLevel()` changes its level.
+
 ## Brands instead of duck typing
 
 `isContext()`, `isHierarchyObject()` and `isHierarchyObjectContainer()` check a symbol-keyed flag,

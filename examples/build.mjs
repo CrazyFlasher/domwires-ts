@@ -1,7 +1,7 @@
-import {build} from "esbuild";
 import fs from "fs";
 import path from "path";
 import {fileURLToPath} from "url";
+import {bundleForBrowser} from "../tools/bundle.mjs";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const projectDir = path.resolve(currentDir, "..");
@@ -14,23 +14,13 @@ fs.mkdirSync(distPath);
 fs.copyFileSync(path.resolve(frontendDir, "index.html"), path.resolve(distPath, "index.html"));
 
 // the example imports the package by its public name, exactly as it is written in the README
-await build({
-    absWorkingDir: projectDir,
+await bundleForBrowser({
+    projectDir: projectDir,
     entryPoints: [path.resolve(frontendDir, "main.ts")],
     outfile: path.resolve(distPath, "main.js"),
-    bundle: true,
-    format: "iife",
-    platform: "browser",
-    target: "es2022",
-    // the example is a development build: keep the original sources, so the browser debugger
-    // shows examples/frontend/*.ts and the framework sources instead of the bundle
-    sourcemap: true,
-    sourcesContent: true,
-    loader: {".ts": "ts"},
     alias: {
         domwires: path.resolve(projectDir, "src/index.ts")
-    },
-    logLevel: "info"
+    }
 });
 
 console.log("⚡ Example built");

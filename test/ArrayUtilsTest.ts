@@ -11,13 +11,6 @@ before(() =>
 
 describe('ArrayUtilsTest', function (this: Suite)
 {
-    it("testIsLast", () =>
-    {
-        expect(ArrayUtils.isLast(arr, 4)).true;
-        expect(ArrayUtils.isLast(arr, 1)).false;
-        expect(ArrayUtils.isLast(arr, 0)).false;
-    });
-
     it("testContains", () =>
     {
         expect(ArrayUtils.contains(arr, 4)).true;

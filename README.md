@@ -464,6 +464,10 @@ expect(model.value).equals(5);
 **Debugging.** Pass a logger to the factory: it prints mapping and pool messages, and a trace of the
 caller can be turned on with `new Logger(LogLevel.VERBOSE).setTraceCaller(true)`.
 
+The framework has its own logger as well: it stays silent by default and speaks up with
+`setGlobalLogLevel(LogLevel.VERBOSE)`, which is useful when classes are mapped by name (for example,
+from a config with `definableFromString`).
+
 ***
 
 ### Development

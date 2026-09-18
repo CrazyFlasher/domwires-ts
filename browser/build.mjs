@@ -1,35 +1,23 @@
-import {build} from "esbuild";
 import fs from "fs";
 import path from "path";
 import {fileURLToPath} from "url";
+import {bundleForBrowser} from "../tools/bundle.mjs";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const projectDir = path.resolve(currentDir, "..");
-const distName = "../dist_client";
-const distPath = path.resolve(currentDir, distName);
+const distPath = path.resolve(projectDir, "dist_client");
 
 fs.rmSync(distPath, {recursive: true, force: true});
 fs.mkdirSync(distPath);
 
-function copy(from, to)
-{
-    fs.copyFileSync(path.resolve(currentDir, from), path.resolve(currentDir, distName + to));
-}
-
-copy("./test.html", "/test.html");
-copy("../dev.json", "/dev.json");
+fs.copyFileSync(path.resolve(currentDir, "test.html"), path.resolve(distPath, "test.html"));
+fs.copyFileSync(path.resolve(projectDir, "dev.json"), path.resolve(distPath, "dev.json"));
 
 // no polyfills are required: the core has no dependencies on node built-ins
-await build({
-    absWorkingDir: projectDir,
+await bundleForBrowser({
+    projectDir: projectDir,
     entryPoints: [path.resolve(projectDir, "test/index.ts")],
-    outfile: distPath + "/test.js",
-    bundle: true,
-    format: "iife",
-    platform: "browser",
-    target: "es2022",
-    loader: {".ts": "ts"},
-    logLevel: "info"
+    outfile: path.resolve(distPath, "test.js")
 });
 
 console.log("⚡ Done");

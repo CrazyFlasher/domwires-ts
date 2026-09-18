@@ -43,8 +43,9 @@ export class CounterMediator extends AbstractHierarchyObject
         this.render();
     }
 
-    private onCounterChanged(message: IMessage, data?: CounterChangedData): void
+    private onCounterChanged(_message: IMessage, _data?: CounterChangedData): void
     {
+        // the message is only a trigger here: the value is read from the immutable model
         this.render();
     }
 
