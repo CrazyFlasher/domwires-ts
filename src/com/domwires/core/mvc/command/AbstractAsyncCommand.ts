@@ -17,7 +17,4 @@ export class AbstractAsyncCommand extends AbstractCommand implements IAsyncComma
             that.execute();
         });
     }
-
-    /* eslint-disable-next-line @typescript-eslint/no-empty-function */
-    public isIAsyncCommand(): void {}
 }

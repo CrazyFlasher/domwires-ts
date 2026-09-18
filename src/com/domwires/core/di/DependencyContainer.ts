@@ -232,18 +232,10 @@ export class DependencyContainer implements IDependencyContainer
         }
 
         const key: string = name === undefined ? DEFAULT_NAME : name;
-        let binding: Binding | undefined = names.get(key);
+        const binding: Binding<T> = names.get(key) ?? {};
 
-        if (!binding)
-        {
-            binding = {};
+        names.set(key, binding);
 
-            names.set(key, binding);
-        }
-
-        // the binding is created above
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         return binding;
     }
 }

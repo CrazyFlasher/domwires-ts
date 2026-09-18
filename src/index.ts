@@ -1,9 +1,6 @@
-import {registerDefaults} from "./com/domwires/core/registerDefaults";
-
 export * from "./com/domwires/core/Global";
 export * from "./com/domwires/core/Enum";
 export * from "./com/domwires/core/Decorators";
-export * from "./com/domwires/core/registerDefaults";
 export * from "./com/domwires/core/app/AbstractApp";
 export * from "./com/domwires/core/common/IDisposable";
 export * from "./com/domwires/core/common/AbstractDisposable";
@@ -27,5 +24,3 @@ export * from "./com/domwires/core/mvc/hierarchy/IHierarchyObjectContainer";
 export * from "./com/domwires/core/mvc/message/IMessageDispatcher";
 export * from "./com/domwires/core/utils/ArrayUtils";
 export * from "./com/domwires/logger/ILogger";
-
-registerDefaults();

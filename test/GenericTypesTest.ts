@@ -66,11 +66,8 @@ type Type_3 = { readonly o: any };
 
 class MesType<T = void> extends Enum
 {
-    // TODO: Weird shit 1: no error if doing this way (note: Type_1 and Type_2):
-    // public static readonly A: MessageType<Type_1> = new MessageType<Type_2>("A");
-
-    // TODO: Weird shit 2: error if doing this way (note: MessageType and MessageType):
-    // public static readonly A: MessageType<Type_1> = new MessageType<Type_2>("A");
+    // Note: the data type of a message type is defined by the annotation of the static field,
+    // the generic argument of a constructor call is not narrowed against it.
 
     public static readonly A: MessageType<Type_1> = new MesType<Type_1>();
     public static readonly B: MessageType<Type_2> = new MesType<Type_2>();
