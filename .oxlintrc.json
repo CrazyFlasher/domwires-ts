@@ -1,0 +1,11 @@
+{
+  "ignorePatterns": [
+    "dist/**",
+    "dist-test/**",
+    "dist_client/**",
+    "node_modules/**"
+  ],
+  "rules": {
+    "no-unused-expressions": "off"
+  }
+}
