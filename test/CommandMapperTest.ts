@@ -1,6 +1,17 @@
 import {Done, Suite} from "mocha";
 import {expect} from "chai";
-import {Class, CommandMapperConfig, Enum, Factory, ICommand, ICommandMapper, IFactory, Logger, LogLevel} from "../src";
+import {
+    AbstractCommand,
+    Class,
+    CommandMapperConfig,
+    Enum,
+    Factory,
+    ICommand,
+    ICommandMapper,
+    IFactory,
+    Logger,
+    LogLevel
+} from "../src";
 import {MockMessageType} from "./mock/MockMessageType";
 import {
     MockAfterAsyncCommand,
@@ -463,6 +474,18 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testSingletonCommandsAreFaster', () =>
     {
+        class CountingCommand extends AbstractCommand
+        {
+            public static createdInstances = 0;
+
+            public constructor()
+            {
+                super();
+
+                CountingCommand.createdInstances++;
+            }
+        }
+
         function executeCommands(config: CommandMapperConfig, commandClass: Class<ICommand>): number
         {
             const timeStarted = new Date().getTime();
@@ -496,7 +519,16 @@ describe('CommandMapperTest', function (this: Suite)
         logger.info("Time passed for singleton commands: ", timePassedForSingletonCommands);
         logger.info("Time passed for NOT singleton commands: ", timePassedForNotSingletonCommands);
 
-        expect(timePassedForNotSingletonCommands < timePassedForNotSingletonCommands);
+        // timings above are just a benchmark and depend on the machine, so the optimization itself is checked
+        // by the amount of created command objects: a singleton command is created once and is reused from a pool,
+        // a not singleton command is created for every execution
+        CountingCommand.createdInstances = 0;
+        executeCommands({singletonCommands: true, mergeMessageDataAndMappingData: true}, CountingCommand);
+        expect(CountingCommand.createdInstances).equals(1);
+
+        CountingCommand.createdInstances = 0;
+        executeCommands({singletonCommands: false, mergeMessageDataAndMappingData: true}, CountingCommand);
+        expect(CountingCommand.createdInstances).equals(1000);
     });
 
 

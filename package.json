@@ -49,5 +49,8 @@
     "oxlint": "1.83.0",
     "rimraf": "6.0.1",
     "typescript": "7.0.2"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
   }
 }
