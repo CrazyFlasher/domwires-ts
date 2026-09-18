@@ -1,5 +1,5 @@
 import {Factory, IFactory, Logger, LogLevel} from "domwires";
-import {CounterContext} from "./context";
+import {CounterContext} from "./CounterContext";
 
 /**
  * The entry point: a factory holds all bindings, a context is created through it and stays alive

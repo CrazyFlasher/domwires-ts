@@ -1,5 +1,5 @@
 import {AbstractHierarchyObject} from "domwires";
-import {AppMessage} from "./messages";
+import {AppMessage} from "./AppMessage";
 
 /**
  * The read only view of the model. Mediators get only this interface, so they cannot change the state.

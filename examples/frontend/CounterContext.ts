@@ -1,8 +1,10 @@
 import {AbstractContext} from "domwires";
-import {ChangeCounterCommand, CounterIsNotAtMaxGuards, ResetCounterCommand} from "./commands";
-import {AppMessage} from "./messages";
-import {CounterMediator} from "./mediator";
-import {CounterModel, ICounterModel} from "./model";
+import {AppMessage} from "./AppMessage";
+import {ChangeCounterCommand} from "./ChangeCounterCommand";
+import {CounterIsNotAtMaxGuards} from "./CounterIsNotAtMaxGuards";
+import {CounterMediator} from "./CounterMediator";
+import {CounterModel, ICounterModel} from "./CounterModel";
+import {ResetCounterCommand} from "./ResetCounterCommand";
 
 /**
  * A context is a composition root: it owns models and mediators, maps messages to commands and

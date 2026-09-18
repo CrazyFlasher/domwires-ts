@@ -28,14 +28,15 @@ other: everything goes through messages and commands.
 
 ### Quick start
 
-Five small files of the counter example. The full version is in [`examples/frontend`](./examples/frontend):
-a click on "+1" makes the mediator dispatch a message, the context maps it to a command, the command
-changes the model, the model tells about it and the mediator renders the new state.
+The counter example, one class per file — the same layout as in the framework itself. The full
+version is in [`examples/frontend`](./examples/frontend): a click on "+1" makes the mediator dispatch
+a message, the context maps it to a command, the command changes the model, the model tells about it
+and the mediator renders the new state.
 
 ![The counter example](./docs/example-diagram.svg)
 
 ```ts
-// messages.ts
+// AppMessage.ts
 import {MessageType} from "domwires";
 
 export type ChangeCounterData = {
@@ -50,9 +51,9 @@ export class AppMessage extends MessageType
 ```
 
 ```ts
-// model.ts — a mediator gets only the immutable interface
+// CounterModel.ts — a mediator gets only the immutable interface
 import {AbstractHierarchyObject} from "domwires";
-import {AppMessage} from "./messages";
+import {AppMessage} from "./AppMessage";
 
 export interface ICounterModelImmutable
 {
@@ -84,9 +85,9 @@ export class CounterModel extends AbstractHierarchyObject implements ICounterMod
 ```
 
 ```ts
-// commands.ts — the only place, where the state is changed
+// ChangeCounterCommand.ts — the only place, where the state is changed
 import {AbstractCommand, AbstractGuards, lazyInject, lazyInjectNamed} from "domwires";
-import {ICounterModel} from "./model";
+import {ICounterModel} from "./CounterModel";
 
 export class ChangeCounterCommand extends AbstractCommand
 {
@@ -102,6 +103,7 @@ export class ChangeCounterCommand extends AbstractCommand
     }
 }
 
+// CounterIsNotAtMaxGuards.ts — the guard of the mapping
 export class CounterIsNotAtMaxGuards extends AbstractGuards
 {
     @lazyInject("ICounterModel")
@@ -115,10 +117,10 @@ export class CounterIsNotAtMaxGuards extends AbstractGuards
 ```
 
 ```ts
-// mediator.ts — renders the model and dispatches user intentions
+// CounterMediator.ts — renders the model and dispatches user intentions
 import {AbstractHierarchyObject, IMessage, inject, postConstruct} from "domwires";
-import {AppMessage, CounterChangedData} from "./messages";
-import {ICounterModelImmutable} from "./model";
+import {AppMessage, CounterChangedData} from "./AppMessage";
+import {ICounterModelImmutable} from "./CounterModel";
 
 export class CounterMediator extends AbstractHierarchyObject
 {
@@ -152,12 +154,13 @@ export class CounterMediator extends AbstractHierarchyObject
 ```
 
 ```ts
-// context.ts — the composition root
+// CounterContext.ts — the composition root
 import {AbstractContext} from "domwires";
-import {ChangeCounterCommand, CounterIsNotAtMaxGuards} from "./commands";
-import {AppMessage} from "./messages";
-import {CounterMediator} from "./mediator";
-import {CounterModel, ICounterModel} from "./model";
+import {AppMessage} from "./AppMessage";
+import {ChangeCounterCommand} from "./ChangeCounterCommand";
+import {CounterIsNotAtMaxGuards} from "./CounterIsNotAtMaxGuards";
+import {CounterMediator} from "./CounterMediator";
+import {CounterModel, ICounterModel} from "./CounterModel";
 
 export class CounterContext extends AbstractContext
 {
@@ -183,7 +186,7 @@ export class CounterContext extends AbstractContext
 ```ts
 // main.ts — bootstrap
 import {Factory, IFactory, Logger, LogLevel} from "domwires";
-import {CounterContext} from "./context";
+import {CounterContext} from "./CounterContext";
 
 const factory: IFactory = new Factory(new Logger(LogLevel.INFO));
 

@@ -1,6 +1,6 @@
 import {AbstractHierarchyObject, IMessage, inject, postConstruct} from "domwires";
-import {AppMessage, CounterChangedData} from "./messages";
-import {ICounterModelImmutable} from "./model";
+import {AppMessage, CounterChangedData} from "./AppMessage";
+import {ICounterModelImmutable} from "./CounterModel";
 
 /**
  * A mediator knows nothing about commands: it renders the immutable model and dispatches messages,
