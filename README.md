@@ -24,23 +24,15 @@ other: everything goes through messages and commands.
 * Objects are created through a factory with injections, so any part can be replaced on a platform
   or in a test.
 
-```mermaid
-graph TD
-    C[Context] -->|owns| M[Model]
-    C -->|owns| V[Mediator]
-    C -->|owns| C2[Child context]
-    M -->|dispatches a message| C
-    V -->|dispatches a message| C
-    C -->|forwards to models and mediators| V
-    C -->|maps messages to commands| CMD[Command]
-    CMD -->|mutates| M
-```
-
 ***
 
 ### Quick start
 
-Five small files of the counter example. The full version is in [`examples/frontend`](./examples/frontend).
+Five small files of the counter example. The full version is in [`examples/frontend`](./examples/frontend):
+a click on "+1" makes the mediator dispatch a message, the context maps it to a command, the command
+changes the model, the model tells about it and the mediator renders the new state.
+
+![The counter example](./docs/example-diagram.svg)
 
 ```ts
 // messages.ts

@@ -21,7 +21,9 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist/"
+    "dist/",
+    "docs/",
+    "README.md"
   ],
   "sideEffects": false,
   "engines": {
