@@ -5,6 +5,7 @@ import {IDisposable, IDisposableImmutable} from "../../common/IDisposable";
 import {Enum} from "../../Enum";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
 import {ArrayUtils} from "../../utils/ArrayUtils";
+import {setDefaultImplementation} from "../../Global";
 
 /**
  * A message type. Data type is stored in the generic parameter only, so a message
@@ -444,3 +445,6 @@ class Listener<DataType>
         return this._bindedFunc;
     }
 }
+
+// the registration lives next to the class, so a bundler can not drop it as an unused side effect
+setDefaultImplementation<IMessageDispatcher>("IMessageDispatcher", MessageDispatcher);

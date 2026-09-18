@@ -3,7 +3,12 @@
 import {IHierarchyObject, IHierarchyObjectImmutable} from "./IHierarchyObject";
 import {IMessage} from "../message/IMessageDispatcher";
 import {AbstractHierarchyObject} from "./AbstractHierarchyObject";
-import {IS_HIERARCHY_OBJECT_CONTAINER, isContext, isHierarchyObjectContainer} from "../../Global";
+import {
+    IS_HIERARCHY_OBJECT_CONTAINER,
+    isContext,
+    isHierarchyObjectContainer,
+    setDefaultImplementation
+} from "../../Global";
 import {ArrayUtils} from "../../utils/ArrayUtils";
 
 export interface IHierarchyObjectContainerImmutable<TChildImmutable = IHierarchyObjectImmutable>
@@ -326,3 +331,6 @@ export class HierarchyObjectContainer<TChild extends TChildImmutable & IHierarch
 }
 
 Reflect.set(HierarchyObjectContainer.prototype, IS_HIERARCHY_OBJECT_CONTAINER, true);
+
+// the registration lives next to the class, so a bundler can not drop it as an unused side effect
+setDefaultImplementation<IHierarchyObjectContainer>("IHierarchyObjectContainer", HierarchyObjectContainer);

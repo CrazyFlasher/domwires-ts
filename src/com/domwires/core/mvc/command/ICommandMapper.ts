@@ -4,7 +4,7 @@
 import {IDisposable, IDisposableImmutable} from "../../common/IDisposable";
 import {Enum} from "../../Enum";
 import {ICommand} from "./ICommand";
-import {Class} from "../../Global";
+import {Class, setDefaultImplementation} from "../../Global";
 import {IGuards} from "./IGuards";
 import {inject, optional, postConstruct} from "../../di/Decorators";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
@@ -613,3 +613,6 @@ export class CommandMapper extends AbstractDisposable implements ICommandMapper
         return undefined;
     }
 }
+
+// the registration lives next to the class, so a bundler can not drop it as an unused side effect
+setDefaultImplementation<ICommandMapper>("ICommandMapper", CommandMapper);

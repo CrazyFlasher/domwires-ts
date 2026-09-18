@@ -69,9 +69,14 @@ export function getClassFromString<T>(value: string): Class<T>
 
 export function setDefaultImplementation<T>(key: string | Class<T>, value: Class<T>): void
 {
-    if (defaultImplMap.has(key))
+    const existing: Class<any> | undefined = defaultImplMap.get(key);
+
+    // registration is idempotent: a module may be loaded twice (an entry point and a deep import,
+    // a bundle and a source file), and the same implementation is not a conflict
+    if (existing && existing !== value)
     {
-        throw new Error("Default implementation already defined for " + key + " : " + value.name);
+        throw new Error("Default implementation already defined for " + key + " : " + existing.name +
+            ", cannot redefine it with " + value.name + "!");
     }
 
     defaultImplMap.set(key, value);

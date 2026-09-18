@@ -8,7 +8,7 @@ import {
     IHierarchyObjectContainerImmutable
 } from "../hierarchy/IHierarchyObjectContainer";
 import {IContext, IContextImmutable} from "./IContext";
-import {ICommandMapper, MappingConfig, MappingConfigList} from "../command/ICommandMapper";
+import {CommandMapper, ICommandMapper, MappingConfig, MappingConfigList} from "../command/ICommandMapper";
 import {Enum} from "../../Enum";
 import {IMessage, IMessageDispatcher, IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
 import {Class, isContext, IS_CONTEXT, isHierarchyObject} from "../../Global";
@@ -81,7 +81,13 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
             this.factory.mapToValue("IFactory", this.factory);
         }
 
-        this.commandMapper = this.factory.instantiateValueUnmapped("ICommandMapper");
+        // the mapper is taken from a mapping, when the application provides one, and is created directly
+        // otherwise: the internal default must not depend on a global registration, that a bundler may drop
+        const commandMapperIsMapped: boolean = this.factory.hasTypeMapping("ICommandMapper") ||
+            this.factory.hasValueMapping("ICommandMapper");
+
+        this.commandMapper = this.factory.instantiateValueUnmapped(
+            commandMapperIsMapped ? "ICommandMapper" : CommandMapper);
     }
 
     public override add(child: IHierarchyObject, indexOrId?: number | string): boolean

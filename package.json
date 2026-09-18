@@ -25,7 +25,6 @@
     "docs/",
     "README.md"
   ],
-  "sideEffects": false,
   "engines": {
     "node": ">=20.0.0"
   },
@@ -36,6 +35,7 @@
     "test": "rimraf dist-test/ && tsc -p tsconfig.test.json && mocha \"dist-test/test/**/*.js\" --timeout=3000",
     "test-browser": "node browser/build.mjs && http-server ./dist_client -a localhost -p 1234 -o ./test.html",
     "example:build": "node examples/build.mjs",
+    "example:smoke": "node examples/smoke.mjs",
     "example": "npm run example:build && http-server ./dist_example -a localhost -p 1235 -o ./index.html",
     "lint": "oxlint src test browser",
     "copy-files": "copyfiles -u 1 dev.json dist/"
