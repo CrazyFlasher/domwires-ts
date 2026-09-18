@@ -22,6 +22,10 @@ await build({
     format: "iife",
     platform: "browser",
     target: "es2022",
+    // the example is a development build: keep the original sources, so the browser debugger
+    // shows examples/frontend/*.ts and the framework sources instead of the bundle
+    sourcemap: true,
+    sourcesContent: true,
     loader: {".ts": "ts"},
     alias: {
         domwires: path.resolve(projectDir, "src/index.ts")
