@@ -6,7 +6,7 @@ import {spawnSync} from "node:child_process";
 import {build} from "esbuild";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-const read = file => readFileSync(path.resolve(root, file), "utf8");
+const read = file => readFileSync(path.resolve(root, file), "utf8").replace(/\r\n/g, "\n");
 const issues = [];
 const pages = ["README.md"];
 function collect(directory)
