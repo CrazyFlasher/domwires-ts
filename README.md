@@ -113,7 +113,7 @@ Create contexts through the factory so their initialization hook runs. `dispatch
 
 ## Runtime and development
 
-Built with TypeScript 7, targeting ES2022. The package declares Node 20+ and the CI workflow checks Node 20/22/24. The root entry point is browser-compatible; Node-specific loading is a separate export. Node ESM and CommonJS entry points share the same classes, tokens and registries, so mixing `import` and `require` preserves identity. Browser bundlers select a native ESM implementation. Both formats include declarations and source maps; application types are checked with TypeScript 6 and 7.
+Built with TypeScript 7, targeting ES2022. The package declares Node 20+ and the CI workflow checks Node 20/22/24. The root entry point is browser-compatible; Node-specific loading is a separate export. Node ESM and CommonJS entry points share the same classes, tokens and registries, so mixing `import` and `require` preserves identity. Browser bundlers select one native ESM implementation for both import styles. Both formats include declarations and source maps; application types are checked with TypeScript 6 and 7.
 
 Property decorators use `experimentalDecorators`; constructor and provider injection need no decorator syntax. Runtime dependencies are empty.
 

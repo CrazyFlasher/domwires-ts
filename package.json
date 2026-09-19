@@ -21,6 +21,10 @@
           "default": "./dist/index.js"
         }
       },
+      "browser": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/browser.mjs"
+      },
       "import": {
         "types": "./dist/index.d.mts",
         "default": "./dist/browser.mjs"

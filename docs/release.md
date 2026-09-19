@@ -12,7 +12,7 @@ The previous `main` and published tag `v2.1.0` resolve to `08c80f955e63d652f0ab5
 
 - Node 20+; remote CI covers Node 20, 22 and 24.
 - Node `import` selects a native ESM facade; `require` selects the same CommonJS implementation. Both share runtime and declaration identity.
-- Browser bundlers select a native ESM implementation targeting ES2022. Automated browser support is currently checked in Chromium; Firefox/WebKit are not yet part of the verified matrix.
+- Browser bundlers select a shared native ESM implementation for import and require, targeting ES2022. Automated browser support is currently checked in Chromium; Firefox/WebKit are not yet part of the verified matrix.
 - Consumer declarations are checked with TypeScript 6 and 7, including both module modes and negative API tests.
 - `npm pack` and `npm publish` rebuild via `prepack`. The explicit file list includes sources, declarations, maps, Markdown guides and SVG artwork, and excludes generated API HTML, tests and development tooling.
 - Internal root exports are removed. Mapping construction/scheduling internals are stripped from declarations; supported protected extension points are documented in [API reference](api.md#extension-points).
@@ -29,7 +29,7 @@ The previous `main` and published tag `v2.1.0` resolve to `08c80f955e63d652f0ab5
 - [x] RC version, lockfile, MIT license and changelog.
 - [x] Complete final local checks and record results.
 - [x] Preserve the previous main as v2.x.
-- [ ] Push the candidate branch.
+- [x] Push the candidate branch.
 - [ ] Require green remote CI, then fast-forward main.
 - [ ] Publish the RC to next and verify an installation from npm.
 - [ ] Publish stable 5.0.0 to latest after RC validation.
@@ -69,3 +69,5 @@ Historical implementation reports: [stage one](v2-implementation.md), [stage two
 ## Local RC verification (2026-09-19)
 
 Node 24.18: 192 runtime tests, 3 Chromium scenarios, typecheck/lint, packed consumers with TypeScript 6.0.2 and 7.0.2, example smoke and documentation checks pass. The API check covers 264 interface members and the documented extension hooks. The browser lifecycle scenario performs 100 scene changes and 100 restarts. The Node stress check completes 2,800 cycles with zero live bullets, adapters, requests or clocks; sampled heap growth after warmup is 462,928 bytes, below its limit. These measurements describe this local run, not a cross-platform performance guarantee.
+
+The first remote matrix passed on candidate `bf04667` ([run](https://github.com/CrazyFlasher/domwires-ts/actions/runs/35458569587)). An additional mixed browser import/require regression was then added; the final candidate must pass the matrix again before main is advanced.

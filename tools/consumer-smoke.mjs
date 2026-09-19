@@ -110,6 +110,8 @@ try
         run([tsc, "--ignoreConfig", "--noEmit", "--strict", "--target", "es2022",
             "--module", "nodenext", `types.${extension}`]);
     }
+    run([tsc, "--ignoreConfig", "--noEmit", "--strict", "--target", "es2022",
+        "--module", "esnext", "--moduleResolution", "bundler", "types.ts"]);
     fs.writeFileSync(path.join(temporary, "mixed-types.mts"), `
         import {Factory, ServiceToken} from "domwires";
         import cjs = require("domwires");
@@ -121,6 +123,8 @@ try
         "--module", "nodenext", "mixed-types.mts"]);
     fs.writeFileSync(path.join(temporary, "browser.js"), `
         import {Factory, AbstractContext, AbstractCommand, MessageType} from "domwires";
+        const cjs = require("domwires");
+        if (Factory !== cjs.Factory) throw new Error("Browser import/require identity split");
         class Context extends AbstractContext {}
         const event = new MessageType("run"), context = new Factory().getInstance(Context);
         let count = 0;
@@ -137,7 +141,7 @@ try
     assert.ok(!Object.keys(bundle.metafile.inputs).some(input => /NodeConfigLoader|node:/.test(input)));
     assert.ok(Object.keys(bundle.metafile.inputs).some(input => input.endsWith("dist/browser.mjs")));
     const sandbox = {AbortController};
-    vm.runInNewContext(bundle.outputFiles[0].text, sandbox);
+    vm.runInNewContext(bundle.outputFiles[0].text, sandbox, {displayErrors: false});
     assert.equal(sandbox.consumerResult, 1);
     console.log("Packed CJS, native ESM, shared runtime/type identities, public declarations and minified browser consumers pass.");
 }
