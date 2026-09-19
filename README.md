@@ -13,7 +13,7 @@ A context connects components through messages and contracts. Commands change mo
 
 [Get started](docs/getting-started.md) · [Documentation](docs/index.md) · [API reference](docs/api.md) · [Examples](docs/examples.md)
 
-> **5.0 release candidate.** This checkout prepares `5.0.0-rc.1` for the npm `next` tag; `latest` remains on 2.x until stable publication. See the [release checklist](docs/release.md) and [changelog](CHANGELOG.md).
+> **5.0 introduces a new API.** The previous implementation is preserved on [`v2.x`](https://github.com/CrazyFlasher/domwires-ts/tree/v2.x). See the [changelog](CHANGELOG.md) and [release guide](docs/release.md).
 
 ## How it fits together
 
@@ -35,7 +35,13 @@ This is one real route from the scene lab. [The walkthrough](docs/examples.md) e
 
 ## Quick start
 
-Build this checkout and run the examples:
+Install DomWires in your application:
+
+```sh
+npm install domwires@^5.0.0
+```
+
+To build this repository and run the examples:
 
 ```sh
 npm ci
@@ -43,7 +49,7 @@ npm run build
 npm run example
 ```
 
-Open the printed localhost URL for the counter and scene lab. To use the development version in another application, run `npm pack` and install the resulting local tarball. Import from `domwires`.
+Open the printed localhost URL for the counter and scene lab. To test local changes in another application, run `npm pack` and install the resulting tarball. Import from `domwires`.
 
 A complete message-to-command program:
 

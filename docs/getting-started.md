@@ -2,9 +2,9 @@
 
 [Documentation](index.md)
 
-## Try the 5.0 release candidate
+## Install DomWires 5.0
 
-The package in this checkout is being prepared for DomWires 5.0. An unqualified `npm install domwires` may still install the published 2.x API. After RC publication, install it with `npm install domwires@next`. To try this checkout before publication:
+Install the new major version explicitly with `npm install domwires@^5.0.0`. To build this repository and run the examples:
 
 ```sh
 npm ci
@@ -14,7 +14,7 @@ npm run example
 
 Open the printed localhost address. The counter page links to the scene lab. For a separate application, run `npm pack` here and install the resulting local `.tgz` file in that application. Import from `domwires`; use `domwires/node` only for Node-specific config loading.
 
-The package is built with TypeScript 7 and targets ES2022. Property decorators require `experimentalDecorators: true`; emitted reflection metadata is unnecessary. Consumer code can use constructor injection (`static readonly inject`) and providers without decorators. A consumer does not need the compiler at runtime.
+The package is built with TypeScript 7 and targets ES2022. Consumer declarations are checked with TypeScript 6 and 7. Property decorators require `experimentalDecorators: true`; emitted reflection metadata is unnecessary. Consumer code can use constructor injection (`static readonly inject`) and providers without decorators. A consumer does not need the compiler at runtime.
 
 ## Your first message
 

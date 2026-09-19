@@ -1,6 +1,6 @@
 {
   "name": "domwires",
-  "version": "5.0.0-rc.1",
+  "version": "5.0.0",
   "description": "Flexible and extensible MVC framework",
   "repository": {
     "type": "git",

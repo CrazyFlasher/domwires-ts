@@ -11,8 +11,8 @@ DomWires separates application state, presentation, actions and composition thro
 | [Scene lab walkthrough](examples.md) | Nested contexts, pooled bullets, loading and scene replacement |
 | [API reference](api.md) | Generate and navigate the reference extracted from source comments |
 | [Contributing](contributing.md) | Source organization, code style and verification |
-| [5.0 release checklist](release.md) | Remaining release gates and the main/v2.x branch plan |
+| [5.0 release guide](release.md) | Verification, distribution and the main/v2.x branches |
 
 Read the counter first if you are new to DomWires. Read the scene lab when you need a module with its own lifetime and asynchronous work.
 
-The concepts originate in the [ActionScript 3](https://github.com/CrazyFlasher/domwires-as3) and [Haxe](https://github.com/CrazyFlasher/domwires-haxe) implementations. The 5.0 API is being prepared as a new major version; application compatibility with 2.x is not a design constraint.
+The concepts originate in the [ActionScript 3](https://github.com/CrazyFlasher/domwires-as3) and [Haxe](https://github.com/CrazyFlasher/domwires-haxe) implementations. 5.0 is a new major API; application compatibility with 2.x is not a design constraint.

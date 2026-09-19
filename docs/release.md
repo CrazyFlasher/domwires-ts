@@ -1,16 +1,16 @@
-# DomWires 5.0 release checklist
+# DomWires 5.0 release guide
 
 [Documentation](index.md)
 
-This checkout is release candidate `5.0.0-rc.1`. Publication uses npm tag `next`; `latest` stays on 2.x until stable validation is complete.
+The stable version is `5.0.0`, promoted after registry installation checks of `5.0.0-rc.1`. Stable publication uses npm tag `latest`; prereleases use `next`. The registry is the source of truth for publication status: run `npm view domwires dist-tags`.
 
 ## Branch transition
 
-The previous `main` and published tag `v2.1.0` resolve to `08c80f955e63d652f0ab568ef0a38be760d8fd3f`. Preserve that exact commit as `v2.x` before advancing `main`. Push the candidate branch, require a green remote CI matrix, then fast-forward `main`. Never rewrite the old history.
+The previous `main` and published tag `v2.1.0` resolve to `08c80f955e63d652f0ab568ef0a38be760d8fd3f`. That exact commit is preserved on `v2.x`; the validated 5.0 implementation is on `main`. Both branches retain the previous history.
 
 ## Distribution
 
-- Node 20+; remote CI covers Node 20, 22 and 24.
+- Node 20+; remote CI covers Node 20, 22 and 24. Documentation and TypeScript 6 consumers are also verified on Windows and Linux.
 - Node `import` selects a native ESM facade; `require` selects the same CommonJS implementation. Both share runtime and declaration identity.
 - Browser bundlers select a shared native ESM implementation for import and require, targeting ES2022. Automated browser support is currently checked in Chromium; Firefox/WebKit are not yet part of the verified matrix.
 - Consumer declarations are checked with TypeScript 6 and 7, including both module modes and negative API tests.
@@ -31,8 +31,7 @@ The previous `main` and published tag `v2.1.0` resolve to `08c80f955e63d652f0ab5
 - [x] Preserve the previous main as v2.x.
 - [x] Push the candidate branch.
 - [x] Require green remote CI, then fast-forward main.
-- [ ] Publish the RC to next and verify an installation from npm.
-- [ ] Publish stable 5.0.0 to latest after RC validation.
+- [x] Publish the RC to next and verify an installation from npm.
 
 ## Verification and publication
 
@@ -51,18 +50,18 @@ npm run example:smoke
 npm run browser:install
 npm run test:browser
 npm run test:stress
-npm publish --tag next
+npm publish --tag latest
 ```
 
 After publication, run the packed-consumer checks against the registry (PowerShell):
 
 ```powershell
-$env:DOMWIRES_PACKAGE = "domwires@5.0.0-rc.1"
+$env:DOMWIRES_PACKAGE = "domwires@5.0.0"
 npm run test:consumer
 Remove-Item Env:DOMWIRES_PACKAGE
 ```
 
-For stable publication, update the manifest/lockfile to `5.0.0`, finalize the changelog and release notice, repeat package/CI validation, publish with `--tag latest`, and tag the actual published commit. Confirm registry version and integrity before recording a release as published. Do not assume publication succeeded after a network error.
+Before a stable publication, update the manifest/lockfile, finalize the changelog and release notice, repeat package/CI validation, publish with `--tag latest`, and tag the actual published commit. For a candidate, use a prerelease version and `--tag next`. Confirm registry version and integrity before recording a release as published. Do not assume publication succeeded after a network error.
 
 Historical implementation reports: [stage one](v2-implementation.md), [stage two](v2-polish.md). Their original working name was v2; they describe development leading to 5.0, not a released 5.0 package.
 
@@ -70,4 +69,4 @@ Historical implementation reports: [stage one](v2-implementation.md), [stage two
 
 Node 24.18: 192 runtime tests, 3 Chromium scenarios, typecheck/lint, packed consumers with TypeScript 6.0.2 and 7.0.2, example smoke and documentation checks pass. The API check covers 264 interface members and the documented extension hooks. The browser lifecycle scenario performs 100 scene changes and 100 restarts. The Node stress check completes 2,800 cycles with zero live bullets, adapters, requests or clocks; sampled heap growth after warmup is 462,928 bytes, below its limit. These measurements describe this local run, not a cross-platform performance guarantee.
 
-The final implementation candidate `59fc803` passed all five remote jobs: Node 20/22/24, documentation (including TypeScript 6 consumers), and Chromium ([CI run](https://github.com/CrazyFlasher/domwires-ts/actions/runs/35458724381)). The checked candidate was fast-forwarded to `main`; `v2.x` remains at `08c80f9`. The mixed browser import/require regression and TypeScript bundler resolution are included. Publication dry-run with npm 11.16.0 passed; this is not evidence of an actual npm publication.
+Published candidate `v5.0.0-rc.1` points to `3190e98`. It passed all six remote jobs: Node 20/22/24, documentation and TypeScript 6 consumers on Linux/Windows, and Chromium ([CI run](https://github.com/CrazyFlasher/domwires-ts/actions/runs/35458924153)). The mixed browser import/require regression and TypeScript bundler resolution are included. Its npm tarball SHA-1 is `afd82afde5791f39e5d7f4a0dce7fdd0ae6d4d57`; the registry checksum matched the local artifact, and consumer tests passed against the actual registry installation.

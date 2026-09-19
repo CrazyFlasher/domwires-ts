@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.0.0 — 2026-09-19
+
+Stable release following validation of `5.0.0-rc.1` from npm. Runtime code and the public API are unchanged from the candidate. The changes below form the 5.0 release.
+
 ## 5.0.0-rc.1
 
 First release candidate for DomWires 5.0. This is a breaking redesign of 2.x;
