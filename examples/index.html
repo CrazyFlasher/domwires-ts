@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>DomWires 5.0 · Examples</title>
+    <style>
+        :root
+        {
+            color-scheme: dark;
+            font-family: system-ui, sans-serif;
+            background: #0d1720;
+            color: #e6eef3;
+        }
+
+        body
+        {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 64px 24px;
+        }
+
+        .eyebrow
+        {
+            color: #83d9bc;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 12px;
+        }
+
+        h1
+        {
+            font-size: 40px;
+            margin: 12px 0;
+        }
+
+        p
+        {
+            color: #b9c9d3;
+            line-height: 1.6;
+        }
+
+        nav
+        {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 36px;
+        }
+
+        a
+        {
+            padding: 28px;
+            background: #192735;
+            border: 1px solid #365063;
+            border-radius: 14px;
+            color: #83d9bc;
+            text-decoration: none;
+        }
+
+        a:hover, a:focus-visible
+        {
+            border-color: #83d9bc;
+            background: #203442;
+        }
+
+        a:focus-visible
+        {
+            outline: 2px solid #83d9bc;
+            outline-offset: 4px;
+        }
+
+        h2
+        {
+            margin: 0 0 12px;
+            font-size: 24px;
+        }
+
+        a p
+        {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <span class="eyebrow">DomWires 5.0</span>
+        <h1>Explore the examples</h1>
+        <p>Start with a counter, then explore a game with independent scene and HUD contexts.</p>
+        <nav aria-label="Examples">
+            <a href="counter.html" aria-labelledby="counter-title">
+                <h2 id="counter-title">Counter →</h2>
+                <p>Model updates, mediator messages, command guards and remounting.</p>
+            </a>
+            <a href="game.html" aria-labelledby="game-title">
+                <h2 id="game-title">Scene lab →</h2>
+                <p>Pooled projectiles, async loading, scene switching and command tracing.</p>
+            </a>
+        </nav>
+    </main>
+</body>
+</html>

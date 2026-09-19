@@ -1,40 +1,34 @@
-import {AbstractHierarchyObject, postConstruct, inject} from "../../../src";
-import {HUD_MODEL_IMMUTABLE} from "../contracts";
-import {HUD_CHANGED} from "../messages";
-import {MOUNT} from "./ViewTokens";
+export type HudViewState = {
+    readonly lastLoaded: string;
+    readonly loads: number;
+};
 
-export class HudView extends AbstractHierarchyObject
+export interface IHudView
 {
-    @inject(MOUNT)
-    private mount!: HTMLElement;
+    render(state: HudViewState): void;
 
-    @inject(HUD_MODEL_IMMUTABLE)
-    private model!: {readonly lastLoaded: string; readonly loads: number};
+    dispose(): void;
+}
 
-    private label!: HTMLElement;
+export class HudView implements IHudView
+{
+    private readonly label: HTMLElement;
 
-    @postConstruct()
-    private init(): void
+    public constructor(mount: HTMLElement)
     {
-        this.label = document.createElement("p");
+        this.label = mount.ownerDocument.createElement("p");
         this.label.className = "hud-status";
-
-        this.mount.append(this.label);
-        this.subscribe(HUD_CHANGED, () => this.render());
-
-        this.render();
+        mount.append(this.label);
     }
 
-    private render(): void
+    public render(state: HudViewState): void
     {
-        this.label.textContent = "HUD · Completed loads: " + this.model.loads +
-            " · Last level: " + this.model.lastLoaded;
+        this.label.textContent = "HUD · Completed loads: " + state.loads +
+            " · Last level: " + state.lastLoaded;
     }
 
-    public override dispose(): void
+    public dispose(): void
     {
-        this.label?.remove();
-
-        super.dispose();
+        this.label.remove();
     }
 }

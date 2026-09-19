@@ -12,7 +12,7 @@ npm run build
 npm run example
 ```
 
-Open the printed localhost address. The counter page links to the scene lab. For a separate application, run `npm pack` here and install the resulting local `.tgz` file in that application. Import from `domwires`; use `domwires/node` only for Node-specific config loading.
+Open the printed localhost address and choose **Counter** or **Scene lab**. For a separate application, run `npm pack` here and install the resulting local `.tgz` file in that application. Import from `domwires`; use `domwires/node` only for Node-specific config loading.
 
 The package is built with TypeScript 7 and targets ES2022. Consumer declarations are checked with TypeScript 6 and 7. Property decorators require `experimentalDecorators: true`; emitted reflection metadata is unnecessary. Consumer code can use constructor injection (`static readonly inject`) and providers without decorators. A consumer does not need the compiler at runtime.
 

@@ -1,17 +1,26 @@
-import {AbstractContext, CommandExecution, CommandTrace} from "../../../src";
+import {AbstractContext, CommandExecution, CommandTrace, inject, optional} from "../../../src";
+import {ToggleRunning} from "../commands/ToggleRunning";
 import {SwitchScene} from "../commands/SwitchScene";
-import {SCENE_NAME, SCENE_SWITCHER, SceneSwitcher} from "../contracts";
+import {GAME_CLOCK, GameClock, SCENE_NAME, SCENE_SWITCHER, SceneSwitcher} from "../contracts";
 import {gameResources} from "../gameResources";
-import {FIRE, LEVEL_LOADED, LOAD, SCENE_CHANGED, SWITCH, TICK} from "../messages";
+import {GameMediator} from "../mediators/GameMediator";
+import {FIRE, LEVEL_LOADED, LOAD, RUNNING_CHANGED, SCENE_CHANGED, SWITCH, TICK, TOGGLE_RUNNING} from "../messages";
 import {HudContext} from "./HudContext";
 import {SceneContext} from "./SceneContext";
+import {IGameViewFactory} from "../views/IGameViewFactory";
+import {GAME_EVENTS, VIEW_FACTORY} from "../views/ViewTokens";
 
-export class GameContext extends AbstractContext implements SceneSwitcher
+export class GameContext extends AbstractContext implements SceneSwitcher, GameClock
 {
     public scene!: SceneContext;
     public hud!: HudContext;
     public running = true;
 
+    @inject(VIEW_FACTORY)
+    @optional()
+    private viewFactory?: IGameViewFactory;
+
+    private mediator?: GameMediator;
     private observer?: CommandTrace;
 
     protected override init(): void
@@ -19,9 +28,19 @@ export class GameContext extends AbstractContext implements SceneSwitcher
         super.init();
 
         this.provide(SCENE_SWITCHER, this, ["command"]);
+        this.provide(GAME_CLOCK, this, ["command"]);
+        this.map(TOGGLE_RUNNING, ToggleRunning);
+
+        if (this.viewFactory)
+        {
+            this.provide(VIEW_FACTORY, this.viewFactory, ["mediator"]);
+            this.provide(GAME_EVENTS, this, ["mediator"]);
+            this.mediator = this.createMediator(GameMediator, "game");
+        }
 
         this.hud = this.createContext(HudContext, {
             id: "hud",
+            inherit: this.viewFactory ? [VIEW_FACTORY] : [],
             receive: message => message.type === LEVEL_LOADED
         });
 
@@ -55,6 +74,12 @@ export class GameContext extends AbstractContext implements SceneSwitcher
         });
     }
 
+    public toggleRunning(): void
+    {
+        this.running = !this.running;
+        this.dispatchMessage(RUNNING_CHANGED, {running: this.running});
+    }
+
     public observe(trace: CommandTrace | undefined): void
     {
         this.observer = trace;
@@ -63,13 +88,20 @@ export class GameContext extends AbstractContext implements SceneSwitcher
         this.scene.trace = trace;
     }
 
+    public setTracing(enabled: boolean): void
+    {
+        const mediator = this.mediator;
+
+        this.observe(enabled && mediator ? event => mediator.recordTrace(event) : undefined);
+    }
+
     private createScene(scene: string): void
     {
         this.provide(SCENE_NAME, scene, ["command"]);
 
         this.scene = this.createContext(SceneContext, {
             id: "scene",
-            inherit: [SCENE_NAME],
+            inherit: this.viewFactory ? [SCENE_NAME, VIEW_FACTORY] : [SCENE_NAME],
             receive: message => message.type === TICK || message.type === FIRE || message.type === LOAD,
             bubble: message => message.type === LEVEL_LOADED
         });

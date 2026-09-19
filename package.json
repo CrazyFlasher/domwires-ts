@@ -1,6 +1,6 @@
 {
   "name": "domwires",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Flexible and extensible MVC framework",
   "repository": {
     "type": "git",
@@ -68,7 +68,7 @@
     "test-browser": "node browser/build.mjs && http-server ./dist_client -a localhost -p 1234 -o ./test.html",
     "example:build": "node examples/build.mjs",
     "example:smoke": "node examples/smoke.mjs",
-    "example": "npm run example:build && http-server ./dist_example -a localhost -p 1235 -o ./index.html",
+    "example": "npm run example:build && http-server ./dist_example -a localhost -p 1235 -c-1 -o ./index.html",
     "lint": "oxlint src test browser examples tools",
     "copy-files": "copyfiles -u 1 dev.json dist/",
     "test:consumer": "node tools/consumer-smoke.mjs",

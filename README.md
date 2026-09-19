@@ -9,7 +9,7 @@
 
 DomWires is a dependency-free TypeScript framework for composing applications from models, mediators, commands and contexts. It works in browsers and Node.js, alongside your UI or rendering library.
 
-A context connects components through messages and contracts. Commands change model state. Mediators translate input and render the live state exposed by Immutable interfaces. Context boundaries make dependencies, routing and cleanup explicit.
+A context connects components through messages and contracts. Commands change model state. Views capture input and render data. Mediators translate view callbacks into messages and read live state through Immutable interfaces. Context boundaries make dependencies, routing and cleanup explicit.
 
 [Get started](docs/getting-started.md) · [Documentation](docs/index.md) · [API reference](docs/api.md) · [Examples](docs/examples.md)
 
@@ -19,16 +19,17 @@ A context connects components through messages and contracts. Commands change mo
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/message-flow-dark.svg">
-  <img src="docs/assets/message-flow-light.svg" alt="Fire button sends FIRE through GameContext and SceneContext to the Fire command. Fire changes SceneModel. The context forwards STATE_CHANGED to SceneView, which reads SceneModelImmutable and renders.">
+  <img src="docs/assets/message-flow-light.svg" alt="Inside GameContext, GameMediator creates and owns GameView. View callbacks become FIRE messages routed into SceneContext. Fire changes SceneModel. STATE_CHANGED reaches SceneMediator, which reads SceneModelImmutable and renders its owned SceneView.">
 </picture>
 
-This is one real route from the scene lab. [The walkthrough](docs/examples.md) expands it to nested contexts, level loading, cancellation and HUD updates.
+This is one real route from the scene lab. Each context creates its mediators; each mediator creates and disposes its view. [The walkthrough](docs/examples.md) expands it to nested contexts, level loading, cancellation and HUD updates.
 
 | Component | Responsibility |
 | --- | --- |
 | Model | Owns state and emits change notifications. |
 | Immutable interface | Exposes the same live model without its mutation methods. It does not freeze or clone the object. |
-| Mediator | Translates external input into messages and renders readable state. |
+| View | Captures input, reports callbacks or UI events, and renders data. |
+| Mediator | Creates and owns its view, translates input into messages, reads model state and updates the view. |
 | Command | Performs an application action, synchronously or asynchronously. |
 | Context | Composes components, maps messages, controls boundaries and owns lifetimes. |
 | Adapter | Ordinary infrastructure object used by commands; no required Service base class. |

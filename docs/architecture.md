@@ -4,7 +4,9 @@
 
 ## Concept
 
-DomWires separates state, presentation, actions and composition. A model owns state. Its mutable interface exposes state-changing operations; its immutable interface exposes live readable state. A mediator translates external input into intentions and renders model state. A command performs an application action. A context composes these objects, maps intentions to commands and forwards notifications.
+DomWires separates state, presentation, actions and composition. A model owns state. Its mutable interface exposes state-changing operations; its immutable interface exposes live readable state. A view captures input, reports callbacks or UI events, and renders data. A mediator translates those view events into application messages, reads model state and updates the view. Views do not dispatch into contexts directly. A command performs an application action. A context composes these objects, maps intentions to commands and forwards notifications.
+
+In the scene lab, ownership follows `context → mediator → view`. The mediator creates its view, directly or through an injected factory, and disposes it with its callbacks and subscriptions. The view handles DOM or renderer details without participating in the framework's message hierarchy. The framework does not require a view base class.
 
 The AS3/Haxe concept is preserved. The 5.0 changes concern dependency boundaries, execution lifetime, routing correctness and explicit cleanup. External infrastructure is represented by ordinary adapters, not a required fifth MVC base class. A command may await an adapter and then update a model; a long-lived connection belongs to a context or resource scope.
 

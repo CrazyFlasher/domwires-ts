@@ -54,3 +54,10 @@ export interface SceneSwitcher
 }
 
 export const SCENE_SWITCHER = new ServiceToken<SceneSwitcher>("SceneSwitcher");
+
+export interface GameClock
+{
+    toggleRunning(): void;
+}
+
+export const GAME_CLOCK = new ServiceToken<GameClock>("GameClock");

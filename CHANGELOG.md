@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.0.1 — 2026-09-19
+
+- Separate game views from mediators: contexts create mediators, and mediators create and dispose their views through an injected factory. DOM callbacks become mediator messages, and model notifications become render data. Update the walkthrough and diagrams to show ownership.
+- Add an example chooser with separate Counter and Scene lab pages, correct the Scene lab version to DomWires 5.0, and disable caching in the example development server.
+- Add a discoverable `examples/tsconfig.json` so IDEs use the example configuration instead of the library's `src` root.
+
+The framework runtime and public API are unchanged from 5.0.0.
+
 ## 5.0.0 — 2026-09-19
 
 Stable release following validation of `5.0.0-rc.1` from npm. Runtime code and the public API are unchanged from the candidate. The changes below form the 5.0 release.

@@ -13,8 +13,21 @@ test.beforeEach(async ({page}) => {
 });
 test.afterEach(async ({page}) => { expect(page.runtimeErrors).toEqual([]); });
 
-test("counter survives repeated mount and disposal", async ({page}) => {
+test("example chooser links to both examples and back", async ({page}) => {
     await page.goto("/index.html");
+    await expect(page.getByRole("navigation", {name: "Examples"}).getByRole("link")).toHaveCount(2);
+    await page.getByRole("link", {name: "Counter →", exact: true}).click();
+    await expect(page.locator("#app strong")).toHaveText("0");
+    await page.getByRole("link", {name: "All examples", exact: true}).click();
+    await page.getByRole("link", {name: "Scene lab →", exact: true}).click();
+    await expect(page.getByRole("heading", {name: "Scene lab", exact: true})).toBeVisible();
+    await expect(page.locator(".eyebrow")).toContainText("DomWires 5.0");
+    await page.getByRole("link", {name: "All examples", exact: true}).click();
+    await expect(page.getByRole("heading", {name: "Explore the examples", exact: true})).toBeVisible();
+});
+
+test("counter survives repeated mount and disposal", async ({page}) => {
+    await page.goto("/counter.html");
     for (let i = 0; i < 25; i++) {
         await expect(page.locator("#app strong")).toHaveText("0");
         await page.getByRole("button", {name: "+1", exact: true}).click();

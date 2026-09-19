@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Domwires · Scene lab</title>
+<title>DomWires · Scene lab</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0d1720;color:#e6eef3}
 body{max-width:960px;margin:0 auto;padding:36px 24px}a{color:#83d9bc}h1{font-size:40px;margin:8px 0 12px}
@@ -16,13 +16,13 @@ footer{margin-top:28px;display:flex;align-items:center;gap:20px;font-size:14px}
 </style>
 </head>
 <body>
-<header><span class="eyebrow">Domwires v2 / Interactive example</span><h1>Scene lab</h1>
+<header><span class="eyebrow">DomWires 5.0 / Interactive example</span><h1>Scene lab</h1>
 <p>Fire pooled projectiles, pause and step the simulation, or load a level. Start a slow load and then a fast one: only the latest result is applied. Switching scenes cancels their pending work; the HUD keeps its own state.</p></header>
 <div id="controls" aria-label="Game controls"></div>
 <p id="status" role="status">Starting…</p>
 <section id="scene" aria-label="Current scene"></section>
 <section id="hud" aria-label="Persistent HUD"></section>
 <details><summary>Command trace</summary><p>Turn tracing on with the toolbar. The latest 50 events are shown; tick events are omitted.</p><pre id="trace" aria-live="off"></pre></details>
-<footer><button id="restart">Restart demo</button><a href="index.html">Counter example</a><span>12 projectiles per scene · 20 ticks/second</span></footer>
+<footer><button id="restart">Restart demo</button><a href="index.html">All examples</a><span>12 projectiles per scene · 20 ticks/second</span></footer>
 <script src="game.js"></script>
 </body></html>

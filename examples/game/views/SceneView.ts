@@ -1,22 +1,27 @@
-import {AbstractHierarchyObject, postConstruct, inject} from "../../../src";
-import {SCENE_MODEL_IMMUTABLE, SceneModelImmutable} from "../contracts";
-import {STATE_CHANGED} from "../messages";
-import {MOUNT} from "./ViewTokens";
+export type SceneViewState = {
+    readonly scene: string;
+    readonly level: string;
+    readonly shots: number;
+    readonly ticks: number;
+    readonly bullets: readonly {readonly x: number; readonly y: number}[];
+};
 
-export class SceneView extends AbstractHierarchyObject
+export interface ISceneView
 {
-    @inject(MOUNT)
-    private mount!: HTMLElement;
+    render(state: SceneViewState): void;
 
-    @inject(SCENE_MODEL_IMMUTABLE)
-    private model!: SceneModelImmutable;
+    dispose(): void;
+}
 
-    private canvas!: HTMLCanvasElement;
-    private label!: HTMLElement;
+export class SceneView implements ISceneView
+{
+    private readonly canvas: HTMLCanvasElement;
+    private readonly label: HTMLElement;
 
-    @postConstruct()
-    private init(): void
+    public constructor(mount: HTMLElement)
     {
+        const document = mount.ownerDocument;
+
         this.label = document.createElement("p");
         this.label.className = "scene-status";
 
@@ -25,21 +30,18 @@ export class SceneView extends AbstractHierarchyObject
         this.canvas.height = 260;
         this.canvas.setAttribute("aria-label", "Scene playfield");
 
-        this.mount.append(this.label, this.canvas);
-        this.subscribe(STATE_CHANGED, () => this.render());
-
-        this.render();
+        mount.append(this.label, this.canvas);
     }
 
-    private render(): void
+    public render(state: SceneViewState): void
     {
-        this.label.textContent = "Scene " + this.model.scene + " · " + this.model.level +
-            " · Shots: " + this.model.shots + " · Active: " + this.model.bullets.length +
-            "/12 · Ticks: " + this.model.ticks;
+        this.label.textContent = "Scene " + state.scene + " · " + state.level +
+            " · Shots: " + state.shots + " · Active: " + state.bullets.length +
+            "/12 · Ticks: " + state.ticks;
 
         const ctx = this.canvas.getContext("2d")!;
 
-        ctx.fillStyle = this.model.scene === "A" ? "#142d3b" : "#302947";
+        ctx.fillStyle = state.scene === "A" ? "#142d3b" : "#302947";
         ctx.fillRect(0, 0, 640, 260);
 
         ctx.strokeStyle = "#ffffff0c";
@@ -61,7 +63,7 @@ export class SceneView extends AbstractHierarchyObject
 
         ctx.fillStyle = "#ffd38c";
 
-        for (const bullet of this.model.bullets)
+        for (const bullet of state.bullets)
         {
             ctx.beginPath();
             ctx.arc(bullet.x, bullet.y, 5, 0, Math.PI * 2);
@@ -69,11 +71,9 @@ export class SceneView extends AbstractHierarchyObject
         }
     }
 
-    public override dispose(): void
+    public dispose(): void
     {
-        this.canvas?.remove();
-        this.label?.remove();
-
-        super.dispose();
+        this.canvas.remove();
+        this.label.remove();
     }
 }

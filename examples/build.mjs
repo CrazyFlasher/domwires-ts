@@ -11,7 +11,8 @@ const distPath = path.resolve(projectDir, "dist_example");
 fs.rmSync(distPath, {recursive: true, force: true});
 fs.mkdirSync(distPath);
 
-fs.copyFileSync(path.resolve(frontendDir, "index.html"), path.resolve(distPath, "index.html"));
+fs.copyFileSync(path.resolve(currentDir, "index.html"), path.resolve(distPath, "index.html"));
+fs.copyFileSync(path.resolve(frontendDir, "index.html"), path.resolve(distPath, "counter.html"));
 
 // the example imports the package by its public name, exactly as it is written in the README
 await bundleForBrowser({

@@ -2,7 +2,7 @@
 
 [Documentation](index.md)
 
-The stable version is `5.0.0`, promoted after registry installation checks of `5.0.0-rc.1`. Stable publication uses npm tag `latest`; prereleases use `next`. The registry is the source of truth for publication status: run `npm view domwires dist-tags`.
+The 5.0 line started with `5.0.0`, promoted after registry installation checks of `5.0.0-rc.1`. Patch `5.0.1` updates example view ownership, navigation, IDE configuration and documentation; the framework runtime and public API are unchanged. Stable publication uses npm tag `latest`; prereleases use `next`. The registry is the source of truth for publication status: run `npm view domwires dist-tags`.
 
 ## Branch transition
 
@@ -56,7 +56,7 @@ npm publish --tag latest
 After publication, run the packed-consumer checks against the registry (PowerShell):
 
 ```powershell
-$env:DOMWIRES_PACKAGE = "domwires@5.0.0"
+$env:DOMWIRES_PACKAGE = "domwires@5.0.1"
 npm run test:consumer
 Remove-Item Env:DOMWIRES_PACKAGE
 ```
