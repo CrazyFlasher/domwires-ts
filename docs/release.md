@@ -30,7 +30,7 @@ The previous `main` and published tag `v2.1.0` resolve to `08c80f955e63d652f0ab5
 - [x] Complete final local checks and record results.
 - [x] Preserve the previous main as v2.x.
 - [x] Push the candidate branch.
-- [ ] Require green remote CI, then fast-forward main.
+- [x] Require green remote CI, then fast-forward main.
 - [ ] Publish the RC to next and verify an installation from npm.
 - [ ] Publish stable 5.0.0 to latest after RC validation.
 
@@ -70,4 +70,4 @@ Historical implementation reports: [stage one](v2-implementation.md), [stage two
 
 Node 24.18: 192 runtime tests, 3 Chromium scenarios, typecheck/lint, packed consumers with TypeScript 6.0.2 and 7.0.2, example smoke and documentation checks pass. The API check covers 264 interface members and the documented extension hooks. The browser lifecycle scenario performs 100 scene changes and 100 restarts. The Node stress check completes 2,800 cycles with zero live bullets, adapters, requests or clocks; sampled heap growth after warmup is 462,928 bytes, below its limit. These measurements describe this local run, not a cross-platform performance guarantee.
 
-The first remote matrix passed on candidate `bf04667` ([run](https://github.com/CrazyFlasher/domwires-ts/actions/runs/35458569587)). An additional mixed browser import/require regression was then added; the final candidate must pass the matrix again before main is advanced.
+The final implementation candidate `59fc803` passed all five remote jobs: Node 20/22/24, documentation (including TypeScript 6 consumers), and Chromium ([CI run](https://github.com/CrazyFlasher/domwires-ts/actions/runs/35458724381)). The checked candidate was fast-forwarded to `main`; `v2.x` remains at `08c80f9`. The mixed browser import/require regression and TypeScript bundler resolution are included. Publication dry-run with npm 11.16.0 passed; this is not evidence of an actual npm publication.
