@@ -5,10 +5,11 @@ import {Logger, LogLevel} from "../logger/ILogger";
 import type {IHierarchyObject} from "./mvc/hierarchy/IHierarchyObject";
 import type {IHierarchyObjectContainer} from "./mvc/hierarchy/IHierarchyObjectContainer";
 import type {IContext} from "./mvc/context/IContext";
+import {ServiceToken} from "./di/ServiceToken";
 
 export type Class<T> = new(...args: any[]) => T;
 
-export type Type<T = any> = string | Class<T>;
+export type Type<T = any> = string | Class<T> | ServiceToken<T>;
 
 /**
  * Runtime brands. They are set on prototypes of the framework classes and allow fast
@@ -44,20 +45,19 @@ export function setGlobalLogLevel(value: LogLevel): void
     logger = new Logger(value);
 }
 
-const defaultImplMap: Map<string | Class<any>, Class<any>> = new Map<string | Class<any>, Class<any>>();
+const defaultImplMap: Map<Type, Class<any>> = new Map();
+const definedClasses: Map<string, Class<any>> = new Map();
 
 export function definableFromString<T>(clazz: Class<T>, alias?: string): void
 {
     logger.verbose("Manually defined classes: " + clazz.name + (alias ? " to alias: " + alias : ""));
 
-    const targets: any = globalThis;
-
-    targets[alias ? alias : clazz.name] = clazz;
+    definedClasses.set(alias ?? clazz.name, clazz);
 }
 
 export function getClassFromString<T>(value: string): Class<T>
 {
-    const clazz = (globalThis as any)[value];
+    const clazz = definedClasses.get(value);
 
     if (!clazz)
     {
@@ -67,7 +67,7 @@ export function getClassFromString<T>(value: string): Class<T>
     return clazz;
 }
 
-export function setDefaultImplementation<T>(key: string | Class<T>, value: Class<T>): void
+export function setDefaultImplementation<T>(key: Type<T>, value: Class<NoInfer<T>>): void
 {
     const existing: Class<any> | undefined = defaultImplMap.get(key);
 
@@ -82,8 +82,8 @@ export function setDefaultImplementation<T>(key: string | Class<T>, value: Class
     defaultImplMap.set(key, value);
 }
 
-export function getDefaultImplementation(key: string | Class<any>): Class<any> | undefined
+export function getDefaultImplementation(key: Type): Class<any> | undefined
 {
-    return typeof key === "string" ? defaultImplMap.get(key) : key;
+    return defaultImplMap.get(key) ?? (typeof key === "function" ? key : undefined);
 }
 

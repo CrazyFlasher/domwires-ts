@@ -8,6 +8,7 @@ import {Class, Type} from "../Global";
  */
 const PROPERTY_INJECTIONS = Symbol("domwires:propertyInjections");
 const POST_CONSTRUCT = Symbol("domwires:postConstruct");
+let injectionPlans = new WeakMap<Class<unknown>, ReadonlyArray<PropertyInjection>>();
 
 export type PropertyInjection = {
     readonly propertyKey: string | symbol;
@@ -31,6 +32,8 @@ function getOwnInjections(clazz: any): PropertyInjection[]
 
 function getInjection(target: object, propertyKey: string | symbol): PropertyInjection
 {
+    // Also supports applying decorators programmatically after a class was first instantiated.
+    injectionPlans = new WeakMap();
     const injections: PropertyInjection[] = getOwnInjections(Reflect.get(target, "constructor"));
     let injection: PropertyInjection | undefined = undefined;
 
@@ -66,7 +69,7 @@ export function inject(serviceIdentifier: Type): PropertyDecorator
 }
 
 /**
- * Specifies the name of the binding. Should be used together with @inject or @lazyInject.
+ * Specifies the binding name. Use together with `@inject` or `@lazyInject`.
  */
 export function named(name: string): PropertyDecorator
 {
@@ -88,7 +91,7 @@ export function optional(): PropertyDecorator
 }
 
 /**
- * Resolves the property from the global lazy registry, which is filled right before a command execution.
+ * Resolves the property from the object's own dependency scope on access.
  */
 export function lazyInject(serviceIdentifier: Type): PropertyDecorator
 {
@@ -143,6 +146,8 @@ export function injectable(): ClassDecorator
  */
 export function getPropertyInjections(type: Class<unknown>): ReadonlyArray<PropertyInjection>
 {
+    const cached = injectionPlans.get(type);
+    if (cached) return cached;
     const chain: any[] = [];
     let current: any = type;
 
@@ -166,11 +171,14 @@ export function getPropertyInjections(type: Class<unknown>): ReadonlyArray<Prope
         {
             for (const injection of ownInjections)
             {
-                injections.push(injection);
+                const existing = injections.findIndex(item => item.propertyKey === injection.propertyKey);
+                if (existing >= 0) injections[existing] = injection;
+                else injections.push(injection);
             }
         }
     }
 
+    injectionPlans.set(type, injections);
     return injections;
 }
 

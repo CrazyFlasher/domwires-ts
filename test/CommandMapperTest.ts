@@ -1,3 +1,7 @@
+import {MessageType} from "../src";
+// This runtime fixture intentionally exercises multiple dynamic payload shapes.
+const dynamicMessage = new MessageType<Record<string, unknown> | null>("dynamic");
+import {Message as RoutedMessage, MessageDispatcher as RouteOrigin} from "../src";
 import {Done, Suite} from "mocha";
 import {expect} from "chai";
 import {
@@ -69,62 +73,62 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testUnmap', () =>
     {
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand1).addGuards(MockAllowGuards);
-        commandMapper.unmap(MockMessageType.GOODBYE, MockCommand1);
-        expect(commandMapper.hasMapping(MockMessageType.GOODBYE)).false;
+        commandMapper.map(dynamicMessage, MockCommand1).addGuards(MockAllowGuards);
+        commandMapper.unmap(dynamicMessage, MockCommand1);
+        expect(commandMapper.hasMapping(dynamicMessage)).false;
 
         const m: MockObj1 = factory.instantiateValueUnmapped<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
 
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin()));
         expect(m.d).equals(0);
     });
 
     it('testClear', () =>
     {
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand1);
+        commandMapper.map(dynamicMessage, MockCommand1);
         commandMapper.map(MockMessageType.HELLO, MockCommand1);
         commandMapper.map(MockMessageType.SHALOM, MockCommand1);
 
         commandMapper.clear();
 
-        expect(commandMapper.hasMapping(MockMessageType.GOODBYE)).false;
+        expect(commandMapper.hasMapping(dynamicMessage)).false;
         expect(commandMapper.hasMapping(MockMessageType.HELLO)).false;
         expect(commandMapper.hasMapping(MockMessageType.SHALOM)).false;
     });
 
     it('testDispose', () =>
     {
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand1);
+        commandMapper.map(dynamicMessage, MockCommand1);
         commandMapper.map(MockMessageType.HELLO, MockCommand1);
         commandMapper.map(MockMessageType.SHALOM, MockCommand1);
 
         commandMapper.dispose();
 
-        expect(commandMapper.hasMapping(MockMessageType.GOODBYE)).false;
+        expect(commandMapper.hasMapping(dynamicMessage)).false;
         expect(commandMapper.hasMapping(MockMessageType.HELLO)).false;
         expect(commandMapper.hasMapping(MockMessageType.SHALOM)).false;
     });
 
     it('testUnmapAll', () =>
     {
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand1);
+        commandMapper.map(dynamicMessage, MockCommand1);
         commandMapper.map(MockMessageType.HELLO, MockCommand1);
         commandMapper.map(MockMessageType.SHALOM, MockCommand1);
-        commandMapper.unmapAll(MockMessageType.GOODBYE);
+        commandMapper.unmapAll(dynamicMessage);
         commandMapper.unmapAll(MockMessageType.HELLO);
         commandMapper.unmapAll(MockMessageType.SHALOM);
 
-        expect(commandMapper.hasMapping(MockMessageType.GOODBYE)).false;
+        expect(commandMapper.hasMapping(dynamicMessage)).false;
         expect(commandMapper.hasMapping(MockMessageType.HELLO)).false;
         expect(commandMapper.hasMapping(MockMessageType.SHALOM)).false;
     });
 
     it('testMap', () =>
     {
-        expect(commandMapper.hasMapping(MockMessageType.GOODBYE)).false;
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand1);
-        expect(commandMapper.hasMapping(MockMessageType.GOODBYE)).true;
+        expect(commandMapper.hasMapping(dynamicMessage)).false;
+        commandMapper.map(dynamicMessage, MockCommand1);
+        expect(commandMapper.hasMapping(dynamicMessage)).true;
     });
 
     it('testTryToExecuteCommand', () =>
@@ -135,7 +139,7 @@ describe('CommandMapperTest', function (this: Suite)
         commandMapper.map(MockMessageType.HELLO, MockCommand1);
 
         expect(m.d).equals(0);
-        commandMapper.tryToExecuteCommand(MockMessageType.HELLO);
+        commandMapper.route(new RoutedMessage(MockMessageType.HELLO, new RouteOrigin()));
         expect(m.d).equals(7);
     });
 
@@ -144,18 +148,18 @@ describe('CommandMapperTest', function (this: Suite)
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
 
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand1);
+        commandMapper.map(dynamicMessage, MockCommand1);
         commandMapper.map(MockMessageType.HELLO, MockCommand1);
         commandMapper.map(MockMessageType.SHALOM, MockCommand1);
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
-        commandMapper.tryToExecuteCommand(MockMessageType.HELLO);
-        commandMapper.tryToExecuteCommand(MockMessageType.SHALOM);
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin()));
+        commandMapper.route(new RoutedMessage(MockMessageType.HELLO, new RouteOrigin()));
+        commandMapper.route(new RoutedMessage(MockMessageType.SHALOM, new RouteOrigin()));
         expect(m.d).equals(21);
 
         commandMapper.unmap(MockMessageType.SHALOM, MockCommand1);
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
-        commandMapper.tryToExecuteCommand(MockMessageType.HELLO);
-        commandMapper.tryToExecuteCommand(MockMessageType.SHALOM);
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin()));
+        commandMapper.route(new RoutedMessage(MockMessageType.HELLO, new RouteOrigin()));
+        commandMapper.route(new RoutedMessage(MockMessageType.SHALOM, new RouteOrigin()));
         expect(m.d).equals(35);
     });
 
@@ -164,8 +168,8 @@ describe('CommandMapperTest', function (this: Suite)
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
 
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand1);
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
+        commandMapper.map(dynamicMessage, MockCommand1);
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin()));
 
         expect(m.d).equals(7);
 
@@ -177,19 +181,19 @@ describe('CommandMapperTest', function (this: Suite)
 
         factory.mapToValue<MockObj1>(MockObj1, m2);
 
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin()));
 
         expect(m2.d).equals(7);
     });
 
     it('testInjectMessageData', () =>
     {
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand2);
+        commandMapper.map(dynamicMessage, MockCommand2);
 
         const vo: MockVo = new MockVo();
         const itemId = "lol";
 
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {vo, itemId, e: MockMessageType.HELLO});
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin(), {vo, itemId, e: MockMessageType.HELLO}));
 
         expect(vo.age).equals(11);
         expect(vo.name).equals("hi");
@@ -198,23 +202,23 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testInjectMessageDataFromType', () =>
     {
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand25);
+        commandMapper.map(dynamicMessage, MockCommand25);
 
         const vo: MockType = {name: "olo"};
 
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {vo});
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin(), {vo}));
 
         expect(vo.name).equals("hi");
     });
 
     it('testInjectMessageDataWidthCustomConstructorName', () =>
     {
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand2_1);
+        commandMapper.map(dynamicMessage, MockCommand2_1);
 
         const vo: MockVoWithId = new MockVoWithId();
         const itemId = "lol";
 
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {vo, itemId, e: MockMessageType.HELLO});
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin(), {vo, itemId, e: MockMessageType.HELLO}));
 
         expect(vo.age).equals(11);
         expect(vo.name).equals("hi");
@@ -225,17 +229,17 @@ describe('CommandMapperTest', function (this: Suite)
     {
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand1, null, false, true);
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
-        expect(commandMapper.hasMapping(MockMessageType.GOODBYE)).false;
+        commandMapper.map(dynamicMessage, MockCommand1, {data: null, stopOnExecute: false, once: true});
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin()));
+        expect(commandMapper.hasMapping(dynamicMessage)).false;
     });
 
     it('testMapWithData', () =>
     {
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5});
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
+        commandMapper.map(dynamicMessage, MockCommand3, {data: {olo: 5}});
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin()));
         expect(m.d).equals(5);
     });
 
@@ -243,52 +247,52 @@ describe('CommandMapperTest', function (this: Suite)
     {
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5});
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {a: 1});
+        commandMapper.map(dynamicMessage, MockCommand3, {data: {olo: 5}});
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin(), {a: 1}));
         expect(m.d).equals(5);
     });
 
     it('testMessageDataOverridesMappedData', () =>
     {
         factory.mapToValue<CommandMapperConfig>("CommandMapperConfig",
-            {singletonCommands: true, mergeMessageDataAndMappingData: false});
+            {defaultLifetime: "context", defaultDataMode: "fallback"});
 
         const cm: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
 
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
-        cm.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5});
-        cm.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
+        cm.map(dynamicMessage, MockCommand3, {data: {olo: 5}});
+        cm.route(new RoutedMessage(dynamicMessage, new RouteOrigin(), {olo: 4}));
         expect(m.d).equals(4);
     });
 
     it('testAllowGuards', () =>
     {
         factory.mapToValue<CommandMapperConfig>("CommandMapperConfig",
-            {singletonCommands: true, mergeMessageDataAndMappingData: false});
+            {defaultLifetime: "context", defaultDataMode: "fallback"});
 
         const cm: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
 
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
-        cm.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5}).addGuards(MockAllowGuards);
-        cm.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
+        cm.map(dynamicMessage, MockCommand3, {data: {olo: 5}}).addGuards(MockAllowGuards);
+        cm.route(new RoutedMessage(dynamicMessage, new RouteOrigin(), {olo: 4}));
         expect(m.d).equals(4);
     });
 
     it('testAllowOppositeGuards', () =>
     {
         factory.mapToValue<CommandMapperConfig>("CommandMapperConfig",
-            {singletonCommands: true, mergeMessageDataAndMappingData: false});
+            {defaultLifetime: "context", defaultDataMode: "fallback"});
 
         const cm: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
 
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
-        cm.map(MockMessageType.GOODBYE, MockCommand3, {
+        cm.map(dynamicMessage, MockCommand3, {data: {
             olo: 5
-        }).addGuardsNot(MockNotAllowGuards);
-        cm.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
+        }}).addGuardsNot(MockNotAllowGuards);
+        cm.route(new RoutedMessage(dynamicMessage, new RouteOrigin(), {olo: 4}));
         expect(m.d).equals(4);
     });
 
@@ -296,8 +300,8 @@ describe('CommandMapperTest', function (this: Suite)
     {
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5}).addGuards(MockNotAllowGuards);
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
+        commandMapper.map(dynamicMessage, MockCommand3, {data: {olo: 5}}).addGuards(MockNotAllowGuards);
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin(), {olo: 4}));
         expect(m.d).equals(0);
     });
 
@@ -306,13 +310,13 @@ describe('CommandMapperTest', function (this: Suite)
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
 
-        commandMapper.map(MockMessageType.GOODBYE, [MockCommand3], {olo: 5})
+        commandMapper.map(dynamicMessage, [MockCommand3], {data: {olo: 5}})
             .addGuards(MockAllowGuards)
             .addGuards(MockAllowGuards)
             .addGuardsNot(MockNotAllowGuards)
             .addGuardsNot(MockAllowGuards2);
 
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin()));
         expect(m.d).equals(0);
     });
 
@@ -320,40 +324,40 @@ describe('CommandMapperTest', function (this: Suite)
     {
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand3, {olo: 5}).addGuardsNot(MockAllowGuards);
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
+        commandMapper.map(dynamicMessage, MockCommand3, {data: {olo: 5}}).addGuardsNot(MockAllowGuards);
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin(), {olo: 4}));
         expect(m.d).equals(0);
     });
 
     it('testInjectMessageDataToGuards', () =>
     {
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand0).addGuards(MockAllowGuards);
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {olo: 4});
+        commandMapper.map(dynamicMessage, MockCommand0).addGuards(MockAllowGuards);
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin(), {olo: 4}));
     });
 
     it('testMapValuesToGuards', () =>
     {
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand0).addGuards(MockValuesGuards);
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE, {s: "123", n: 123, o: {a: "olo"}});
+        commandMapper.map(dynamicMessage, MockCommand0).addGuards(MockValuesGuards);
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin(), {s: "123", n: 123, o: {a: "olo"}}));
     });
 
     it('testMapValuesToGuardsNotSingleton', () =>
     {
         factory.mapToValue<CommandMapperConfig>("CommandMapperConfig",
-            {singletonCommands: false, mergeMessageDataAndMappingData: true});
+            {defaultLifetime: "execution", defaultDataMode: "merge"});
         const cm: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
 
-        cm.map(MockMessageType.GOODBYE, MockCommand0).addGuards(MockValuesNotSingletonGuards);
-        cm.tryToExecuteCommand(MockMessageType.GOODBYE, {s: "123", n: 123, o: {a: "olo"}});
+        cm.map(dynamicMessage, MockCommand0).addGuards(MockValuesNotSingletonGuards);
+        cm.route(new RoutedMessage(dynamicMessage, new RouteOrigin(), {s: "123", n: 123, o: {a: "olo"}}));
     });
 
     it('testMapWithDataUnmaps', () =>
     {
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
-        commandMapper.executeCommand(MockCommand4, {olo: "lol"});
+        commandMapper.execute(MockCommand4, {olo: "lol"});
         expect(m.s).equals("lol");
-        commandMapper.executeCommand(MockCommand4, {olo: "puk"});
+        commandMapper.execute(MockCommand4, {olo: "puk"});
         expect(m.s).equals("puk");
     });
 
@@ -364,7 +368,7 @@ describe('CommandMapperTest', function (this: Suite)
         factory.mapToValue<MockObj1>(MockObj1, m);
         const vo: MockVo2 = new MockVo2();
         vo.olo = "test";
-        commandMapper.executeCommand(MockCommand5, vo);
+        commandMapper.execute(MockCommand5, vo);
         expect(m.s).equals("test");
     });
 
@@ -373,9 +377,9 @@ describe('CommandMapperTest', function (this: Suite)
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
         factory.mapToValue("string", "test", "olo");
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand4, null, false, true);
-        commandMapper.map(MockMessageType.GOODBYE, MockCommand1);
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
+        commandMapper.map(dynamicMessage, MockCommand4, {data: null, stopOnExecute: true, once: true});
+        commandMapper.map(dynamicMessage, MockCommand1);
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin()));
         expect(m.d).equals(0);
     });
 
@@ -384,8 +388,8 @@ describe('CommandMapperTest', function (this: Suite)
         const m: MockObj1 = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, m);
         factory.mapToValue("string", "test", "olo");
-        commandMapper.map(MockMessageType.GOODBYE, [MockCommand4, MockCommand1], null, true);
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
+        commandMapper.map(dynamicMessage, [MockCommand4, MockCommand1], {data: null, stopOnExecute: true});
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin()));
         expect(m.d).equals(7);
     });
 
@@ -394,7 +398,7 @@ describe('CommandMapperTest', function (this: Suite)
         const v: string[] = [];
 
         const mappingData = {v};
-        commandMapper.executeCommand(MockCommand8, mappingData);
+        commandMapper.execute(MockCommand8, mappingData);
     });
 
     it('testMapEnumValue', () =>
@@ -404,12 +408,12 @@ describe('CommandMapperTest', function (this: Suite)
         factory.mapToValue("Enum", e, "e");
         expect(e, factory.getInstance("Enum", "e"));
 
-        commandMapper.executeCommand(MockCommand17, {e: MockMessageType.HELLO});
+        commandMapper.execute(MockCommand17, {e: MockMessageType.HELLO});
     });
 
     it('testMapEnumValueWithoutTypeSpecified', () =>
     {
-        commandMapper.executeCommand(MockCommand18, {
+        commandMapper.execute(MockCommand18, {
             i: 7,
             f: 5.5,
             s: "Anton",
@@ -420,38 +424,44 @@ describe('CommandMapperTest', function (this: Suite)
 
     it('testCommandIsSingleton1', () =>
     {
+        factory.mapToValue<CommandMapperConfig>("CommandMapperConfig", {defaultLifetime: "context", defaultDataMode: "merge"});
+        commandMapper = factory.instantiateValueUnmapped("ICommandMapper");
         const model: MockModel2 = factory.getInstance<MockModel2>(MockModel2);
         factory.mapToValue<MockModel2>(MockModel2, model);
 
-        commandMapper.executeCommand(MockCommand19);
-        commandMapper.executeCommand(MockCommand19);
-        commandMapper.executeCommand(MockCommand19);
+        commandMapper.execute(MockCommand19);
+        commandMapper.execute(MockCommand19);
+        commandMapper.execute(MockCommand19);
 
         expect(model.testVar).equals(3);
     });
 
     it('testCommandIsSingleton2', () =>
     {
+        factory.mapToValue<CommandMapperConfig>("CommandMapperConfig", {defaultLifetime: "context", defaultDataMode: "merge"});
+        commandMapper = factory.instantiateValueUnmapped("ICommandMapper");
         factory.mapToType<MockCommand19>(MockCommand19, MockCommand19Ex);
 
         const model: MockModel2 = factory.getInstance<MockModel2>(MockModel2);
         factory.mapToValue<MockModel2>(MockModel2, model);
 
-        commandMapper.executeCommand(MockCommand19);
-        commandMapper.executeCommand(MockCommand19);
-        commandMapper.executeCommand(MockCommand19);
+        commandMapper.execute(MockCommand19);
+        commandMapper.execute(MockCommand19);
+        commandMapper.execute(MockCommand19);
 
         expect(model.testVar).equals(3);
     });
 
     it('testCommandIsSingleton3', () =>
     {
+        factory.mapToValue<CommandMapperConfig>("CommandMapperConfig", {defaultLifetime: "context", defaultDataMode: "merge"});
+        commandMapper = factory.instantiateValueUnmapped("ICommandMapper");
         factory.mapToType<MockCommand19>(MockCommand19, MockCommand19Ex);
 
         const model: MockModel2 = factory.getInstance<MockModel2>(MockModel2);
         factory.mapToValue<MockModel2>(MockModel2, model);
 
-        commandMapper.executeCommand(MockCommand19);
+        commandMapper.execute(MockCommand19);
 
         expect(model.testVar).equals(1);
     });
@@ -459,20 +469,20 @@ describe('CommandMapperTest', function (this: Suite)
     it('testCommandIsNotSingleton', () =>
     {
         factory.mapToValue<CommandMapperConfig>("CommandMapperConfig",
-            {singletonCommands: false, mergeMessageDataAndMappingData: true});
+            {defaultLifetime: "execution", defaultDataMode: "merge"});
         const cm: ICommandMapper = factory.instantiateValueUnmapped("ICommandMapper");
 
         const model: MockModel2 = factory.getInstance<MockModel2>(MockModel2);
         factory.mapToValue<MockModel2>(MockModel2, model);
 
-        cm.executeCommand(MockCommand19);
-        cm.executeCommand(MockCommand19);
-        cm.executeCommand(MockCommand19);
+        cm.execute(MockCommand19);
+        cm.execute(MockCommand19);
+        cm.execute(MockCommand19);
 
         expect(model.testVar).equals(1);
     });
 
-    it('testSingletonCommandsAreFaster', () =>
+    it('testExplicitSingletonAllocationCount', () =>
     {
         class CountingCommand extends AbstractCommand
         {
@@ -498,7 +508,7 @@ describe('CommandMapperTest', function (this: Suite)
 
             for (let i = 0; i < 1000; i++)
             {
-                cm.executeCommand(commandClass, {
+                cm.execute(commandClass, {
                     i: 7,
                     f: 5.5,
                     s: "Anton",
@@ -511,10 +521,10 @@ describe('CommandMapperTest', function (this: Suite)
         }
 
         const timePassedForSingletonCommands = executeCommands(
-            {singletonCommands: true, mergeMessageDataAndMappingData: true}, MockCommand18);
+            {defaultLifetime: "context", defaultDataMode: "merge"}, MockCommand18);
 
         const timePassedForNotSingletonCommands = executeCommands(
-            {singletonCommands: false, mergeMessageDataAndMappingData: true}, MockCommand18NotLazy);
+            {defaultLifetime: "execution", defaultDataMode: "merge"}, MockCommand18NotLazy);
 
         logger.info("Time passed for singleton commands: ", timePassedForSingletonCommands);
         logger.info("Time passed for NOT singleton commands: ", timePassedForNotSingletonCommands);
@@ -523,11 +533,11 @@ describe('CommandMapperTest', function (this: Suite)
         // by the amount of created command objects: a singleton command is created once and is reused from a pool,
         // a not singleton command is created for every execution
         CountingCommand.createdInstances = 0;
-        executeCommands({singletonCommands: true, mergeMessageDataAndMappingData: true}, CountingCommand);
+        executeCommands({defaultLifetime: "context", defaultDataMode: "merge"}, CountingCommand);
         expect(CountingCommand.createdInstances).equals(1);
 
         CountingCommand.createdInstances = 0;
-        executeCommands({singletonCommands: false, mergeMessageDataAndMappingData: true}, CountingCommand);
+        executeCommands({defaultLifetime: "execution", defaultDataMode: "merge"}, CountingCommand);
         expect(CountingCommand.createdInstances).equals(1000);
     });
 
@@ -538,7 +548,7 @@ describe('CommandMapperTest', function (this: Suite)
         const obj = factory.getInstance<MockObj1>(MockObj1);
         factory.mapToValue<MockObj1>(MockObj1, obj);
         factory.mapToValue<ICommandMapper>("ICommandMapper", commandMapper);
-        commandMapper.executeCommand(MockNestedCmd);
+        commandMapper.execute(MockNestedCmd);
 
         expect(obj.d).equals(7);
     });
@@ -548,12 +558,12 @@ describe('CommandMapperTest', function (this: Suite)
         const obj = factory.getInstance<MockAsyncModel>(MockAsyncModel);
         factory.mapToValue<MockAsyncModel>(MockAsyncModel, obj);
 
-        commandMapper.map(MockMessageType.GOODBYE, [
+        commandMapper.map(dynamicMessage, [
             MockAsyncCommand, MockAfterAsyncCommand,
             MockAsyncCommand, MockAfterAsyncCommand
         ]);
 
-        commandMapper.tryToExecuteCommand(MockMessageType.GOODBYE);
+        commandMapper.route(new RoutedMessage(dynamicMessage, new RouteOrigin()));
 
         setTimeout(() =>
         {
@@ -594,8 +604,8 @@ describe('CommandMapperTest', function (this: Suite)
 
         c.map(MockMessageType.HELLO, MockCommand24).addTargetGuards(m2);
 
-        m1.dispatchMessage(MockMessageType.HELLO);
-        m2.dispatchMessage(MockMessageType.HELLO);
+        m1.dispatchMessage(MockMessageType.HELLO, {prop: ""});
+        m2.dispatchMessage(MockMessageType.HELLO, {prop: ""});
 
         expect(m2.testVar).equals(5);
         expect(MockCommand24.executedTimes).equals(1);
@@ -616,9 +626,9 @@ describe('CommandMapperTest', function (this: Suite)
 
         c.map(MockMessageType.HELLO, MockCommand24).addTargetGuards(m1, false);
 
-        m1.dispatchMessage(MockMessageType.HELLO);
-        m2.dispatchMessage(MockMessageType.HELLO);
-        m3.dispatchMessage(MockMessageType.HELLO);
+        m1.dispatchMessage(MockMessageType.HELLO, {prop: ""});
+        m2.dispatchMessage(MockMessageType.HELLO, {prop: ""});
+        m3.dispatchMessage(MockMessageType.HELLO, {prop: ""});
 
         expect(m2.testVar).equals(5);
         expect(MockCommand24.executedTimes).equals(2);

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="title desc">
+<title id="title">DomWires monochrome mark</title><desc id="desc">The component and connection mark in one color.</desc>
+<g font-family="Segoe UI, Arial, sans-serif"><g fill="none" stroke-linejoin="round" stroke-linecap="round">
+<path d="M24 24 H65 L96 55 V97 H24 V65" stroke="#182635" stroke-width="10"/>
+<path d="M24 43 H50 V73 H75" stroke="#182635" stroke-width="10"/>
+<rect x="16" y="35" width="16" height="16" rx="3" fill="#182635" stroke="none"/>
+<rect x="67" y="65" width="16" height="16" rx="3" fill="#182635" stroke="none"/>
+</g></g></svg>

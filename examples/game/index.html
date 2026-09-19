@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domwires · Scene lab</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0d1720;color:#e6eef3}
+body{max-width:960px;margin:0 auto;padding:36px 24px}a{color:#83d9bc}h1{font-size:40px;margin:8px 0 12px}
+.eyebrow{color:#83d9bc;text-transform:uppercase;letter-spacing:3px;font-size:12px}
+p{color:#b9c9d3;line-height:1.6}header p{max-width:740px}
+#controls{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0}button{background:#243746;color:#edf6fa;border:1px solid #486071;border-radius:8px;padding:10px 15px;cursor:pointer}
+button:hover{background:#344f60}button:disabled{opacity:.5}canvas{width:100%;max-width:800px;border-radius:14px;border:1px solid #365063}
+#hud{border-top:1px solid #294150;margin-top:20px}#status{color:#83d9bc}summary{cursor:pointer;margin:16px 0}
+pre{background:#101f2a;padding:16px;height:180px;overflow:auto;font-size:12px;border-radius:8px}
+footer{margin-top:28px;display:flex;align-items:center;gap:20px;font-size:14px}
+</style>
+</head>
+<body>
+<header><span class="eyebrow">Domwires v2 / Interactive example</span><h1>Scene lab</h1>
+<p>Fire pooled projectiles, pause and step the simulation, or load a level. Start a slow load and then a fast one: only the latest result is applied. Switching scenes cancels their pending work; the HUD keeps its own state.</p></header>
+<div id="controls" aria-label="Game controls"></div>
+<p id="status" role="status">Starting…</p>
+<section id="scene" aria-label="Current scene"></section>
+<section id="hud" aria-label="Persistent HUD"></section>
+<details><summary>Command trace</summary><p>Turn tracing on with the toolbar. The latest 50 events are shown; tick events are omitted.</p><pre id="trace" aria-live="off"></pre></details>
+<footer><button id="restart">Restart demo</button><a href="index.html">Counter example</a><span>12 projectiles per scene · 20 ticks/second</span></footer>
+<script src="game.js"></script>
+</body></html>

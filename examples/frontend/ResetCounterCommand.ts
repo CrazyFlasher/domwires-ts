@@ -1,9 +1,9 @@
 import {AbstractCommand, lazyInject} from "domwires";
-import {ICounterModel} from "./CounterModel";
+import {ICounterModel, COUNTER_MODEL} from "./CounterModel";
 
 export class ResetCounterCommand extends AbstractCommand
 {
-    @lazyInject("ICounterModel")
+    @lazyInject(COUNTER_MODEL)
     private model!: ICounterModel;
 
     public override execute(): void

@@ -35,6 +35,7 @@ const context = {
         body: createElement()
     },
     console: silentConsole,
+    AbortController,
     setTimeout: setTimeout
 };
 

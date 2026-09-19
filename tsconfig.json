@@ -22,7 +22,8 @@
     "types": [
       "node"
     ],
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "inlineSources": true
   },
   "include": [
     "src/**/*"

@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {IDisposable, IDisposableImmutable} from "../../common/IDisposable";
+import {IMessage, Message, messageAtTarget} from "./IMessage";
 import {Enum} from "../../Enum";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
 import {ArrayUtils} from "../../utils/ArrayUtils";
@@ -13,137 +14,87 @@ import {setDefaultImplementation} from "../../Global";
  */
 export class MessageType<DataType = void> extends Enum
 {
-
+    declare private readonly payloadContract: (value: DataType) => DataType;
+    public constructor(name?: string) { super(name); }
 }
 
 /**
  * A message is always passed to a listener, so only the data is optional: a message without data
  * gives undefined here.
  */
-export type MessageListener<DataType> = (message: IMessage, data?: DataType) => void;
+export type MessageListener<DataType> = (message: IMessage, data: DataType) => void;
+export type MessageArguments<T> = undefined extends T ? [data?: NoInfer<T>, bubbles?: boolean] : [data: NoInfer<T>, bubbles?: boolean];
 
+/** Independently owned listener registration returned by subscribe(). */
+export interface Subscription
+{
+    /** Removes this subscription only. Repeated disposal is harmless. */
+    dispose(): void;
+}
+
+/** Live observation and listener registration without dispatch or bulk-removal operations. */
 export interface IMessageDispatcherImmutable extends IDisposableImmutable
 {
+    /**
+     * Whether this exact message type has at least one live listener.
+     */
     hasMessageListener<DataType>(type: MessageType<DataType>): boolean;
 
+    /**
+     * Registers a listener once per type/callback identity. Higher priority runs first; ties keep insertion order.
+     * A once listener is removed before invocation, including recursive dispatch. Callback this is the dispatcher.
+     */
     addMessageListener<DataType>(type: MessageType<DataType>, listener: MessageListener<DataType>, once?: boolean, priority?: number): void;
 
+    /**
+     * Removes the matching callback; absence is harmless. Removal takes effect during active delivery.
+     */
     removeMessageListener<DataType>(type: MessageType<DataType>, listener: MessageListener<DataType>): void;
 
+    /**
+     * Creates an independent disposable subscription, even when the same callback is already registered.
+     * Defaults: once false, priority 0. Repeated disposal is harmless.
+     */
+    subscribe<T>(type: MessageType<T>, listener: MessageListener<NoInfer<T>>, options?: {once?: boolean; priority?: number}): Subscription;
+
+    /**
+     * Hierarchy routing hook for a message arriving from below. Return false to stop upward traversal.
+     * The base dispatcher returns false; hierarchy containers override delivery behavior.
+     */
     onMessageBubbled<DataType>(message: IMessage, data?: DataType): boolean;
 }
 
+/** Synchronous message delivery with stable frames and typed payloads. */
 export interface IMessageDispatcher extends IMessageDispatcherImmutable, IDisposable
 {
+    /**
+     * Delivers to a listener snapshot at this target. Added listeners wait for the next delivery; removed ones are skipped.
+     * Listener exceptions propagate synchronously and stop this delivery. Does not initiate upward bubbling.
+     */
     handleMessage<DataType>(message: IMessage, data?: DataType): IMessageDispatcher;
 
+    /**
+     * Removes all subscriptions, including pending listeners in an active delivery; returns this dispatcher.
+     */
     removeAllMessageListeners(): IMessageDispatcher;
 
-    dispatchMessage<DataType>(type: MessageType<DataType>, data?: DataType, bubbles?: boolean): IMessageDispatcher;
-}
-
-export interface IMessage
-{
-    get type(): MessageType<any>;
-
-    get data(): unknown;
-
-    get initialTarget(): IMessageDispatcherImmutable;
-
-    get currentTarget(): IMessageDispatcherImmutable;
-
-    get previousTarget(): IMessageDispatcherImmutable | undefined;
-
-    get bubbles(): boolean;
-
-    get isPropagationStopped(): boolean;
-
     /**
-     * Stops the further propagation of the message: it will not be delivered to the next target.
+     * Creates a message and synchronously delivers it locally, then bubbles when allowed (default true).
+     * Payload is passed by reference. Context commands may continue asynchronously; await context.settle() for them.
+     * @throws If disposed or a synchronous listener throws.
      */
-    stopPropagation(): void;
-}
-
-/**
- * An immutable message snapshot. Every dispatch creates its own instance, so nested and
- * delayed handling never corrupts the message of the outer dispatch.
- */
-export class Message implements IMessage
-{
-    private readonly _type: MessageType<any>;
-    private readonly _data: unknown;
-    private readonly _bubbles: boolean;
-    private readonly _initialTarget: IMessageDispatcherImmutable;
-
-    private _currentTarget: IMessageDispatcherImmutable;
-    private _previousTarget: IMessageDispatcherImmutable | undefined;
-
-    private _isPropagationStopped = false;
-
-    public constructor(type: MessageType<any>, initialTarget: IMessageDispatcherImmutable, data?: unknown, bubbles = true)
-    {
-        this._type = type;
-        this._initialTarget = initialTarget;
-        this._currentTarget = initialTarget;
-        this._data = data;
-        this._bubbles = bubbles;
-    }
-
-    /**
-     * Moves the message to the next target of the hierarchy.
-     */
-    public setCurrentTarget(value: IMessageDispatcherImmutable): IMessageDispatcherImmutable
-    {
-        this._previousTarget = this._currentTarget;
-
-        this._currentTarget = value;
-
-        return this._currentTarget;
-    }
-
-    public stopPropagation(): void
-    {
-        this._isPropagationStopped = true;
-    }
-
-    public get isPropagationStopped(): boolean
-    {
-        return this._isPropagationStopped;
-    }
-
-    public get bubbles(): boolean
-    {
-        return this._bubbles;
-    }
-
-    public get currentTarget(): IMessageDispatcherImmutable
-    {
-        return this._currentTarget;
-    }
-
-    public get previousTarget(): IMessageDispatcherImmutable | undefined
-    {
-        return this._previousTarget;
-    }
-
-    public get initialTarget(): IMessageDispatcherImmutable
-    {
-        return this._initialTarget;
-    }
-
-    public get type(): MessageType<any>
-    {
-        return this._type;
-    }
-
-    public get data(): unknown
-    {
-        return this._data;
-    }
+    dispatchMessage<DataType>(type: MessageType<DataType>, ...args: MessageArguments<DataType>): IMessageDispatcher;
 }
 
 export class MessageDispatcher extends AbstractDisposable implements IMessageDispatcher
 {
+    public subscribe<T>(type: MessageType<T>, listener: MessageListener<NoInfer<T>>, options: {once?: boolean; priority?: number} = {}): Subscription
+    {
+        // A unique wrapper lets each handle own its registration independently.
+        const callback: MessageListener<T> = (message, data) => listener(message, data);
+        this.addMessageListener(type, callback, options.once, options.priority);
+        return {dispose: () => this.removeMessageListener(type, callback)};
+    }
     private _messageMap: Map<Enum, Listener<any>[]> | undefined;
 
     /**
@@ -194,7 +145,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         {
             for (const l of messageMapForType)
             {
-                if (l.func === listener)
+                if (l.func === listener && !l.removed)
                 {
                     return l;
                 }
@@ -204,8 +155,10 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return undefined;
     }
 
-    public dispatchMessage<DataType>(type: MessageType<DataType>, data?: DataType, bubbles = true): IMessageDispatcher
+    public dispatchMessage<DataType>(type: MessageType<DataType>, ...args: MessageArguments<DataType>): IMessageDispatcher
     {
+        if (this.isDisposed) throw new Error("Message dispatcher already disposed!");
+        const [data, bubbles = true] = args;
         if (this.isBubbling)
         {
             this.warn("WARNING: You try to dispatch '" + type.name +
@@ -224,7 +177,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
         return this;
     }
 
-    private bubbleUpMessage<DataType>(message: Message, data?: DataType): void
+    private bubbleUpMessage<DataType>(message: IMessage, data?: DataType): void
     {
         this.isBubbling = true;
 
@@ -235,7 +188,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
 
             while (currentTarget && !message.isPropagationStopped)
             {
-                parent = Reflect.get(Object(currentTarget), "_parent");
+                parent = Reflect.get(Object(currentTarget), "parentImmutable");
 
                 if (!parent)
                 {
@@ -243,7 +196,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
                 }
 
                 currentTarget = parent;
-                message.setCurrentTarget(currentTarget);
+                message = messageAtTarget(message, currentTarget);
 
                 // onMessageBubbled() can stop the bubbling by returning false
                 if (!currentTarget.onMessageBubbled(message, data))
@@ -276,9 +229,10 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
 
         try
         {
-            for (let i = 0; i < listeners.length; i++)
+            const snapshot = listeners.slice();
+            for (let i = 0; i < snapshot.length; i++)
             {
-                const listener: Listener<any> | undefined = listeners[i];
+                const listener: Listener<any> | undefined = snapshot[i];
 
                 if (!listener || listener.removed)
                 {
@@ -311,7 +265,7 @@ export class MessageDispatcher extends AbstractDisposable implements IMessageDis
     {
         if (this._messageMap)
         {
-            return this._messageMap.get(type) != undefined;
+            return this._messageMap.get(type)?.some(listener => !listener.removed) ?? false;
         }
 
         return false;

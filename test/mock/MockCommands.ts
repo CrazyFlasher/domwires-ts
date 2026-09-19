@@ -346,22 +346,12 @@ export class MockNestedCmd extends AbstractCommand
     @lazyInject(MockObj1)
     private obj!: MockObj1;
 
-    private executeCount = 0;
-
-    public override execute(): void
+    public override execute(input?: {depth?: number; obj?: MockObj1}): void
     {
-        if (this.executeCount < 2)
-        {
-            this.obj.d += 7;
-
-            this.executeCount++;
-
-            this.f.unmapFromValue<MockObj1>(MockObj1);
-            const obj = this.f.getInstance<MockObj1>(MockObj1);
-            this.f.mapToValue<MockObj1>(MockObj1, obj);
-
-            this.cm.executeCommand(MockNestedCmd);
-        }
+        const depth = input?.depth ?? 0;
+        const obj = input?.obj ?? this.obj;
+        obj.d += 7;
+        if (depth < 2) this.cm.execute(MockNestedCmd, {depth: depth + 1, obj: new MockObj1()});
     }
 }
 

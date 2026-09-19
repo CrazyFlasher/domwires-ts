@@ -1,4 +1,4 @@
-import {AbstractHierarchyObject} from "domwires";
+import {AbstractHierarchyObject, ServiceToken} from "domwires";
 import {AppMessage} from "./AppMessage";
 
 /**
@@ -44,3 +44,6 @@ export class CounterModel extends AbstractHierarchyObject implements ICounterMod
         return this;
     }
 }
+
+export const COUNTER_MODEL = new ServiceToken<ICounterModel>("CounterModel");
+export const COUNTER_MODEL_IMMUTABLE = new ServiceToken<ICounterModelImmutable>("CounterModelImmutable");

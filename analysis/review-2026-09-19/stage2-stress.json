@@ -1,0 +1,63 @@
+{
+  "node": "v24.18.0",
+  "cycles": 2800,
+  "growthAfterWarmup": 303592,
+  "samples": [
+    {
+      "cycles": 400,
+      "heapUsed": 6049936,
+      "bullets": 0,
+      "adapters": 0,
+      "requests": 0,
+      "clocks": 0
+    },
+    {
+      "cycles": 800,
+      "heapUsed": 6214408,
+      "bullets": 0,
+      "adapters": 0,
+      "requests": 0,
+      "clocks": 0
+    },
+    {
+      "cycles": 1200,
+      "heapUsed": 6479312,
+      "bullets": 0,
+      "adapters": 0,
+      "requests": 0,
+      "clocks": 0
+    },
+    {
+      "cycles": 1600,
+      "heapUsed": 6503408,
+      "bullets": 0,
+      "adapters": 0,
+      "requests": 0,
+      "clocks": 0
+    },
+    {
+      "cycles": 2000,
+      "heapUsed": 6410968,
+      "bullets": 0,
+      "adapters": 0,
+      "requests": 0,
+      "clocks": 0
+    },
+    {
+      "cycles": 2400,
+      "heapUsed": 6474648,
+      "bullets": 0,
+      "adapters": 0,
+      "requests": 0,
+      "clocks": 0
+    },
+    {
+      "cycles": 2800,
+      "heapUsed": 6518000,
+      "bullets": 0,
+      "adapters": 0,
+      "requests": 0,
+      "clocks": 0
+    }
+  ]
+}

@@ -5,3 +5,10 @@ dist_client/
 dist_example/
 .idea/
 *.log
+.consumer-check/
+
+.browser-cache/
+playwright-report/
+test-results/
+
+docs/api/

@@ -11,9 +11,11 @@ export type AppConfigLoader = (path: string) => Promise<unknown>;
 
 export abstract class AbstractApp<TAppConfig = unknown> extends MessageDispatcher
 {
+    /** Optional platform loader; loadConfig() falls back to fetch when this is absent. */
     @inject("AppConfigLoader") @optional()
     protected configLoader: AppConfigLoader | undefined;
 
+    /** Last successfully loaded configuration; initialized by loadConfig(). */
     protected _appConfigJson!: TAppConfig;
 
     public get appConfigJson(): TAppConfig

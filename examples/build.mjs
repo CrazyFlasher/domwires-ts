@@ -23,4 +23,11 @@ await bundleForBrowser({
     }
 });
 
-console.log("⚡ Example built");
+fs.copyFileSync(path.resolve(currentDir, "game/index.html"), path.resolve(distPath, "game.html"));
+await bundleForBrowser({
+    projectDir,
+    entryPoints: [path.resolve(currentDir, "game/main.ts")],
+    outfile: path.resolve(distPath, "game.js")
+});
+
+console.log("⚡ Counter and game examples built");

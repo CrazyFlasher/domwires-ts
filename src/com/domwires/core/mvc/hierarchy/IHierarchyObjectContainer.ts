@@ -1,7 +1,8 @@
+/* eslint-disable unicorn/no-useless-spread -- Snapshots protect iteration from removal and reentrant registration. */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import {IHierarchyObject, IHierarchyObjectImmutable} from "./IHierarchyObject";
-import {IMessage} from "../message/IMessageDispatcher";
+import {IMessage, messageAtTarget} from "../message/IMessage";
 import {AbstractHierarchyObject} from "./AbstractHierarchyObject";
 import {
     IS_HIERARCHY_OBJECT_CONTAINER,
@@ -9,328 +10,248 @@ import {
     isHierarchyObjectContainer,
     setDefaultImplementation
 } from "../../Global";
-import {ArrayUtils} from "../../utils/ArrayUtils";
 
+/** Direct-child lookup through immutable contracts. */
 export interface IHierarchyObjectContainerImmutable<TChildImmutable = IHierarchyObjectImmutable>
     extends IHierarchyObjectImmutable
 {
+    /**
+     * Number of direct children.
+     */
     get numChildren(): number;
 
+    /**
+     * Whether a direct child exists by identity or registered id.
+     */
     contains(child: TChildImmutable): boolean;
 
+    /**
+     * Whether a direct child exists by identity or registered id.
+     */
     contains(id: string): boolean;
 
+    /**
+     * Finds a direct child by id or zero-based index; undefined when absent.
+     */
     getImmutable(id: string): TChildImmutable | undefined;
 
+    /**
+     * Finds a direct child by id or zero-based index; undefined when absent.
+     */
     getImmutable(index: number): TChildImmutable | undefined;
 
+    /**
+     * This container's optional registration id.
+     */
     get id(): string | undefined;
 
+    /**
+     * Legacy structural marker; runtime identification uses the framework brand.
+     */
     isIHierarchyObjectContainer(): void;
 }
 
+/** Owns direct children and routes messages without retaining live collection views. */
 export interface IHierarchyObjectContainer<TChild extends IHierarchyObject = IHierarchyObject, TChildImmutable extends IHierarchyObjectImmutable = IHierarchyObjectImmutable>
     extends IHierarchyObjectContainerImmutable<TChildImmutable>, IHierarchyObject
 {
+    /**
+     * Finds a direct child by id or zero-based index; undefined when absent.
+     */
     get(id: string): TChild | undefined;
 
+    /**
+     * Finds a direct child by id or zero-based index; undefined when absent.
+     */
     get(index: number): TChild | undefined;
 
+    /**
+     * Attaches a child, detaching it from a previous parent without disposal.
+     * Returns false when already attached. Rejects cycles and duplicate ids before changing membership.
+     */
     add(child: TChild): boolean;
 
+    /**
+     * Attaches a child, detaching it from a previous parent without disposal.
+     * Returns false when already attached. Rejects cycles and duplicate ids before changing membership.
+     */
     add(child: TChild, index: number): boolean;
 
+    /**
+     * Attaches a child, detaching it from a previous parent without disposal.
+     * Returns false when already attached. Rejects cycles and duplicate ids before changing membership.
+     */
     add(child: TChild, id: string): boolean;
 
+    /**
+     * Detaches a direct child by identity or id. Returns false when absent; dispose defaults to false.
+     */
     remove(child: TChild, dispose?: boolean): boolean;
 
+    /**
+     * Detaches a direct child by identity or id. Returns false when absent; dispose defaults to false.
+     */
     remove(id: string, dispose?: boolean): boolean;
 
+    /**
+     * Detaches a snapshot of all children, optionally disposing them; dispose defaults to false.
+     */
     removeAll(dispose?: boolean): IHierarchyObjectContainer<TChild, TChildImmutable>;
 
+    /**
+     * Forwards a stable message frame to each matching child. Stops at propagation boundaries.
+     */
     dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, filter?: (child: TChild) => boolean): IHierarchyObjectContainer<TChild, TChildImmutable>;
 
+    /**
+     * Sets this container's id and updates parent lookup; rejects conflicting ids.
+     */
     setId(value: string): IHierarchyObjectContainer<TChild, TChildImmutable>;
 
-    get childrenMap():Map<string, TChild>;
+    /**
+     * Snapshot of named direct children; changing the returned collection cannot edit membership.
+     */
+    get childrenMap():ReadonlyMap<string, TChild>;
 
-    get childrenList():TChild[];
+    /**
+     * Snapshot of ordered direct children; child objects themselves remain live.
+     */
+    get childrenList():readonly TChild[];
 }
 
-export class HierarchyObjectContainer<TChild extends TChildImmutable & IHierarchyObject, TChildImmutable extends IHierarchyObjectImmutable>
+export class HierarchyObjectContainer<
+    TChild extends TChildImmutable & IHierarchyObject,
+    TChildImmutable extends IHierarchyObjectImmutable>
     extends AbstractHierarchyObject implements IHierarchyObjectContainer<TChild, TChildImmutable>
 {
-    private _childrenList: TChild[] = [];
-    private _childrenMap: Map<string, TChild> = new Map<string, TChild>();
+    private readonly _childrenList: TChild[] = [];
+    private readonly _childrenMap = new Map<string, TChild>();
+    private readonly ids = new Map<TChildImmutable, string | undefined>();
+    private _id?: string;
 
-    private _id: string | undefined;
-
-    /* eslint-disable-next-line @typescript-eslint/no-empty-function */
     public isIHierarchyObjectContainer(): void {}
-
-    public override dispose()
+    public override dispose(): void
     {
-        this.removeAll(true);
-
-        // this._childrenList = null;
-        // this._childrenMap = null;
-
+        const errors: unknown[] = [];
+        for (const child of [...this._childrenList])
+        {
+            try { this.remove(child, true); } catch (error) { errors.push(error); }
+        }
         super.dispose();
+        if (errors.length) throw new AggregateError(errors, "Child disposal failed");
     }
 
-    public get id(): string | undefined
-    {
-        return this._id;
-    }
+    public get id(): string | undefined { return this._id; }
+    public setId(value: string): this { this._id = value; return this; }
+    public get childrenList(): readonly TChild[] { return this._childrenList.slice(); }
+    public get childrenMap(): ReadonlyMap<string, TChild> { return new Map(this._childrenMap); }
 
-    public setId(value: string): IHierarchyObjectContainer<TChild, TChildImmutable>
-    {
-        this._id = value;
-
-        return this;
-    }
-
-    public get childrenList(): TChild[]
-    {
-        return this._childrenList;
-    }
-
-    public get childrenMap(): Map<string, TChild>
-    {
-        return this._childrenMap;
-    }
-
-    public add(child: TChild, index: number): boolean;
-    public add(child: TChild, id: string): boolean;
-    public add(child: TChild): boolean;
-    public add(child: TChild, indexOrId?: number | string): boolean;
     public add(child: TChild, indexOrId?: number | string): boolean
     {
-        let success = false;
-        let index: number | undefined;
-        let id: string | undefined;
-
-        if (typeof indexOrId === "number")
+        if (this.isDisposed || child.isDisposed) throw new Error("Cannot attach a disposed hierarchy object");
+        const index = typeof indexOrId === "number" ? indexOrId : this._childrenList.length;
+        const id = typeof indexOrId === "string" ? indexOrId : undefined;
+        if (!Number.isInteger(index) || index < 0 || index > this._childrenList.length)
+            throw new Error("Invalid child index!");
+        // eslint-disable-next-line typescript/no-this-alias -- Walk the parent chain.
+        for (let ancestor: IHierarchyObjectImmutable | undefined = this; ancestor; ancestor = ancestor.parentImmutable)
+            if (Object.is(ancestor, child)) throw new Error("Hierarchy cycle is not allowed");
+        if (id !== undefined && this._childrenMap.has(id) && this._childrenMap.get(id) !== child)
+            throw new Error("Child id already registered: " + id);
+        if (this.ids.has(child))
         {
-            index = indexOrId;
-        } else
-        if (typeof indexOrId === "string")
-        {
-            id = indexOrId;
-        }
-
-        if (index !== undefined && index > this._childrenList.length)
-        {
-            throw new Error("Invalid child index! Index shouldn't be bigger that children list length!");
-        }
-
-        const contains = this.contains(child);
-
-        if (index !== undefined)
-        {
-            if (contains)
+            if (typeof indexOrId === "number")
             {
-                ArrayUtils.remove(this._childrenList, child);
+                this._childrenList.splice(this._childrenList.indexOf(child), 1);
+                this._childrenList.splice(Math.min(index, this._childrenList.length), 0, child);
             }
-
-            this._childrenList.splice(index, 0, child);
+            return false;
         }
-
-        if (!contains)
+        child.parent?.remove(child);
+        this._childrenList.splice(index, 0, child);
+        this.ids.set(child, id);
+        if (id !== undefined) this._childrenMap.set(id, child);
+        try
         {
-            if (index === undefined)
-            {
-                if (!id)
-                {
-                    this._childrenList.push(child);
-                } else
-                {
-                    this._childrenMap.set(id, child);
-                }
-            }
-
-            if (child.parent)
-            {
-                child.parent.remove(child);
-            }
-
+            this.childAdded(child);
             child.setParent(this);
-
-            success = true;
         }
-
-        return success;
+        catch (error)
+        {
+            this.remove(child);
+            throw error;
+        }
+        return true;
     }
 
-    public get(id: string): TChild | undefined;
-    public get(index: number): TChild | undefined;
-    public get(indexOrId: number | string): TChild | undefined;
     public get(indexOrId: number | string): TChild | undefined
     {
         return typeof indexOrId === "string" ? this._childrenMap.get(indexOrId) : this._childrenList[indexOrId];
     }
-
-    public getImmutable(id: string): TChildImmutable | undefined;
-    public getImmutable(index: number): TChildImmutable | undefined;
-    public getImmutable(indexOrId: number | string): TChildImmutable | undefined;
-    public getImmutable(indexOrId: number | string): TChildImmutable | undefined
-    {
-        return this.get(indexOrId);
-    }
-
+    public getImmutable(indexOrId: number | string): TChildImmutable | undefined { return this.get(indexOrId); }
     public contains(child: TChildImmutable): boolean;
     public contains(id: string): boolean;
     public contains(childOrId: TChildImmutable | string): boolean;
     public contains(childOrId: TChildImmutable | string): boolean
     {
-        if (typeof childOrId === "string")
-        {
-            return this._childrenMap.has(childOrId);
-        }
-
-        for (const child of this._childrenList)
-        {
-            if (Object.is(child, childOrId))
-            {
-                return true;
-            }
-        }
-
-        for (const child of this._childrenMap.values())
-        {
-            if (Object.is(child, childOrId))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return typeof childOrId === "string" ? this._childrenMap.has(childOrId) : this.ids.has(childOrId);
     }
 
-    public dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, filter?: (child: TChild) => boolean): IHierarchyObjectContainer<TChild, TChildImmutable>
+    public dispatchMessageToChildren<DataType>(message: IMessage, data?: DataType, filter?: (child: TChild) => boolean): this
     {
-        for (const child of this._childrenList)
+        for (const child of [...this._childrenList])
         {
-            if (message.isPropagationStopped)
-            {
-                break;
-            }
-
-            if (filter && !filter(child))
-            {
-                continue;
-            }
-
-            // do not send the message back to the object, it came from
-            if (message.previousTarget === child)
-            {
-                continue;
-            }
-
-            child.handleMessage(message, data);
-
-            // a nested container delivers the message to its own children as well
+            if (message.isPropagationStopped) break;
+            if (!this.ids.has(child) || (filter && !filter(child))) continue;
+            if (message.previousTarget === child || message.initialTarget === child) continue;
+            const delivered = messageAtTarget(message, child);
+            child.handleMessage(delivered, data);
             if (isHierarchyObjectContainer(child) && !isContext(child))
-            {
-                child.dispatchMessageToChildren(message, data);
-            }
+                child.dispatchMessageToChildren(delivered, data);
         }
-
         return this;
     }
 
     public override onMessageBubbled<DataType>(message: IMessage, data?: DataType): boolean
     {
         this.handleMessage(message, data);
-
         return true;
     }
 
     public remove(child: TChild, dispose?: boolean): boolean;
     public remove(id: string, dispose?: boolean): boolean;
     public remove(childOrId: TChild | string, dispose?: boolean): boolean;
-    public remove(childOrId: TChild | string, dispose?: boolean): boolean
+    public remove(childOrId: TChild | string, dispose = false): boolean
     {
-        let success = false;
-
-        let child: TChild | undefined;
-        let id: string | undefined;
-
-        if (typeof childOrId === "string")
-        {
-            id = childOrId;
-            child = this.get(id);
-        } else
-        {
-            child = childOrId;
-        }
-
-        if (child && this.contains(child))
-        {
-            if (id)
-            {
-                this._childrenMap.delete(id);
-            } else
-            {
-                ArrayUtils.remove(this._childrenList, child);
-            }
-
-            if (dispose)
-            {
-                child.dispose();
-            }
-            else
-            {
-                child.setParent(undefined);
-            }
-
-            success = true;
-        }
-
-        return success;
+        const child = typeof childOrId === "string" ? this.get(childOrId) : childOrId;
+        if (!child || !this.ids.has(child)) return false;
+        const id = this.ids.get(child);
+        this.ids.delete(child);
+        this._childrenList.splice(this._childrenList.indexOf(child), 1);
+        if (id !== undefined) this._childrenMap.delete(id);
+        this.childRemoved(child);
+        child.setParent(undefined);
+        if (dispose) child.dispose();
+        return true;
     }
 
-    public removeAll(dispose?: boolean): IHierarchyObjectContainer<TChild, TChildImmutable>
+    /** Synchronous hook after removal from this container, before child.setParent(undefined). */
+    protected childRemoved(_child: TChild): void {}
+    /** Synchronous hook after insertion into this container, before child.setParent(this). */
+    protected childAdded(_child: TChild): void {}
+
+    public removeAll(dispose = false): this
     {
-        for (const child of this._childrenList)
+        const errors: unknown[] = [];
+        for (const child of [...this._childrenList])
         {
-            if (dispose)
-            {
-                child.dispose();
-            }
-            else
-            {
-                child.setParent(undefined);
-            }
+            try { this.remove(child, dispose); } catch (error) { errors.push(error); }
         }
-
-        // children with an id are stored in the map, they should be detached as well
-        for (const child of this._childrenMap.values())
-        {
-            if (dispose)
-            {
-                child.dispose();
-            }
-            else
-            {
-                child.setParent(undefined);
-            }
-        }
-
-        ArrayUtils.clear(this._childrenList);
-
-        this._childrenMap.clear();
-
+        if (errors.length) throw new AggregateError(errors, "Removing children failed");
         return this;
     }
-
-    public get numChildren(): number
-    {
-        return this._childrenList.length + this._childrenMap.size;
-    }
+    public get numChildren(): number { return this._childrenList.length; }
 }
 
 Reflect.set(HierarchyObjectContainer.prototype, IS_HIERARCHY_OBJECT_CONTAINER, true);
-
-// the registration lives next to the class, so a bundler can not drop it as an unused side effect
 setDefaultImplementation<IHierarchyObjectContainer>("IHierarchyObjectContainer", HierarchyObjectContainer);

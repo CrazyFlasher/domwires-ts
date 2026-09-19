@@ -137,7 +137,7 @@ describe('MessageDispatcherTest', function (this: Suite)
         d.addMessageListener(MockMessageType.HELLO, listener1);
         d.addMessageListener(MockMessageType.HELLO, listener2);
 
-        d.dispatchMessage(MockMessageType.HELLO);
+        d.dispatchMessage(MockMessageType.HELLO, {prop: ""});
 
         expect(a).true;
         expect(b).true;
@@ -153,7 +153,7 @@ describe('MessageDispatcherTest', function (this: Suite)
         d.addMessageListener(MockMessageType.HELLO, listener1, false, 0);
         d.addMessageListener(MockMessageType.HELLO, listener2, false, 1);
 
-        d.dispatchMessage(MockMessageType.HELLO);
+        d.dispatchMessage(MockMessageType.HELLO, {prop: ""});
 
         expect(x).equals(1);
     });
@@ -168,7 +168,7 @@ describe('MessageDispatcherTest', function (this: Suite)
         d.addMessageListener(MockMessageType.HELLO, listener1, false, 1);
         d.addMessageListener(MockMessageType.HELLO, listener2, false, 0);
 
-        d.dispatchMessage(MockMessageType.HELLO);
+        d.dispatchMessage(MockMessageType.HELLO, {prop: ""});
 
         expect(x).equals(2);
     });
@@ -179,7 +179,7 @@ describe('MessageDispatcherTest', function (this: Suite)
         d.addMessageListener(MockMessageType.HELLO, () =>
         {
         });
-        d.dispatchMessage(MockMessageType.HELLO);
+        d.dispatchMessage(MockMessageType.HELLO, {prop: ""});
     });
 
     it('testListenOnce', () =>
@@ -190,8 +190,8 @@ describe('MessageDispatcherTest', function (this: Suite)
 
         d.addMessageListener(MockMessageType.HELLO, listener1, true);
 
-        d.dispatchMessage(MockMessageType.HELLO);
-        d.dispatchMessage(MockMessageType.HELLO);
+        d.dispatchMessage(MockMessageType.HELLO, {prop: ""});
+        d.dispatchMessage(MockMessageType.HELLO, {prop: ""});
 
         expect(x).equals(1);
         expect(d.hasMessageListener(MockMessageType.HELLO)).false;

@@ -35,21 +35,38 @@ export function markAsOwner(name: string): string
     return OWNER_PREFIX + name + OWNER_SUFFIX;
 }
 
+/** Read access to logger disposal state. */
 export interface ILoggerImmutable extends IDisposableImmutable
 {
 
 }
 
+/** Level-filtered logging. Methods return the logger for chaining. */
 export interface ILogger extends ILoggerImmutable, IDisposable
 {
+    /**
+     * Writes at verbose level when enabled.
+     */
     verbose(...args: unknown[]): ILogger;
 
+    /**
+     * Writes at info level when enabled.
+     */
     info(...args: unknown[]): ILogger;
 
+    /**
+     * Writes at warning level when enabled.
+     */
     warn(...args: unknown[]): ILogger;
 
+    /**
+     * Writes at error level when enabled.
+     */
     error(...args: unknown[]): ILogger;
 
+    /**
+     * Writes a fatal entry when error-level logging is enabled; does not throw the supplied arguments.
+     */
     fatal(...args: unknown[]): ILogger;
 }
 

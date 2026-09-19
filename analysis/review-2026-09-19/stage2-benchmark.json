@@ -1,0 +1,69 @@
+{
+  "node": "v24.18.0",
+  "results": [
+    {
+      "scenario": "unmapped messages",
+      "iterations": 10000,
+      "medianDispatchMs": 6.221499999999992,
+      "samples": [
+        {
+          "dispatchMs": 6.060600000000001,
+          "retainedHeapBytes": 81304,
+          "pending": 0
+        },
+        {
+          "dispatchMs": 5.843699999999998,
+          "retainedHeapBytes": 8296,
+          "pending": 0
+        },
+        {
+          "dispatchMs": 6.221499999999992,
+          "retainedHeapBytes": 6512,
+          "pending": 0
+        },
+        {
+          "dispatchMs": 6.385100000000008,
+          "retainedHeapBytes": 15824,
+          "pending": 0
+        },
+        {
+          "dispatchMs": 7.088000000000008,
+          "retainedHeapBytes": 12760,
+          "pending": 0
+        }
+      ]
+    },
+    {
+      "scenario": "synchronous mapped messages",
+      "iterations": 10000,
+      "medianDispatchMs": 59.191400000000016,
+      "samples": [
+        {
+          "dispatchMs": 61.16919999999999,
+          "retainedHeapBytes": 277568,
+          "pending": 0
+        },
+        {
+          "dispatchMs": 59.191400000000016,
+          "retainedHeapBytes": 33768,
+          "pending": 0
+        },
+        {
+          "dispatchMs": 53.470099999999974,
+          "retainedHeapBytes": 24800,
+          "pending": 0
+        },
+        {
+          "dispatchMs": 67.67990000000003,
+          "retainedHeapBytes": 341000,
+          "pending": 0
+        },
+        {
+          "dispatchMs": 57.288899999999956,
+          "retainedHeapBytes": 72200,
+          "pending": 0
+        }
+      ]
+    }
+  ]
+}

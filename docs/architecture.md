@@ -1,143 +1,100 @@
-# Architecture
+# Architecture and contracts
 
-How the framework works inside. Layers depend in one direction only:
+[Documentation](index.md)
 
-```
-Global (types, brands, class registry)
-  └── di (container, decorators, lazy registry)
-        └── common (IDisposable)
-              └── mvc/message  (MessageType, Message, MessageDispatcher)
-                    └── mvc/hierarchy (object, container)
-                          └── mvc/context  (IContext, AbstractContext)
-                                └── mvc/command (mapping, guards, execution)
-                                      └── factory (bindings, pools, config mapping)
-```
+## Concept
 
-## Dependency binder
+DomWires separates state, presentation, actions and composition. A model owns state. Its mutable interface exposes state-changing operations; its immutable interface exposes live readable state. A mediator translates external input into intentions and renders model state. A command performs an application action. A context composes these objects, maps intentions to commands and forwards notifications.
 
-`DependencyContainer` keeps a map of `serviceIdentifier → name → binding`, where a binding holds
-either a class (a new instance per resolution) or a value. A value binding wins over a class
-binding for the same identifier.
+The AS3/Haxe concept is preserved. The 5.0 changes concern dependency boundaries, execution lifetime, routing correctness and explicit cleanup. External infrastructure is represented by ordinary adapters, not a required fifth MVC base class. A command may await an adapter and then update a model; a long-lived connection belongs to a context or resource scope.
 
-* **Metadata.** A property decorator writes a record (`propertyKey`, `serviceIdentifier`, `named`,
-  `optional`, `lazy`) into a symbol-keyed own property of the class constructor. Only own metadata is
-  read, otherwise a derived class would push its injections into the list of its base class. The list
-  is collected along the constructor chain, from the base class to the concrete one.
-* **Injection.** `create()` instantiates the class, then writes the properties, then calls the post
-  construct hook. Injection happens after the constructor body, so a field initializer can not
-  overwrite an injected value. There is no `reflect-metadata` and no `emitDecoratorMetadata`: every
-  identifier is written explicitly in the decorator, and signature metadata is not needed.
-* **Unmapped identifiers.** A class identifier is instantiated as is (that is how `getInstance()` of
-  an unmapped class works), a string identifier throws with the name of the class and of the property.
-* **`optional()`** skips the injection instead of throwing, so an optional dependency stays `undefined`.
-* **`lazyInject`** is a getter, not a value: the property is resolved on every access from a global
-  lazy registry. The factory fills that registry right before a command execution (`clearLazy()` +
-  `mergeIntoLazy()`), therefore a command object, taken from a pool, always sees the values of the
-  current execution instead of the values of the execution it was created in.
-* **`injectable()`** is a no-op marker, kept so class declarations stay readable; the binder does not
-  need it.
+## Dependency scopes
 
-## Messages and bubbling
+A `Factory` owns its local bindings and object pools. Its values are borrowed unless explicitly owned elsewhere. `createScope()` creates a child that resolves local bindings first. With no options it inherits bindings; `{inherit: []}` is isolated, and `{inherit: [TOKEN]}` imports selected identifiers. Selected identifiers include their named bindings. An inherited transient implementation/provider resolves against the requesting child scope.
 
-`MessageType<Data>` extends `Enum` and carries the data type in the generic parameter only — it is a
-compile time marker, the runtime object is just a named enum value.
+Bindings distinguish an explicitly bound `undefined` from an absent value. Value bindings take precedence over providers and classes. Providers are transient; bind an already created value when you need shared identity. Class construction supports a static `inject` token list, property injection, then a synchronous post-construction hook. Async initialization belongs in `start()`.
 
-Every `dispatchMessage()` creates a **new** `Message` instance:
+A lazy property captures the scope which created/injected the object. Execution payloads never change the parent factory. Every invocation has fresh named payload bindings, `COMMAND_INPUT`, `COMMAND_EXECUTION` and its own `IFactory`. Reused explicit singleton commands are reinjected only when idle. Constructor dependencies of a singleton remain the dependencies from its construction; do not inject request-specific data into a singleton constructor.
 
-1. `handleMessage()` runs the listeners of the current target;
-2. if `bubbles` is true and nobody called `stopPropagation()`, the message is passed to the parent
-   (`_parent`), each step updating `currentTarget` / `previousTarget` and calling `onMessageBubbled()`;
-3. `onMessageBubbled()` returning `false` stops the propagation, `AbstractContext` overrides it and
-   returns `false` by default, so a message does not leave a context unless the context allows it.
+Property metadata is inherited from base to derived, with derived declarations overriding the same property. Injection plans are cached and invalidated when decorators are applied programmatically. Resolution cycles report the identifier path. Constructor and provider errors do not temporarily erase existing value bindings.
 
-A single instance per dispatch is the reason why a nested `dispatchMessage()` inside a listener can
-not rewrite the message of the outer dispatch (before 2.0 a single instance was reused and mutated).
+`ServiceToken<T>` carries an invariant compile-time type and unique runtime identity. Its name is diagnostic. String identifiers and legacy property decorators cannot guarantee that a consumer's declared property type matches the binding. Role separation is an architectural boundary, not a sandbox against casts, direct object construction or intentional access to a composition factory.
 
-**Listeners** are stored per message type in a `Map<Enum, Listener[]>`, sorted by descending priority.
-Removal during a dispatch is deferred: a listener is marked as removed, the iteration over the array
-is never broken, and the lists are compacted when the outermost dispatch finishes. That fixed a bug
-where removing a listener (or firing an `once` listener) skipped the next listener in the list.
+## Context composition
 
-## Contexts and forwarding
+Every context created through a factory creates an owned local factory, even when its input factory is shared. A context creates separate command, model, mediator and adapter scopes. The command scope inherits the context factory; the other role scopes inherit only the logger. `provide(token, value, roles)` exports a borrowed dependency to selected roles.
 
-A context is a `HierarchyObjectContainer` plus a `CommandMapper`. On every message it receives, it
-does two things:
+`registerModel({mutable, immutable, implementation/value, id})` registers one hierarchy object and publishes its two contracts. Commands/guards see both; the reader roles see only the immutable contract. The immutable interface may contain only data/getters; it need not expose hierarchy operations. Tokens must be distinct. Removing or reparenting the model also removes its local role bindings.
 
-1. maps the message to commands (`tryToExecuteCommand`);
-2. forwards the message to models and mediators according to `ContextConfig`.
+`createMediator()` attaches a mediator with the reader scope. `createAdapter()` constructs an ordinary infrastructure object with read access; it does not automatically own it. `own(adapter)` makes ownership explicit. There is no built-in HTTP, database, Socket.IO, email, authentication or rendering dependency.
 
-The role of the originator (model or mediator) is resolved by walking up from `message.initialTarget`
-to the direct child of the context, so a model, nested into a plain container, is still recognized as
-a model of the context. `dispatchMessageToChildren()` never sends a message back to its
-`previousTarget`, which is why the originator does not receive its own message twice.
+`createContext()` constructs a child with an explicit dependency export list. `addContext()` attaches an existing context. A receive predicate selects messages sent into a child; a bubble predicate selects messages leaving it. Without those predicates, messages stop at that context boundary. The usual model-to-mediator and mediator-to-mediator forwarding defaults remain inside each context; the four `ContextConfig` flags control these routes.
 
-Containers pass a message to a nested container and to the children of that container; a nested
-context is treated as a leaf (it forwards on its own).
+Using the lower-level `factory` or manually constructing and attaching components intentionally leaves composition to the caller.
 
-## Commands
+## Execution and mapping
 
-A command map is `Enum → MappingConfig[]`. A `MappingConfig` holds the command class, optional
-mapping data, guards (positive and negative), the target guard, `once` and `stopOnExecute` flags.
+`ICommand<Input>.execute(input, execution)` returns void or a promise-like value. No base class is required. `AbstractCommand<Input>` is a convenience; `AbstractAsyncCommand` remains a callback adapter for code using `resolve/reject`, with fresh instances by default.
 
-Execution of a message:
+`map(message, Command, options)` checks message input against the command and checks mapping data, including batch registrations. `execute(Command, input, options)` checks direct input. Options name guards, lifetime, concurrency and once/stop flags. `route(message)` is the low-level boundary for an already received message; applications normally use typed dispatch. Object mapping data overwrites corresponding message fields; absent values use the present side, and primitives use the mapping value. This is shallow composition. `dataMode: "fallback"` uses mapping data only when message data is undefined.
 
-1. data of the message and data of the mapping are merged (the mapping wins, and a warning is logged,
-   when it overwrites a property of the message);
-2. the values are put into the lazy registry (`singletonCommands: true`) or into the container
-   bindings (`singletonCommands: false`) under their type name and property name;
-3. guards are resolved and asked for `allows`;
-4. the command is taken from a pool of capacity 1 (singleton commands are created once per context)
-   or instantiated, then executed;
-5. with `once` the mapping is removed, with `stopOnExecute` the rest of the mappings are skipped.
+An invocation performs these steps:
 
-`dispatchMessage()` stays synchronous: a command without an `await` is fully executed inside the
-dispatch, and an asynchronous command (`AbstractAsyncCommand`) is awaited by the mapper, which keeps
-the order of the mapped commands. A context tracks the started commands in `pendingCommands`, so
-`settle()` can await them and rethrow a failure. Without `settle()` an error is reported through the
-logger instead of becoming an unhandled rejection.
+1. Create its dependency scope and execution signal view.
+2. Evaluate target guards, guards and opposite guards in that scope.
+3. Create a command (or obtain an idle explicitly retained instance).
+4. Reserve a once registration by removing that exact handle.
+5. Invoke the command and inspect its actual returned value.
+6. Await a promise-like result before the next mapping; dispose invocation resources in the completion path.
 
-## Pools
+Commands use `lifetime: "execution"` by default. `lifetime: "context"` retains one instance per command class and mapper; overlapping or recursive use is rejected. `CommandMapperConfig.defaultLifetime` changes that default. Generic pools do not determine command or guard lifetime. Optional property injection restores the original field default when a later invocation has no binding, preventing stale payload values.
 
-`PoolModel` holds a list of instances, a capacity and a round-robin index. `get()`:
+A dispatch iterates a snapshot of mappings. Removed handles are skipped, newly added mappings wait for a subsequent dispatch, and removing one once mapping does not skip its successor. Guard rejection does not consume once. Once is consumed before command user code, including a command that later throws. A stop flag stops only after an allowed execution; in a batch it applies to the final command for every registered message. Execution failure rejects that command chain and stops subsequent mappings in the chain.
 
-* creates and stores an instance while the list is shorter than the capacity;
-* otherwise walks at most `list.length` items, starting from the current index, and returns the first
-  one that is not busy (the busy flag is read by the name, given to `registerPool`);
-* if everything is busy — the capacity is increased by one beforehand when the safe pool mode is on,
-  and an exception is thrown when it is off.
+Guards expose a synchronous boolean `allows` contract. Guard implementations should be side-effect free.
 
-The bounded walk replaced a recursive call that ended with a stack overflow when all pool items were
-busy. `dispose()` clears the list, `unregisterPool()` and `clear()` release the pooled objects.
+Each mapping owns a scheduler. `parallel` starts independently; `serial` queues FIFO and continues after an earlier failure; `latest` aborts earlier active executions; `drop` skips a busy mapping. Guards run when queued work actually starts. Separate mappings have separate queues even for the same command class. Context-lifetime instances are shared by class, so different serial mappings can still contend for one instance. `latest` with context lifetime is rejected during registration.
 
-## Disposal
+Explicit unmap/dispose cancels active and queued work. Automatic once consumption lets its reserved command finish. A skip does not trigger stopOnExecute. Failure or cancellation stops the rest of that dispatch chain, without preventing unrelated queued requests.
 
-`AbstractDisposable.dispose()` is not idempotent on purpose: a second call throws, which surfaces
-double disposal during development. `MessageDispatcher.dispose()` removes all listeners.
-`HierarchyObjectContainer.dispose()` disposes children, including the ones stored by id.
+Trace is an optional callback per mapper/context. Events include mapper/message/mapping/execution IDs, guard decisions, command outcome and duration. All delivery frames retain the original message ID. The framework stores no event history or payloads. The observer owns any buffer; failures are isolated and counted. Async observers are observed for rejection but not awaited by commands or settle. Set trace on every participating context, as the game example does. Trace observers should avoid mutating application state.
 
-## Logging
+## Messages and hierarchy
 
-`Logger` checks the level first and does nothing when a message is filtered out, so logging costs
-almost nothing in production. The name of the object, that wrote the message, is passed as a marker
-argument by `AbstractDisposable`; a call site trace is optional (`setTraceCaller(true)`) because it
-requires a stack trace per message.
+A message type carries its payload contract. Required payloads cannot be omitted, listeners receive that payload, and explicit generic arguments cannot change a token's contract.
 
-The framework keeps a second, global logger for its own messages (for example, when a class is
-registered by name). It is silent until `setGlobalLogLevel()` changes its level.
+Each dispatch creates a message. Each delivery receives stable `initialTarget`, `currentTarget` and `previousTarget` metadata; retaining a listener's message does not later turn its current target into another recipient. Payload objects are not deep-frozen. `stopPropagation()` is shared between delivery frames. It stops subsequent targets; it does not interrupt the remaining listeners at the current target.
 
-## Brands instead of duck typing
+Listeners run by priority, preserving registration order among equal priorities. Each delivery iterates a snapshot. A listener added during delivery waits for a later dispatch; a removed listener is skipped immediately. A once listener is removed before invocation, making recursive dispatch safe. `subscribe()` provides an independent disposable registration, convenient for `ResourceScope`.
 
-`isContext()`, `isHierarchyObject()` and `isHierarchyObjectContainer()` check a symbol-keyed flag,
-that the framework sets on the prototypes. Before 2.0 the checks were done by method names
-(`'isIContext' in object`), which allocated a string on every check in hot paths such as the message
-bubbling.
+All children occupy one ordered collection. IDs are a secondary index into that collection. Numeric lookup therefore includes named children. Duplicate IDs, invalid indices, self-parenting and ancestor cycles are rejected. Removal by instance, removal by ID, reparenting and child disposal all update parent membership and context role indexes. Public child collections are read-only snapshots.
 
-## Known tradeoffs
+Direct context add calls still require an explicit role through `addModel`, `addMediator` or `addContext`. `root` means the nearest containing context (or the context itself), preserving the framework's routing interpretation.
 
-* Service identifiers of interfaces are strings, so a typo can not be caught by the compiler.
-  A typed identifier (`ServiceId<T>`) is the next step for the public API.
-* The package is published as CommonJS with an `exports` map; a dual ESM build is not done yet.
-* `@lazyInject` resolves on every access, which is what commands need, but it also means that a
-  missing binding is reported at the moment of access and not at creation.
-* `HierarchyObjectContainer.childrenList` and `childrenMap` are exposed for the framework internals;
-  application code should use `children`-style accessors of the specific container instead.
+## Completion, cancellation and cleanup
+
+Only unresolved asynchronous work is kept in a mapper's active set. Successful synchronous commands and unmapped messages create no task bookkeeping. Completed failures are held until settle, with a bounded buffer (32 error objects plus a count of further failures).
+
+`settle()` drains work to quiescence, including directly launched commands and attached child contexts. It uses all-settled behavior: one failure does not make it forget slower work. Concurrent calls share a drain. After all outstanding work finishes it raises an aggregate of failures; a subsequent settle starts a new drain.
+
+`CommandExecution.signal` is aborted on mapper/context or mapping disposal, on superseding latest requests, and on cancellation of an explicitly supplied signal. Adapters should accept that signal. `commit(update)` checks cancellation before changing state. A command that ignores cancellation is not intercepted and can keep close pending. Expected cancellation rejects with `CommandCancelledError`, which is excluded from settle failures; actual command and cleanup errors still fail even during cancellation.
+
+`ResourceScope` owns explicitly registered objects with `close()` or `dispose()`, and cleanup callbacks registered with `defer()`. Startable resources are registered before start. Subscriptions or other resources without a start hook may also be registered after start. Cleanup runs in reverse ownership order, waits for asynchronous cleanup, continues after individual failures and aggregates errors. Closing while a resource is starting aborts its signal and waits for that start attempt before cleaning it up. Close is idempotent.
+
+A context owns attached hierarchy components and its local factories. Provided external values remain borrowed. Context `dispose()` initiates cancellation/cleanup and detaches children; `close()` waits for commands, child closes and resource cleanup. Use close when asynchronous work exists.
+
+After a successful constructor, failed injection or a failed synchronous post-construction hook attempts synchronous disposal of the partially initialized object. Constructors that themselves throw must clean up resources acquired before throwing. Rejected child/mediator attachment disposes the newly created object. Failed context startup closes its components and resources.
+
+## Pools and configuration
+
+Generic pools serve reusable application objects independently of commands. Capacities and increases must be positive safe integers. Pools create their own instances rather than repeating a mapped value. Busy scanning is bounded. Safe mode grows the pool when every item is busy; disabling it makes exhaustion an error. Pool removal/disposal calls synchronous dispose on owned disposable items.
+
+Each factory has an implementation registry with explicit aliases. Child registries inherit aliases without modifying the parent. The dynamic config loader supports named implementations and named new instances. Legacy `definableFromString` registration uses a module-local map, not `globalThis`. Framework default-implementation registration remains a module side effect; the package does not claim `sideEffects: false`.
+
+## Verification boundaries
+
+Runtime tests cover the 21 original defect scenarios plus scope, ownership and integration behavior. Negative compile-time tests cover the typed API. The package consumer fixture installs a tarball and checks CJS, ESM, declarations and a minified browser bundle; the node-only config loader stays in a separate subpath.
+
+The VM smoke check is a fast bundle check. Playwright additionally exercises both examples in Chromium, including 100 scene switches and 100 restarts with DOM/listener/heap checks. A Node stress run performs 2800 game lifecycles, checking explicit zero resource counts and retained heap after warmup. CI runs these checks and uploads the browser report. Their scope is the tested workloads, not arbitrary application leak freedom.
+
+The benchmark is a reproducible microbenchmark of mapped and unmapped synchronous messages. Its time and heap samples are diagnostic, not a promise of application performance. Profile actual scene updates or request workloads before adopting pooling or additional concurrency policies.

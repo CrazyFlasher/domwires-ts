@@ -13,7 +13,7 @@ export class MockMediator2 extends AbstractHierarchyObject
 {
     public dispatch(): void
     {
-        this.dispatchMessage(MockMessageType.HELLO);
+        this.dispatchMessage(MockMessageType.HELLO, {prop: ""});
     }
 }
 
@@ -32,7 +32,7 @@ export class MockMediator3 extends AbstractHierarchyObject
 
     public dispatch(): void
     {
-        this.dispatchMessage(MockMessageType.HELLO);
+        this.dispatchMessage(MockMessageType.HELLO, {prop: ""});
     }
 
 }

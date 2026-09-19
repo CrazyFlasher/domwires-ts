@@ -1,20 +1,14 @@
-import {AbstractCommand, lazyInject, lazyInjectNamed} from "domwires";
-import {ICounterModel} from "./CounterModel";
+import {AbstractCommand, inject} from "domwires";
+import {COUNTER_MODEL, ICounterModel} from "./CounterModel";
+import {ChangeCounterData} from "./AppMessage";
 
-/**
- * A command changes the state. Dependencies are injected by the framework: the model is bound
- * to "ICounterModel" in the context, "delta" comes from the data of the message.
- */
-export class ChangeCounterCommand extends AbstractCommand
+export class ChangeCounterCommand extends AbstractCommand<ChangeCounterData>
 {
-    @lazyInject("ICounterModel")
+    @inject(COUNTER_MODEL)
     private model!: ICounterModel;
 
-    @lazyInjectNamed("number", "delta")
-    private delta!: number;
-
-    public override execute(): void
+    public override execute(input: ChangeCounterData): void
     {
-        this.model.setValue(this.model.value + this.delta);
+        this.model.setValue(this.model.value + input.delta);
     }
 }

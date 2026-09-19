@@ -76,7 +76,9 @@ describe('AsyncCommandTest', function (this: Suite)
         });
 
         expect(error).instanceof(Error);
-        expect(error instanceof Error ? error.message : "").equals("async command error");
+        const aggregate = error as AggregateError;
+        expect(aggregate).instanceof(AggregateError);
+        expect(aggregate.errors[0].errors[0].message).equals("async command error");
     });
 
     it('testCommandWithoutBaseClassIsAwaited', async () =>
@@ -85,7 +87,7 @@ describe('AsyncCommandTest', function (this: Suite)
 
         const context: AsyncContext = factory.getInstance<AsyncContext>(AsyncContext);
 
-        await context.executeCommand(HandMadeAsyncCommand);
+        await context.execute(HandMadeAsyncCommand);
 
         expect(HandMadeAsyncCommand.completed).equals(1);
     });
@@ -104,7 +106,7 @@ describe('AsyncCommandTest', function (this: Suite)
 
         const context: AsyncContext = factory.getInstance<AsyncContext>(AsyncContext);
 
-        context.executeCommand(CountingCommand);
+        context.execute(CountingCommand);
 
         expect(CountingCommand.executions).equals(1);
     });

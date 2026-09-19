@@ -1,618 +1,349 @@
+/* eslint-disable unicorn/no-useless-spread -- Registrations and abort listeners may mutate collections. */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-type-assertion/no-type-assertion */
-
 import {IDisposable, IDisposableImmutable} from "../../common/IDisposable";
 import {Enum} from "../../Enum";
-import {ICommand} from "./ICommand";
 import {Class, setDefaultImplementation} from "../../Global";
-import {IGuards} from "./IGuards";
-import {inject, optional, postConstruct} from "../../di/Decorators";
+import {ICommand} from "./ICommand";
+import {MessageType} from "../message/IMessageDispatcher";
+import {IMessage} from "../message/IMessage";
+import {CommandArguments, CommandDataMode, CommandLifetime, CommandMappingOptions, CommandCancelledError, CommandOptions} from "./CommandOptions";
+import {MappingConfig, MappingConfigList} from "./CommandMapping";
+import {CommandTrace, CommandTraceEvent} from "./CommandTrace";
 import {AbstractDisposable} from "../../common/AbstractDisposable";
+import {TaskTracker} from "../../common/TaskTracker";
+import {inject, optional} from "../../di/Decorators";
 import {IFactory} from "../../factory/IFactory";
-import {IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
 import {SERVICE_IDENTIFIER} from "../../Decorators";
-import {ILogger} from "../../../logger/ILogger";
-import {ArrayUtils} from "../../utils/ArrayUtils";
+import {CommandExecution, COMMAND_EXECUTION, COMMAND_INPUT} from "./CommandExecution";
 
+/** Defaults injected under the CommandMapperConfig identifier; individual mappings may override them. */
 export type CommandMapperConfig = {
-    readonly singletonCommands: boolean;
-    readonly mergeMessageDataAndMappingData: boolean;
+    /** Default command lifetime; execution when omitted. */
+    readonly defaultLifetime?: CommandLifetime;
+    /** Default payload/default composition; merge when omitted. */
+    readonly defaultDataMode?: CommandDataMode;
+    /** Initial observer, overridden by assigning the mapper's trace property. */
+    readonly trace?: CommandTrace;
 };
 
-export class MappingConfig<T>
-{
-    private readonly _commandClass: Class<ICommand>;
-    private readonly _data: T | undefined;
-    private readonly _once: boolean;
-    private _guardList!: Class<IGuards>[];
-    private _oppositeGuardList!: Class<IGuards>[];
-    private readonly _stopOnExecute: boolean;
+export type MappedMessages = MessageType<any> | readonly MessageType<any>[];
+export type MappedPayload<M> = M extends readonly (infer E)[] ? MappedPayload<E> : M extends MessageType<infer T> ? T : never;
+export type MappedCommands<T> = Class<ICommand<T>> | readonly Class<ICommand<T>>[];
+export type MappingResult<M, C> = M extends readonly unknown[] ? MappingConfigList<MappedPayload<M>> :
+    C extends readonly unknown[] ? MappingConfigList<MappedPayload<M>> : MappingConfig<MappedPayload<M>>;
 
-    private _verifyTarget!: {target: unknown; equals: boolean};
-
-    public constructor(commandClass: Class<ICommand>, data?: T, once = false, stopOnExecute = false)
-    {
-        this._commandClass = commandClass;
-        this._data = data;
-        this._once = once;
-        this._stopOnExecute = stopOnExecute;
-    }
-
-    public addTargetGuards(target: unknown, equals = true): MappingConfig<T>
-    {
-        this._verifyTarget = {target, equals};
-
-        return this;
-    }
-
-    public addGuards(value: Class<IGuards>): MappingConfig<T>
-    {
-        if (!this._guardList)
-        {
-            this._guardList = [];
-        }
-        this._guardList.push(value);
-
-        return this;
-    }
-
-    public addGuardsNot(value: Class<IGuards>): MappingConfig<T>
-    {
-        if (!this._oppositeGuardList)
-        {
-            this._oppositeGuardList = [];
-        }
-        this._oppositeGuardList.push(value);
-
-        return this;
-    }
-
-    public get commandClass(): Class<ICommand>
-    {
-        return this._commandClass;
-    }
-
-    public get once(): boolean
-    {
-        return this._once;
-    }
-
-    public get data(): T | undefined
-    {
-        return this._data;
-    }
-
-    public get guardList(): Class<IGuards>[]
-    {
-        return this._guardList;
-    }
-
-    public get verifyTarget(): { target: unknown; equals: boolean }
-    {
-        return this._verifyTarget;
-    }
-
-    public get stopOnExecute(): boolean
-    {
-        return this._stopOnExecute;
-    }
-
-    public get oppositeGuardList(): Class<IGuards>[]
-    {
-        return this._oppositeGuardList;
-    }
-}
-
-export class MappingConfigList<T>
-{
-    private readonly list: MappingConfig<T>[];
-
-    public constructor()
-    {
-        this.list = [];
-    }
-
-    public push(item: MappingConfig<T>): void
-    {
-        this.list.push(item);
-    }
-
-    public addTargetGuards(target: unknown, equals = true): MappingConfigList<T>
-    {
-        for (const mappingConfig of this.list)
-        {
-            mappingConfig.addTargetGuards(target, equals);
-        }
-
-        return this;
-    }
-
-    public addGuards(value: Class<IGuards>): MappingConfigList<T>
-    {
-        for (const mappingConfig of this.list)
-        {
-            mappingConfig.addGuards(value);
-        }
-
-        return this;
-    }
-
-    public addGuardsNot(value: Class<IGuards>): MappingConfigList<T>
-    {
-        for (const mappingConfig of this.list)
-        {
-            mappingConfig.addGuardsNot(value);
-        }
-
-        return this;
-    }
-}
-
-class CommandMap extends Map<Enum, MappingConfig<any>[]>
-{
-
-}
-
+/** Read access to command registrations, pending work and trace diagnostics. */
 export interface ICommandMapperImmutable extends IDisposableImmutable
 {
+    /**
+     * Whether at least one live registration exists for this exact message identity.
+     */
     hasMapping(messageType: Enum): boolean;
+    /**
+     * Number of tracked, unfinished dispatch chains and direct executions; completed work is released.
+     */
+    readonly pendingCount: number;
+    /**
+     * Process-local identity used to correlate trace events from this mapper.
+     */
+    readonly mapperId: number;
+    /**
+     * Cumulative synchronous and asynchronous observer failures; observers never fail a command.
+     */
+    readonly traceErrorCount: number;
 }
-
+/** Maps typed messages to commands and owns command execution lifetimes. */
 export interface ICommandMapper extends ICommandMapperImmutable, IDisposable
 {
-    map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T,
-           stopOnExecute?: boolean, once?: boolean): MappingConfig<T>;
-
-    map<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T,
-           stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
-
-    map<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T,
-           stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
-
-    map<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T,
-           stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
-
-    map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T,
-           stopOnExecute?: boolean, once?: boolean): MappingConfig<T> | MappingConfigList<T>;
-
-    unmap(messageType: Enum, commandClass: Class<ICommand>): ICommandMapper;
-
+    /**
+     * Registers every selected message/command pair in order. Required input is checked against each message.
+     * Each registration has its own concurrency queue. Guards run when an invocation starts.
+     * @param options - Defaults: execution lifetime, parallel concurrency, shallow data merge.
+     * @returns A disposable mapping, or a group handle when either argument is an array.
+     * @throws If disposed, or latest concurrency is combined with context lifetime.
+     */
+    map<M extends MappedMessages, C extends MappedCommands<NoInfer<MappedPayload<M>>>>(
+        messages: M, commands: C, options?: CommandMappingOptions<NoInfer<MappedPayload<M>>>): MappingResult<M, C>;
+    /**
+     * Runs a command directly, including guards and invocation-scoped injection.
+     * Synchronous command code runs before this method returns.
+     * @returns A promise rejected on command/cleanup failure or cancellation. Guard rejection resolves normally.
+     * Failures are also reported by the next settle(); handling this promise does not consume that report.
+     */
+    execute<T>(command: Class<ICommand<T>>, ...args: CommandArguments<T>): Promise<void>;
+    /**
+     * Routes an existing delivery frame through a snapshot of its mappings.
+     * Application code normally uses typed dispatchMessage(). An asynchronous mapping delays the next mapping
+     * in this dispatch chain; failure or cancellation stops that chain. Other dispatches remain independent.
+     */
+    route(message: IMessage): Promise<void>;
+    /**
+     * Optional observer. No history is retained; asynchronous observers are not included in settle().
+     */
+    trace: CommandTrace | undefined;
+    /**
+     * Waits until currently tracked work and work started by it drain.
+     * Rejects with AggregateError for buffered command/cleanup failures, then clears that failure buffer.
+     * Expected CommandCancelledError outcomes are excluded. Concurrent calls share the same wait.
+     * This does not stop resources that may dispatch new work later.
+     */
+    settle(): Promise<void>;
+    /**
+     * Removes the first registration for this message/class pair and cancels its active and queued work.
+     * Use the returned mapping handle to remove a particular duplicate registration.
+     */
+    unmap(messageType: Enum, commandClass: Class<ICommand<any>>): ICommandMapper;
+    /**
+     * Removes all mappings and cancels their work. Direct executions are unaffected.
+     * Retained command instances remain owned by the mapper until mapper disposal.
+     */
     clear(): ICommandMapper;
-
+    /**
+     * Removes every mapping for this message identity and cancels their active and queued work.
+     */
     unmapAll(messageType: Enum): ICommandMapper;
-
-    tryToExecuteCommand<T>(messageType: Enum, messageData?: T, messageInitialTarget?: IMessageDispatcherImmutable): Promise<void>;
-
-    executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[],
-                      guardNotList?: Class<IGuards>[]): Promise<void>;
 }
+export {MappingConfig, MappingConfigList} from "./CommandMapping";
+export * from "./CommandOptions";
+export * from "./CommandTrace";
 
+const COMPLETED = Promise.resolve();
+let nextMapperId = 0;
+type TraceDetails = Omit<CommandTraceEvent, "phase" | "mapperId">;
+
+/** Default command router and invocation owner. Construct through a factory supplying IFactory. */
 export class CommandMapper extends AbstractDisposable implements ICommandMapper
 {
+    public readonly mapperId = ++nextMapperId;
     @inject("CommandMapperConfig") @optional()
-    private config!: CommandMapperConfig;
-
+    private config: CommandMapperConfig = {};
     @inject("IFactory")
     private factory!: IFactory;
+    private readonly commandMap = new Map<Enum, MappingConfig<any>[]>();
+    private readonly retainedCommands = new Map<Class<ICommand<any>>, ICommand<any>>();
+    private readonly busy = new Set<ICommand<any>>();
+    private readonly controllers = new Set<AbortController>();
+    private readonly tasks = new TaskTracker(error => error instanceof CommandCancelledError);
+    private traceOverride?: CommandTrace;
+    private hasTraceOverride = false;
+    private traceErrors = 0;
 
-    private commandMap: CommandMap = new CommandMap();
+    public get trace(): CommandTrace | undefined { return this.hasTraceOverride ? this.traceOverride : this.config.trace; }
+    public set trace(value: CommandTrace | undefined) { this.hasTraceOverride = true; this.traceOverride = value; }
+    public get traceErrorCount(): number { return this.traceErrors; }
+    public get pendingCount(): number { return this.tasks.size; }
+    public settle(): Promise<void> { return this.tasks.settle(); }
 
-    private lastCommandExecutionAllowed!: boolean;
-
-    @postConstruct()
-    private init(): void
+    private emit(phase: CommandTraceEvent["phase"], details: TraceDetails): void
     {
-        if (!this.config)
+        try
         {
-            this.config = {
-                singletonCommands: true,
-                mergeMessageDataAndMappingData: true
-            };
+            const result = this.trace?.({phase, mapperId: this.mapperId, ...details});
+            if (result && typeof result.then === "function")
+                Promise.resolve(result).catch(() => { this.traceErrors++; });
         }
+        catch { this.traceErrors++; }
     }
 
-    public override dispose()
+    public map<M extends MappedMessages, C extends MappedCommands<NoInfer<MappedPayload<M>>>>(
+        messages: M, commands: C, options: CommandMappingOptions<NoInfer<MappedPayload<M>>> = {}): MappingResult<M, C>
     {
-        this.clear();
+        if (this.isDisposed) throw new Error("Command mapper already disposed");
+        if ((options.lifetime ?? this.config.defaultLifetime) === "context" && options.concurrency === "latest")
+            throw new Error("latest requires execution lifetime; a cancelled context command may still be running");
+        const batch = Array.isArray(messages) || Array.isArray(commands);
+        const result = new MappingConfigList<MappedPayload<M>>();
+        let single!: MappingConfig<MappedPayload<M>>;
+        const commandList: readonly Class<ICommand<any>>[] = Array.isArray(commands) ? commands : [commands];
+        const messageList: readonly Enum[] = Array.isArray(messages) ? messages : [messages];
+        for (const message of messageList)
+            commandList.forEach((command, index) => {
+                const list = this.commandMap.get(message) ?? [];
+                this.commandMap.set(message, list);
+                const mapping = MappingConfig.create<MappedPayload<M>>(command, {...options,
+                    stopOnExecute: options.stopOnExecute && index === commandList.length - 1}, () => {
+                    const position = list.indexOf(mapping);
+                    if (position >= 0) list.splice(position, 1);
+                    if (!list.length && this.commandMap.get(message) === list) this.commandMap.delete(message);
+                });
+                list.push(mapping); result.push(mapping); single = mapping;
+            });
+        return (batch ? result : single) as MappingResult<M, C>;
+    }
 
+    public unmap(messageType: Enum, commandClass: Class<ICommand<any>>): this
+    { this.commandMap.get(messageType)?.find(mapping => mapping.commandClass === commandClass)?.dispose(); return this; }
+    public hasMapping(messageType: Enum): boolean { return !!this.commandMap.get(messageType)?.length; }
+    public clear(): this
+    {
+        for (const list of [...this.commandMap.values()]) for (const mapping of [...list]) mapping.dispose();
+        return this;
+    }
+    public unmapAll(messageType: Enum): this
+    { for (const mapping of [...(this.commandMap.get(messageType) ?? [])]) mapping.dispose(); return this; }
+
+    public route(message: IMessage): Promise<void>
+    {
+        if (this.trace) this.emit("message", {messageId: message.id, message: message.type.name});
+        if (this.isDisposed) return COMPLETED;
+        const mappings = [...(this.commandMap.get(message.type) ?? [])];
+        let index = 0;
+        const next = (): void | Promise<void> => {
+            while (index < mappings.length && !this.isDisposed)
+            {
+                const mapping = mappings[index++]!;
+                if (mapping.isDisposed) continue;
+                const trace: TraceDetails | undefined = this.trace ? {messageId: message.id, message: message.type.name,
+                    mappingId: mapping.id, command: mapping.commandClass.name, concurrency: mapping.scheduler.policy} : undefined;
+                if (trace && mapping.scheduler.busy && mapping.scheduler.policy === "serial") this.emit("queued", trace);
+                if (trace && mapping.scheduler.busy && mapping.scheduler.policy === "drop") this.emit("skipped", {...trace, reason: "busy"});
+                let entered = false;
+                const result = mapping.scheduler.schedule(controller => {
+                    entered = true;
+                    if (mapping.isDisposed || this.isDisposed) return false;
+                    const data = this.mergeData(message.data, mapping.data, mapping.options.dataMode);
+                    return this.run(mapping.commandClass, data, {...mapping.options,
+                        guards: mapping.guardList, guardsNot: mapping.oppositeGuardList, target: message.initialTarget},
+                        controller, trace, mapping.verifyTarget, () => { if (mapping.once) mapping.consume(); });
+                });
+                if (result instanceof Promise)
+                    return result.then(allowed => allowed && mapping.stopOnExecute ? undefined : next(), error => {
+                        if (trace && !entered) this.emit(error instanceof CommandCancelledError ? "cancelled" : "failed", {...trace, error});
+                        throw error;
+                    });
+                if (result && mapping.stopOnExecute) return;
+            }
+        };
+        try { const pending = next(); return pending ? this.tasks.track(pending) : COMPLETED; }
+        catch (error) { return this.tasks.track(Promise.reject(error)); }
+    }
+
+    public execute<T>(command: Class<ICommand<T>>, ...args: CommandArguments<T>): Promise<void>
+    {
+        try
+        {
+            const result = this.run(command, args[0], args[1] ?? {}, new AbortController(),
+                this.trace ? {command: command.name} : undefined);
+            return result instanceof Promise ? this.tasks.track(result.then(() => undefined)) : COMPLETED;
+        }
+        catch (error) { return this.tasks.track(Promise.reject(error)); }
+    }
+
+    private run(commandClass: Class<ICommand<any>>, data: unknown, options: CommandOptions,
+        controller: AbortController, trace?: TraceDetails, verifyTarget?: {target: unknown; equals: boolean},
+        beforeExecute?: () => void): boolean | Promise<boolean>
+    {
+        if (this.isDisposed) throw new CommandCancelledError("mapper disposed");
+        const scope = this.factory.createScope();
+        const execution = new CommandExecution(scope, controller.signal, options.target);
+        this.controllers.add(controller);
+        const abort = (): void => controller.abort(options.signal?.reason);
+        options.signal?.addEventListener("abort", abort, {once: true});
+        if (options.signal?.aborted) abort();
+        const details = trace ? {...trace, executionId: execution.id} : undefined;
+        const started = details ? performance.now() : 0;
+        let command: ICommand<any> | undefined, acquired = false, cleaned = false;
+        const retained = (options.lifetime ?? this.config.defaultLifetime ?? "execution") === "context";
+        const cleanup = (): void => {
+            if (cleaned) return;
+            cleaned = true;
+            options.signal?.removeEventListener("abort", abort);
+            this.controllers.delete(controller);
+            try {
+                if (command && acquired) {
+                    this.busy.delete(command);
+                    if (!retained || this.isDisposed) this.disposeCommand(command);
+                }
+            } finally { scope.dispose(); }
+        };
+        const finish = (allowed: boolean, error?: unknown, failed = false): boolean => {
+            let failure = failed ? (controller.signal.aborted && (error === controller.signal.reason ||
+                error instanceof CommandCancelledError || (error instanceof Error && error.name === "AbortError"))
+                ? new CommandCancelledError(controller.signal.reason) : error) : undefined;
+            if (!failed && controller.signal.aborted) { failed = true; failure = new CommandCancelledError(controller.signal.reason); }
+            try { cleanup(); }
+            catch (cleanupError) { failure = failed ? new AggregateError([failure, cleanupError], "Command and cleanup failed") : cleanupError; failed = true; }
+            if (details) this.emit(failed ? failure instanceof CommandCancelledError ? "cancelled" : "failed" : allowed ? "completed" : "skipped",
+                {...details, durationMs: performance.now() - started, ...(failed ? {error: failure} : !allowed ? {reason: "guard"} : {})});
+            if (failed) throw failure;
+            return allowed;
+        };
+        try
+        {
+            execution.throwIfCancelled();
+            scope.mapToValue("IFactory", scope);
+            scope.mapToValue(COMMAND_EXECUTION, execution);
+            scope.mapToValue(COMMAND_INPUT, data);
+            for (const key of Object.keys(Object(data))) this.mapPropertyValue(scope, Reflect.get(Object(data), key), key);
+            if (options.target && !Object.prototype.hasOwnProperty.call(Object(data), "target"))
+                this.mapPropertyValue(scope, options.target, "target");
+            let allowed = !verifyTarget || (verifyTarget.target === options.target) === verifyTarget.equals;
+            for (const [types, opposite] of [[options.guards ?? [], false], [options.guardsNot ?? [], true]] as const)
+                for (const type of types) {
+                    if (!allowed) break;
+                    allowed = scope.getInstance(type).allows !== opposite;
+                    if (details) this.emit("guard", {...details, guard: type.name, allowed});
+                }
+            if (!allowed) return finish(false);
+            command = retained ? this.retainedCommands.get(commandClass) : undefined;
+            if (command && this.busy.has(command)) throw new Error("A context command cannot overlap itself: " + commandClass.name);
+            if (command) scope.injector.injectInto(command);
+            else {
+                command = scope.instantiateValueUnmapped(commandClass);
+                if (retained) this.retainedCommands.set(commandClass, command);
+            }
+            this.busy.add(command); acquired = true;
+            beforeExecute?.();
+            execution.throwIfCancelled();
+            if (details) this.emit("started", details);
+            execution.throwIfCancelled();
+            const callbackExecute = Reflect.get(command, "executeAsync");
+            const returned = typeof callbackExecute === "function" ? callbackExecute.call(command) : command.execute(data, execution);
+            if (returned && typeof returned.then === "function")
+                return Promise.resolve(returned).then(() => finish(true), error => finish(true, error, true));
+            return finish(true);
+        }
+        catch (error) { if (cleaned) throw error; return finish(false, error, true); }
+    }
+
+    public override dispose(): void
+    {
+        if (this.isDisposed) return;
+        // Mark first: abort listeners must not start new work while disposal is in progress.
         super.dispose();
+        for (const controller of [...this.controllers]) controller.abort("mapper disposed");
+        this.clear();
+        const errors: unknown[] = [];
+        for (const command of this.retainedCommands.values())
+            try { if (!this.busy.has(command)) this.disposeCommand(command); } catch (error) { errors.push(error); }
+        this.retainedCommands.clear();
+        if (errors.length) throw new AggregateError(errors, "Command disposal failed");
     }
 
-    private _map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, once?: boolean, stopOnExecute?: boolean): MappingConfig<T>
+    private disposeCommand(command: ICommand<any>): void
     {
-        const mappingConfig: MappingConfig<T> = new MappingConfig<T>(commandClass, data, once, stopOnExecute);
-
-        let list = this.commandMap.get(messageType);
-
-        if (!list)
-        {
-            list = [mappingConfig];
-            this.commandMap.set(messageType, list);
-        }
-        else
-        {
-            list.push(mappingConfig);
-        }
-
-        return mappingConfig;
+        const dispose = Reflect.get(command, "dispose");
+        if (typeof dispose === "function" && !Reflect.get(command, "isDisposed")) dispose.call(command);
     }
-
-    public map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfig<T>;
-    public map<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
-    public map<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
-    public map<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
-    public map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfig<T> | MappingConfigList<T>
+    private mergeData(messageData: unknown, mappingData: unknown, mode = this.config.defaultDataMode ?? "merge"): unknown
     {
-        if (!(messageType instanceof Array) && !(commandClass instanceof Array))
-        {
-            return this._map(messageType, commandClass, data, once, stopOnExecute);
-        }
-
-        const mappingConfigList: MappingConfigList<T> = new MappingConfigList();
-        const commandClassList = commandClass as Class<ICommand>[];
-        const messageTypeList = messageType as Enum[];
-
-        if (!(messageType instanceof Array) && commandClass instanceof Array)
-        {
-            for (const commandClass of commandClassList)
-            {
-                const soe = stopOnExecute && commandClassList.indexOf(commandClass) === commandClassList.length - 1;
-                mappingConfigList.push(this._map(messageType, commandClass, data, once, soe));
-            }
-        }
-        else if (messageType instanceof Array && !(commandClass instanceof Array))
-        {
-            for (const messageType of messageTypeList)
-            {
-                const soe = stopOnExecute && messageTypeList.indexOf(messageType) === messageTypeList.length - 1;
-                mappingConfigList.push(this._map(messageType, commandClass, data, once, soe));
-            }
-        }
-        else if (messageType instanceof Array && commandClass instanceof Array)
-        {
-            for (const commandClass of commandClassList)
-            {
-                for (const messageType of messageTypeList)
-                {
-                    const soe = stopOnExecute
-                        && messageTypeList.indexOf(messageType) === messageTypeList.length - 1
-                        && commandClassList.indexOf(commandClass) === commandClassList.length - 1;
-
-                    mappingConfigList.push(this._map(messageType, commandClass, data, once, soe));
-                }
-            }
-        }
-
-        return mappingConfigList;
+        if (mode === "fallback") return messageData === undefined ? mappingData : messageData;
+        if (mappingData === undefined) return messageData;
+        if (messageData === undefined) return mappingData;
+        if (messageData !== null && mappingData !== null && typeof messageData === "object" && typeof mappingData === "object")
+            return {...messageData, ...mappingData};
+        return mappingData;
     }
-
-    public unmap(messageType: Enum, commandClass: Class<ICommand>): ICommandMapper
+    private mapPropertyValue(scope: IFactory, value: any, name: string): void
     {
-        const list = this.commandMap.get(messageType);
-        if (list)
-        {
-            const mappingVo = CommandMapper.mappingListContains(list, commandClass, true);
-            if (mappingVo)
-            {
-                ArrayUtils.remove(list, mappingVo);
-
-                if (list.length === 0)
-                {
-                    this.commandMap.delete(messageType);
-                }
-            }
-        }
-
-        return this;
-    }
-
-    public hasMapping(messageType: Enum): boolean
-    {
-        return this.commandMap.get(messageType) != undefined;
-    }
-
-    public clear(): ICommandMapper
-    {
-        this.commandMap.clear();
-
-        return this;
-    }
-
-    public unmapAll(messageType: Enum): ICommandMapper
-    {
-        const list = this.commandMap.get(messageType);
-        if (list)
-        {
-            this.commandMap.delete(messageType);
-        }
-
-        return this;
-    }
-
-    public async tryToExecuteCommand<T>(messageType: Enum, messageData?: T,
-                                        messageInitialTarget?: IMessageDispatcherImmutable): Promise<void>
-    {
-        const mappedToMessageCommands = this.commandMap.get(messageType);
-
-        if (!mappedToMessageCommands)
-        {
-            return;
-        }
-
-        const executions: Promise<void>[] = [];
-
-        for (const mappingVo of mappedToMessageCommands)
-        {
-            const commandClass: Class<ICommand> = mappingVo.commandClass;
-            const injectionData: T | undefined = !this.config.mergeMessageDataAndMappingData
-                ? (!messageData ? mappingVo.data : messageData)
-                : CommandMapper.mergeData(messageData, mappingVo.data, this, commandClass);
-
-            const execution: Promise<void> = this.executeCommand(commandClass, injectionData, mappingVo.guardList,
-                mappingVo.oppositeGuardList, messageInitialTarget, mappingVo.verifyTarget);
-
-            executions.push(execution);
-
-            if (CommandMapper.isAsyncCommandClass(commandClass))
-            {
-                // an async command is awaited, otherwise the execution order and stopOnExecute break
-                await execution;
-            }
-            else
-            {
-                // a synchronous command is already executed here; the error is not lost: it is reported
-                // by the caller of this promise
-                execution.catch(() => undefined);
-            }
-
-            if (this.lastCommandExecutionAllowed)
-            {
-                if (mappingVo.once)
-                {
-                    this.unmap(messageType, commandClass);
-                }
-
-                if (mappingVo.stopOnExecute)
-                {
-                    break;
-                }
-            }
-        }
-
-        await Promise.all(executions);
-    }
-
-    private static isAsyncCommandClass(commandClass: Class<ICommand>): boolean
-    {
-        return typeof Reflect.get(commandClass.prototype, "executeAsync") === "function";
-    }
-
-    private static mergeData<T>(messageData: T, mappingData: T, logger: ILogger, commandClass: Class<ICommand>): T
-    {
-        if (!messageData && !mappingData) return messageData;
-        if (messageData && !mappingData) return messageData;
-        if (!messageData && mappingData) return mappingData;
-
-        const resultData = {};
-
-        let printResult = false;
-
-        for (const propName of Object.keys(Object(messageData)))
-        {
-            Reflect.set(resultData, propName, Reflect.get(Object(messageData), propName));
-        }
-
-        for (const propName of Object.keys(Object(mappingData)))
-        {
-            if (logger && Reflect.get(resultData, propName) != undefined)
-            {
-                if (!printResult) printResult = true;
-
-                logger.warn("WARNING: Property in message data will be overwritten by property in mapping data:", propName, commandClass.name);
-            }
-
-            Reflect.set(resultData, propName, Reflect.get(Object(mappingData), propName));
-        }
-
-        if (printResult)
-        {
-            logger.warn("Message data:", messageData);
-            logger.warn("Mapping data:", mappingData);
-            logger.warn("Result data:", resultData);
-        }
-
-        return resultData as T;
-    }
-
-    public async executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[],
-                                   guardNotList?: Class<IGuards>[], target?: IMessageDispatcherImmutable,
-                                   verifyTarget?: {target: unknown; equals: boolean}): Promise<void>
-    {
-        if (this.config.singletonCommands)
-        {
-            this.factory.clearLazy();
-            this.factory.mergeIntoLazy();
-        }
-
-        if (data)
-        {
-            this.mapValues(data);
-        }
-
-        if (target && (!data || !Reflect.get(Object(data), "target")))
-        {
-            this.mapPropertyValue(target, "target");
-        }
-
-        this.lastCommandExecutionAllowed = false;
-
-        if (
-            (!guardList || this.guardsAllow(guardList)) &&
-            (!guardNotList || this.guardsAllow(guardNotList, true)) &&
-            this.targetAllow(verifyTarget, target)
-        )
-        {
-            if (this.config.singletonCommands)
-            {
-                if (!this.factory.hasPoolForType(commandClass))
-                {
-                    this.factory.registerPool(commandClass, 1);
-                }
-            }
-
-            try
-            {
-                const command: ICommand = this.factory.getInstance(commandClass);
-
-                const executeAsync: unknown = Reflect.get(command, "executeAsync");
-
-                if (typeof executeAsync === "function")
-                {
-                    await executeAsync.call(command);
-                }
-                else
-                {
-                    command.execute();
-                }
-
-                if (!this.config.singletonCommands)
-                {
-                    if (data) this.mapValues(data, false);
-                    if (target) this.mapPropertyValue(target, "target", false);
-                }
-            } catch (e)
-            {
-                this.error("Command class:", commandClass.name, e);
-                throw e;
-            }
-
-            this.lastCommandExecutionAllowed = true;
-        }
-    }
-
-    private targetAllow(verifyTarget?: {target: unknown; equals: boolean}, target?: IMessageDispatcherImmutable): boolean
-    {
-        if (!verifyTarget) return true;
-
-        if (verifyTarget.equals) return verifyTarget.target === target;
-
-        return verifyTarget.target !== target;
-    }
-
-    private guardsAllow(guardList: Class<IGuards>[], opposite?: boolean): boolean
-    {
-        for (const guardClass of guardList)
-        {
-            try
-            {
-                if (this.config.singletonCommands)
-                {
-                    if (!this.factory.hasPoolForType(guardClass))
-                    {
-                        this.factory.registerPool(guardClass, 1);
-                    }
-                }
-
-                const guards: IGuards = this.factory.getInstance(guardClass);
-
-                const allows: boolean = !opposite ? guards.allows : !guards.allows;
-
-                if (!allows)
-                {
-                    return false;
-                }
-            } catch (e)
-            {
-                this.error("Guards class:", guardClass.name, e);
-
-                throw e;
-            }
-        }
-
-        return true;
-    }
-
-    private mapValues<T>(data: T, map = true): void
-    {
-        for (const propName of Object.keys(Object(data)))
-        {
-            try
-            {
-                this.mapProperty(data, propName, map);
-            } catch (e)
-            {
-                this.error("Cannot map or unmap value to command:", data, propName, e);
-
-                throw e;
-            }
-        }
-    }
-
-    private mapProperty<T>(data: T, propertyName: string, map = true): void
-    {
-        const value = Reflect.get(Object(data), propertyName);
-
-        this.mapPropertyValue(value, propertyName, map);
-    }
-
-    private mapPropertyValue(value: any, propertyName: string, map = true): void
-    {
-        if (value === undefined) return;
-
-        const constructor: unknown = Reflect.get(Object(value), "constructor");
-        const idFromMeta: unknown = constructor === undefined ? undefined : Reflect.get(Object(constructor), SERVICE_IDENTIFIER);
-        const serviceIdentifier: string = typeof idFromMeta === "string" && idFromMeta
-            ? idFromMeta
-            : String(Reflect.get(Object(constructor), "name"));
-
-        if (this.config.singletonCommands)
-        {
-            this.factory.mapValueToLazy(this.getType(serviceIdentifier), value, propertyName);
-        }
-        else
-        {
-            if (map)
-            {
-                this.factory.mapToValue(this.getType(serviceIdentifier), value, propertyName);
-            }
-            else
-            {
-                this.factory.unmapFromValue(this.getType(serviceIdentifier), propertyName);
-            }
-        }
-    }
-
-    public getType(value: string): string
-    {
-        if (!value) throw new Error("Invalid type: " + value);
-
-        if (value === "String" || value === "Number" || value === "Boolean")
-        {
-            return value.toLowerCase();
-        }
-
-        if (value === "Object")
-        {
-            return "any";
-        }
-
-        return value;
-    }
-
-    private static mappingListContains<T>(list: MappingConfig<T>[], commandClass: Class<ICommand>, ignoreGuards = false): MappingConfig<T> | undefined
-    {
-        for (const mappingVo of list)
-        {
-            if (mappingVo.commandClass === commandClass)
-            {
-                const hasGuards: boolean = !ignoreGuards && mappingVo.guardList && mappingVo.guardList.length > 0;
-                return hasGuards ? undefined : mappingVo;
-            }
-        }
-
-        return undefined;
+        const constructor = value?.constructor;
+        const identifier = constructor?.[SERVICE_IDENTIFIER];
+        const typeName = typeof identifier === "string" && identifier ? identifier : constructor?.name;
+        const type = typeName === "String" ? "string" : typeName === "Number" ? "number" :
+            typeName === "Boolean" ? "boolean" : !typeName || typeName === "Object" ? "any" : typeName;
+        scope.mapToValue(type, value, name);
+        if (typeof constructor === "function") scope.mapToValue(constructor, value, name);
     }
 }
-
-// the registration lives next to the class, so a bundler can not drop it as an unused side effect
 setDefaultImplementation<ICommandMapper>("ICommandMapper", CommandMapper);

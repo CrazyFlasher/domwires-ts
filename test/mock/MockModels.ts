@@ -46,7 +46,7 @@ export class MockModel4 extends AbstractHierarchyObject
     {
         this._testVar = value;
 
-        this.dispatchMessage(MockMessageType.GOODBYE);
+        this.dispatchMessage(MockMessageType.GOODBYE, {name: ""});
     }
 }
 

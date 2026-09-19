@@ -1,0 +1,195 @@
+{
+  "commit": "08c80f955e63d652f0ab568ef0a38be760d8fd3f",
+  "node": "v24.18.0",
+  "results": [
+    {
+      "id": "R01",
+      "description": "Nested synchronous execution preserves outer command input",
+      "expected": [
+        "outer",
+        "outer"
+      ],
+      "actual": [
+        "outer",
+        "inner"
+      ],
+      "passed": false
+    },
+    {
+      "id": "R02",
+      "description": "Async dependencies stay isolated across two factories",
+      "expected": [
+        "A",
+        "A"
+      ],
+      "actual": [
+        "A",
+        "B"
+      ],
+      "passed": false
+    },
+    {
+      "id": "R03",
+      "description": "Two concurrent AbstractAsyncCommand calls both complete",
+      "expected": [
+        "fulfilled",
+        "fulfilled"
+      ],
+      "actual": [
+        "pending",
+        "fulfilled"
+      ],
+      "passed": false
+    },
+    {
+      "id": "R04",
+      "description": "Awaiting executeCommand waits for an async execute method",
+      "expected": true,
+      "actual": false,
+      "passed": false
+    },
+    {
+      "id": "R05",
+      "description": "Removing a once mapping does not skip the next mapping",
+      "expected": [
+        "once",
+        "next"
+      ],
+      "actual": [
+        "once"
+      ],
+      "passed": false
+    },
+    {
+      "id": "R06",
+      "description": "Once removes the executed mapping when the same class has two mappings",
+      "expected": 1,
+      "actual": 2,
+      "passed": false
+    },
+    {
+      "id": "R07",
+      "description": "A mediator registered by ID receives model messages",
+      "expected": 1,
+      "actual": 0,
+      "passed": false
+    },
+    {
+      "id": "R08",
+      "description": "Removing a named child by instance removes its registration",
+      "expected": {
+        "removed": true,
+        "count": 0,
+        "contains": false
+      },
+      "actual": {
+        "removed": true,
+        "count": 1,
+        "contains": true
+      },
+      "passed": false
+    },
+    {
+      "id": "R09",
+      "description": "Replacing a duplicate child ID cannot leave a detached registration with a live parent",
+      "expected": false,
+      "actual": true,
+      "passed": false
+    },
+    {
+      "id": "R10",
+      "description": "Reparenting clears the old context role list",
+      "expected": 0,
+      "actual": 1,
+      "passed": false
+    },
+    {
+      "id": "R11",
+      "description": "Adding a higher-priority listener does not invoke the current listener twice",
+      "expected": 1,
+      "actual": 2,
+      "passed": false
+    },
+    {
+      "id": "R12",
+      "description": "A forwarded message currentTarget identifies the receiving mediator",
+      "expected": true,
+      "actual": false,
+      "passed": false
+    },
+    {
+      "id": "R13",
+      "description": "Completed dispatches are removed from pendingCommands without settle",
+      "expected": 0,
+      "actual": 1000,
+      "passed": false
+    },
+    {
+      "id": "R14",
+      "description": "A rejected guard does not leak temporary DI bindings with pooling off",
+      "expected": false,
+      "actual": true,
+      "passed": false
+    },
+    {
+      "id": "R15",
+      "description": "A temporary payload binding restores the previous permanent binding",
+      "expected": "permanent",
+      "actual": "<missing>",
+      "passed": false
+    },
+    {
+      "id": "R16",
+      "description": "Hierarchy rejects ancestor cycles",
+      "expected": true,
+      "actual": false,
+      "passed": false
+    },
+    {
+      "id": "R17",
+      "description": "stopOnExecute applies to every message in a multi-message registration",
+      "expected": [
+        "first"
+      ],
+      "actual": [
+        "first",
+        "extra"
+      ],
+      "passed": false
+    },
+    {
+      "id": "R18",
+      "description": "settle waits for all dispatched work even when one command rejects",
+      "expected": true,
+      "actual": false,
+      "passed": false
+    },
+    {
+      "id": "R19",
+      "description": "instantiateValueUnmapped restores the existing value after a constructor error",
+      "expected": true,
+      "actual": false,
+      "passed": false
+    },
+    {
+      "id": "R20",
+      "description": "Named newInstance config creates the named implementation",
+      "expected": "Named",
+      "actual": "Default",
+      "passed": false
+    },
+    {
+      "id": "R21",
+      "description": "Remapping a command to an async implementation preserves mapped order",
+      "expected": [
+        "async",
+        "next"
+      ],
+      "actual": [
+        "next",
+        "async"
+      ],
+      "passed": false
+    }
+  ]
+}

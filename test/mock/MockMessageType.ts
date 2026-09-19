@@ -12,7 +12,7 @@ export class MockMessageType<T = void> extends MessageType<T>
 {
     public static readonly HELLO: MessageType<MockMessageDataType1> = new MockMessageType<MockMessageDataType1>("HELLO");
     public static readonly GOODBYE: MessageType<MockMessageDataType2> = new MockMessageType<MockMessageDataType2>("GOODBYE");
-    public static readonly SHALOM: MockMessageType = new MockMessageType("SHALOM");
+    public static readonly SHALOM = new MockMessageType<{target?: unknown; [key: string]: unknown} | void>("SHALOM");
 }
 
 export class MockMessageType2<T = void> extends MessageType<T>

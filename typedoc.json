@@ -1,0 +1,24 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/node.ts"
+  ],
+  "tsconfig": "./tsconfig.json",
+  "name": "DomWires 5.0",
+  "readme": "./docs/api.md",
+  "out": "./docs/api",
+  "json": "./.consumer-check/api.json",
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "excludeExternals": true,
+  "disableSources": true,
+  "includeVersion": false,
+  "navigationLinks": {
+    "GitHub": "https://github.com/CrazyFlasher/domwires-ts"
+  },
+  "validation": {
+    "invalidLink": true
+  },
+  "treatWarningsAsErrors": true
+}

@@ -1,6 +1,6 @@
 name: Test
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - run: npm install
+      - run: npm ci
       - run: npm run typecheck
       - run: npm run test
       - run: npm run lint
@@ -23,3 +23,44 @@ jobs:
       - run: npm run example:build
       - run: npm run example:smoke
       - run: node browser/build.mjs
+      - run: npm run test:consumer
+      - run: npm run test:stress
+
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+      - run: npm ci
+      - run: npm ci --prefix tools/docs
+      - run: npm run docs:assets
+      - run: git diff --exit-code -- docs/assets
+      - run: npm run docs:build
+      - run: npm run docs:check
+      - run: npm run test:consumer
+        env:
+          DOMWIRES_TSC: tools/docs/node_modules/typescript/bin/tsc
+      - uses: actions/upload-artifact@v4
+        with:
+          name: api-reference
+          path: docs/api/
+
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+      - run: npm ci
+      - run: npm run browser:install -- --with-deps
+      - run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-report
+          path: |
+            playwright-report/
+            test-results/

@@ -1,15 +1,19 @@
+/** Read access to disposal state. */
 export interface IDisposableImmutable
 {
     /**
-     * True if object has already been disposed.
+     * Whether synchronous disposal has marked the object disposed. Async cleanup may still be pending.
      */
     get isDisposed(): boolean;
 }
 
+/** Synchronous teardown contract. Objects with asynchronous cleanup additionally expose close(). */
 export interface IDisposable extends IDisposableImmutable
 {
     /**
-     * Removes all references, objects. After that object is ready to be cleaned by GC.
+     * Releases owned synchronous state or initiates teardown. Idempotency depends on the implementation:
+     * AbstractDisposable throws on repeated disposal; context.close() provides a repeatable async boundary.
+     * Disposal does not guarantee garbage collection while external references remain.
      */
     dispose(): void;
 }

@@ -14,6 +14,7 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
 
     public override dispose()
     {
+        this._parent?.remove(this);
         this._parent = undefined;
 
         super.dispose();
@@ -53,6 +54,11 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
 
     public setParent(value: IHierarchyObjectContainer | undefined): IHierarchyObject
     {
+        if (value === this._parent) return this;
+        for (let ancestor = value; ancestor; ancestor = ancestor.parent)
+            if (Object.is(ancestor, this)) throw new Error("Hierarchy cycle is not allowed");
+        if (value && !value.contains(this)) { value.add(this); return this; }
+        if (this._parent?.contains(this)) this._parent.remove(this);
         const hasParent: boolean = this._parent != undefined;
 
         this._parent = value;
@@ -69,11 +75,13 @@ export abstract class AbstractHierarchyObject extends MessageDispatcher implemen
         return this;
     }
 
+    /** Synchronous hook after this object is detached; parent is already undefined. */
     /* eslint-disable @typescript-eslint/no-empty-function */
     protected removedFromHierarchy(): void
     {
     }
 
+    /** Synchronous hook after this object is attached; parent is already available. */
     /* eslint-disable @typescript-eslint/no-empty-function */
     protected addedToHierarchy(): void
     {

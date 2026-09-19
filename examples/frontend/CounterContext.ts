@@ -2,8 +2,8 @@ import {AbstractContext} from "domwires";
 import {AppMessage} from "./AppMessage";
 import {ChangeCounterCommand} from "./ChangeCounterCommand";
 import {CounterIsNotAtMaxGuards} from "./CounterIsNotAtMaxGuards";
-import {CounterMediator} from "./CounterMediator";
-import {CounterModel, ICounterModel} from "./CounterModel";
+import {CounterMediator, MOUNT_POINT} from "./CounterMediator";
+import {CounterModel, COUNTER_MODEL, COUNTER_MODEL_IMMUTABLE} from "./CounterModel";
 import {ResetCounterCommand} from "./ResetCounterCommand";
 
 /**
@@ -16,15 +16,14 @@ export class CounterContext extends AbstractContext
     {
         super.init();
 
-        const model: CounterModel = this.factory.getInstance<CounterModel>(CounterModel);
-
-        this.addModel(model);
-
-        // commands and guards work with the mutable model, mediators get the read only interface
-        this.factory.mapToValue<ICounterModel>("ICounterModel", model);
-        this.factory.mapToValue("ICounterModelImmutable", model);
-
-        this.addMediator(this.factory.getInstance<CounterMediator>(CounterMediator));
+        this.provide(MOUNT_POINT, this.factory.getInstance(MOUNT_POINT), ["mediator"]);
+        this.registerModel({
+            mutable: COUNTER_MODEL,
+            immutable: COUNTER_MODEL_IMMUTABLE,
+            implementation: CounterModel,
+            id: "counter"
+        });
+        this.createMediator(CounterMediator, "counterView");
 
         this.map(AppMessage.CHANGE_COUNTER, ChangeCounterCommand).addGuards(CounterIsNotAtMaxGuards);
         this.map(AppMessage.RESET_COUNTER, ResetCounterCommand);

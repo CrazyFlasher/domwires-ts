@@ -7,6 +7,7 @@ type LogMethod = "verbose" | "info" | "warn" | "error" | "fatal";
 @injectable()
 export abstract class AbstractDisposable implements IDisposable, ILogger
 {
+    /** Optional borrowed logger; inherited logging methods are safe when no logger is bound. */
     @inject("ILogger") @optional()
     protected logger!: ILogger;
 

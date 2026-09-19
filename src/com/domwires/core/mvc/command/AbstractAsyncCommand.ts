@@ -3,7 +3,10 @@ import {IAsyncCommand} from "./IAsyncCommand";
 
 export class AbstractAsyncCommand extends AbstractCommand implements IAsyncCommand
 {
+    public override execute(): void {}
+    /** Completes the current callback-based invocation; assigned before execute() is called. */
     protected resolve!: () => void;
+    /** Fails the current callback-based invocation; assigned before execute() is called. */
     protected reject!: (reason?: unknown) => void;
 
     public executeAsync(): Promise<void>

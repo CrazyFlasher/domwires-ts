@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import {Suite} from "mocha";
-import {Enum, HierarchyObjectContainer, MessageDispatcher, MessageType} from "../src";
+import {HierarchyObjectContainer, MessageDispatcher, MessageType} from "../src";
 import {expect} from "chai";
 
 describe('GenericTypesTest', function (this: Suite)
@@ -64,7 +64,7 @@ type Type_1 = { readonly n: number };
 type Type_2 = { readonly s: string };
 type Type_3 = { readonly o: any };
 
-class MesType<T = void> extends Enum
+class MesType<T = void> extends MessageType<T>
 {
     // Note: the data type of a message type is defined by the annotation of the static field,
     // the generic argument of a constructor call is not narrowed against it.

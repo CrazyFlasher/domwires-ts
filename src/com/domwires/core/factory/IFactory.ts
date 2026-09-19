@@ -6,9 +6,10 @@ import {AbstractDisposable} from "../common/AbstractDisposable";
 import {Class, getClassFromString, getDefaultImplementation, Type} from "../Global";
 import {ILogger} from "../../logger/ILogger";
 import {ArrayUtils} from "../utils/ArrayUtils";
-import {DependencyContainer} from "../di/DependencyContainer";
+import {DependencyContainer, Provider, ScopeOptions} from "../di/IDependencyContainer";
+import {PoolModel} from "./PoolModel";
+import {ImplementationRegistry} from "./ImplementationRegistry";
 import {IDependencyContainer} from "../di/IDependencyContainer";
-import {clearLazyBindings, setLazyBinding} from "../di/LazyRegistry";
 
 export type FactoryConfig = Map<string, {
     value?: string | boolean | number | object;
@@ -27,202 +28,144 @@ export type PoolConfig = {
     readonly isBusyFlagGetterName?: string;
 };
 
-class PoolModel
-{
-    private readonly list: any[] = [];
-    private _capacity: number;
-
-    private currentIndex = 0;
-    private readonly factory: Factory;
-    private readonly isBusyFlagGetterName: string | undefined;
-
-    public constructor(factory: Factory, capacity: number, isBusyFlagGetterName?: string)
-    {
-        this.factory = factory;
-        this._capacity = capacity;
-        this.isBusyFlagGetterName = isBusyFlagGetterName;
-    }
-
-    public get<T>(type: Type<T>, createNewIfNeeded = true): T
-    {
-        if (this.list.length < this._capacity && createNewIfNeeded)
-        {
-            return this.createAndStore(type);
-        }
-
-        if (this.list.length === 0)
-        {
-            throw new Error("Pool for '" + Factory.getTypeName(type) + "' is empty and creating of new instances is disabled!");
-        }
-
-        // scan for a not busy item, starting from the current index; the scan is bounded by the list length,
-        // so it always terminates, even if all items are busy
-        for (let i = 0; i < this.list.length; i++)
-        {
-            const instance: T = this.next();
-
-            if (!this.isBusy(instance))
-            {
-                return instance;
-            }
-        }
-
-        throw new Error("All items of pool '" + Factory.getTypeName(type) + "' are busy! " +
-            "Increase the pool capacity or enable the safe pool mode.");
-    }
-
-    public increaseCapacity(value: number): void
-    {
-        this._capacity += value;
-    }
-
-    public dispose(): void
-    {
-        ArrayUtils.clear(this.list);
-
-        this.currentIndex = 0;
-        this._capacity = 0;
-    }
-
-    public get capacity(): number
-    {
-        return this._capacity;
-    }
-
-    public get instanceCount(): number
-    {
-        return this.list.length;
-    }
-
-    public get allItemsAreBusy(): boolean
-    {
-        if (this.list.length < this._capacity)
-        {
-            return false;
-        }
-
-        if (!this.isBusyFlagGetterName)
-        {
-            return false;
-        }
-
-        for (let i = 0; i < this._capacity; i++)
-        {
-            if (!this.isBusy(this.list[i]))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public get busyItemsCount(): number
-    {
-        if (!this.isBusyFlagGetterName)
-        {
-            return 0;
-        }
-
-        let count = 0;
-
-        for (const instance of this.list)
-        {
-            if (this.isBusy(instance))
-            {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    private createAndStore<T>(type: Type<T>): T
-    {
-        const instance: T = this.factory.getInstance(type, undefined, true);
-
-        this.list.push(instance);
-
-        return instance;
-    }
-
-    private next(): any
-    {
-        const instance: any = this.list[this.currentIndex];
-
-        this.currentIndex++;
-
-        if (this.currentIndex === this._capacity || this.currentIndex >= this.list.length)
-        {
-            this.currentIndex = 0;
-        }
-
-        return instance;
-    }
-
-    private isBusy(instance: any): boolean
-    {
-        return this.isBusyFlagGetterName != undefined && instance != undefined &&
-            Boolean(instance[this.isBusyFlagGetterName]);
-    }
-}
-
+/** Resolution and pool queries without binding-management operations. */
 export interface IFactoryImmutable extends IDisposableImmutable
 {
+    /**
+     * Resolves a value, transient provider or implementation, using a registered pool unless ignored.
+     * Class identifiers can construct themselves; token/string identifiers need a binding or default implementation.
+     * @throws If disposed, unresolved, cyclic, or a bounded pool has no available item.
+     */
     getInstance<T>(type: Type<T>, name?: string, ignorePool?: boolean): T;
 
+    /**
+     * Creates through a provider/class implementation, ignoring value bindings and object pools.
+     * The selected implementation still uses this factory's dependency scope.
+     */
     instantiateValueUnmapped<T>(type: Type<T>): T;
 
+    /**
+     * Whether this factory has a local class mapping for the identifier and optional name.
+     */
     hasTypeMapping<T>(type: Type<T>, name?: string): boolean;
 
+    /**
+     * Whether this factory has a local value mapping for the identifier and optional name.
+     */
     hasValueMapping<T>(type: Type<T>, name?: string): boolean;
 
+    /**
+     * Whether this factory owns a pool for this exact identifier.
+     */
     hasPoolForType<T>(type: Type<T>): boolean;
 
+    /**
+     * Returns registered pool capacity; throws if no pool exists.
+     */
     getPoolCapacity<T>(type: Type<T>): number;
 
+    /**
+     * Returns the number of instantiated pool objects; throws if no pool exists.
+     */
     getPoolInstanceCount<T>(type: Type<T>): number;
 
+    /**
+     * Whether a full pool has every item marked busy; false when no busy getter is configured.
+     * Throws if no pool exists.
+     */
     getAllPoolItemsAreBusy<T>(type: Type<T>): boolean;
 
+    /**
+     * Counts items whose configured busy property is truthy; zero without a busy getter.
+     * Throws if no pool exists.
+     */
     getPoolBusyInstanceCount<T>(type: Type<T>): number;
 }
 
+/** Scoped dependency bindings, implementation aliases and owned object pools. */
 export interface IFactory extends IFactoryImmutable, IDisposable
 {
-    mapToType<T>(type: Type<T>, to: Class<T>, name?: string): IFactory;
+    /**
+     * Binds a transient implementation. A value binding for the same token/name takes precedence.
+     */
+    mapToType<T>(type: Type<T>, to: Class<NoInfer<T>>, name?: string): IFactory;
 
-    mapToValue<T>(type: Type<T>, to: T, name?: string): IFactory;
+    /**
+     * Binds a borrowed value, including undefined. Unmapping or disposal does not dispose the value.
+     */
+    mapToValue<T>(type: Type<T>, to: NoInfer<T>, name?: string): IFactory;
 
+    /**
+     * Removes this factory's class mapping; preserves a separately registered value mapping.
+     */
     unmapFromType<T>(type: Type<T>, name?: string): IFactory;
 
+    /**
+     * Removes this factory's value mapping; preserves a separately registered class mapping.
+     */
     unmapFromValue<T>(type: Type<T>, name?: string): IFactory;
 
+    /**
+     * Removes local bindings and disposes all pooled objects. Borrowed values and the parent scope survive.
+     * Pool cleanup failures are aggregated after all pools have been attempted.
+     */
     clear(): IFactory;
 
+    /**
+     * Registers a factory-owned pool. Existing registration is kept with a warning.
+     * @param capacity - Positive safe integer; defaults to 5.
+     * @param instantiateNow - Preallocates all items when true.
+     * @param isBusyFlagGetterName - Property identifying unavailable objects. Without it, objects are reused cyclically.
+     */
     registerPool<T>(type: Type<T>, capacity?: number, instantiateNow?: boolean,
                     isBusyFlagGetterName?: string): IFactory;
 
+    /**
+     * Disposes objects in the local pool and removes it; does nothing if absent.
+     */
     unregisterPool<T>(type: Type<T>): IFactory;
 
+    /**
+     * Adds a positive safe integer to the registered pool's capacity. Objects are created lazily.
+     */
     increasePoolCapacity<T>(type: Type<T>, additionalCapacity: number): IFactory;
 
+    /**
+     * Controls automatic growth when all items are busy. Enabled by default.
+     * Disable for a bounded pool whose exhausted getInstance() calls must throw.
+     */
     setSafePool(value: boolean): IFactory;
 
+    /**
+     * Applies dynamic value/class mappings. Implementation names resolve through the local registry
+     * or explicitly registered legacy class aliases; arbitrary globals are not inspected.
+     */
     appendMappingConfig(config: FactoryConfig): IFactory;
 
-    mapValueToLazy<T>(type: Type<T>, to: T, name?: string): IFactory;
-
-    mergeIntoLazy(): IFactory;
-
-    clearLazy(): IFactory;
-
+    /**
+     * Creates an independently disposable child factory with inherited bindings and registry aliases.
+     * Omitted inherit imports all identifiers; [] imports none; a list selects identifiers, including named bindings.
+     * The caller owns this child factory. Parent pools are not inherited.
+     */
+    createScope(options?: ScopeOptions): IFactory;
+    /**
+     * Registers a transient provider called with the requesting dependency scope on each resolution.
+     */
+    mapToProvider<T>(type: Type<T>, provider: Provider<NoInfer<T>>, name?: string): IFactory;
+    /**
+     * Local implementation-alias registry, with parent lookup for factory scopes.
+     */
+    get registry(): ImplementationRegistry;
+    /**
+     * Low-level scoped dependency container. Direct edits bypass the factory's mapping bookkeeping.
+     */
     get injector(): IDependencyContainer;
 }
 
 export class Factory extends AbstractDisposable implements IFactory
 {
-    private readonly _injector: IDependencyContainer = new DependencyContainer();
+    private readonly _injector: IDependencyContainer;
+    public readonly registry: ImplementationRegistry;
 
     private readonly typeMap: Map<Type, MappingData[]> = new Map<Type, MappingData[]>();
     private readonly valueMap: Map<Type, MappingData[]> = new Map<Type, MappingData[]>();
@@ -231,9 +174,11 @@ export class Factory extends AbstractDisposable implements IFactory
 
     private _safePool = true;
 
-    public constructor(logger?: ILogger)
+    public constructor(logger?: ILogger, injector: IDependencyContainer = new DependencyContainer(), registry = new ImplementationRegistry())
     {
         super();
+        this._injector = injector;
+        this.registry = registry;
 
         if (logger)
         {
@@ -245,6 +190,18 @@ export class Factory extends AbstractDisposable implements IFactory
     public get injector(): IDependencyContainer
     {
         return this._injector;
+    }
+
+    public createScope(options?: ScopeOptions): Factory
+    {
+        if (this.isDisposed) throw new Error("Factory already disposed!");
+        return new Factory(undefined, this._injector.createScope(options), this.registry.createScope());
+    }
+
+    public mapToProvider<T>(type: Type<T>, provider: Provider<NoInfer<T>>, name?: string): IFactory
+    {
+        this._injector.bindToProvider(type, provider, name);
+        return this;
     }
 
     private static includesName(list?: MappingData[], name?: string): MappingData | undefined
@@ -272,9 +229,8 @@ export class Factory extends AbstractDisposable implements IFactory
 
     public override dispose()
     {
-        this.clear();
-
-        super.dispose();
+        try { this.clear(); }
+        finally { super.dispose(); }
     }
 
     private addMapping<T>(map: Map<Type, MappingData[]>, type: Type<T>, to: T | Class<T>, name?: string): void
@@ -389,10 +345,10 @@ export class Factory extends AbstractDisposable implements IFactory
 
     private clearPools(): IFactory
     {
-        this.poolModelMap.forEach((value) => value.dispose());
-
+        const errors: unknown[] = [];
+        this.poolModelMap.forEach(value => { try { value.dispose(); } catch (error) { errors.push(error); } });
         this.poolModelMap.clear();
-
+        if (errors.length) throw new AggregateError(errors, "Pool disposal failed");
         return this;
     }
 
@@ -404,7 +360,7 @@ export class Factory extends AbstractDisposable implements IFactory
         }
     }
 
-    public mapToType<T>(type: Type<T>, to: Class<T>, name?: string): IFactory
+    public mapToType<T>(type: Type<T>, to: Class<NoInfer<T>>, name?: string): IFactory
     {
         this.addMapping(this.typeMap, type, to, name);
         this.syncBindings(type);
@@ -412,7 +368,7 @@ export class Factory extends AbstractDisposable implements IFactory
         return this;
     }
 
-    public mapToValue<T>(type: Type<T>, to: T, name?: string): IFactory
+    public mapToValue<T>(type: Type<T>, to: NoInfer<T>, name?: string): IFactory
     {
         this.addMapping(this.valueMap, type, to, name);
         this.syncBindings(type);
@@ -422,30 +378,23 @@ export class Factory extends AbstractDisposable implements IFactory
 
     public instantiateValueUnmapped<T>(type: Type<T>): T
     {
-        const mappingData: MappingData | undefined = Factory.includesName(this.valueMap.get(type));
-
-        if (!mappingData)
+        if (!this._injector.has(type))
         {
-            return this.getInstance(type);
+            const implementation = getDefaultImplementation(type);
+            if (implementation) this.mapToType(type, implementation);
         }
-
-        this.unmapFromValue(type);
-
-        const instance: T = this.getInstance(type);
-
-        this.mapToValue(type, mappingData.typeOrValue);
-
-        return instance;
+        return this._injector.instantiate(type);
     }
 
     public getInstance<T>(type: Type<T>, name?: string, ignorePool?: boolean): T
     {
+        if (this.isDisposed) throw new Error("Factory already disposed!");
         if (!ignorePool && this.hasPoolForType(type))
         {
             return this.getFromPool(type);
         }
 
-        if (!this.hasValueMapping(type, name) && !this.hasTypeMapping(type, name))
+        if (!this._injector.has(type, name))
         {
             const defaultImpl: Class<any> | undefined = getDefaultImplementation(type);
 
@@ -453,11 +402,11 @@ export class Factory extends AbstractDisposable implements IFactory
             {
                 this.verbose("Mapping to default implementation '" + defaultImpl.name + "'.");
 
-                this.mapToType(type, defaultImpl);
+                this.mapToType(type, defaultImpl, name);
             }
         }
 
-        return name ? this._injector.resolve(type, name) : this._injector.resolve(type);
+        return this._injector.resolve(type, name);
     }
 
     public hasTypeMapping<T>(type: Type<T>, name?: string): boolean
@@ -493,33 +442,6 @@ export class Factory extends AbstractDisposable implements IFactory
         this.valueMap.clear();
 
         this.clearPools();
-
-        return this;
-    }
-
-    public mapValueToLazy<T>(type: Type<T>, to: T, name?: string): IFactory
-    {
-        setLazyBinding(type, to, name);
-
-        return this;
-    }
-
-    public mergeIntoLazy(): IFactory
-    {
-        for (const [type, mappingList] of this.valueMap)
-        {
-            for (const mapping of mappingList)
-            {
-                setLazyBinding(type, mapping.typeOrValue, mapping.name);
-            }
-        }
-
-        return this;
-    }
-
-    public clearLazy(): IFactory
-    {
-        clearLazyBindings();
 
         return this;
     }
@@ -568,7 +490,7 @@ export class Factory extends AbstractDisposable implements IFactory
 
     public registerPool<T>(type: Type<T>, capacity = 5, instantiateNow?: boolean, isBusyFlagGetterName?: string): IFactory
     {
-        if (capacity === 0)
+        if (!Number.isSafeInteger(capacity) || capacity <= 0)
         {
             throw new Error("Capacity should be > 0!");
         }
@@ -667,7 +589,7 @@ export class Factory extends AbstractDisposable implements IFactory
                         this.info("Mapping type from config:", "'" + interfaceDefinition + "'", "to", "'" + value.implementation + "'"
                             + (name ? " with name '" + name + "'" : ""));
 
-                        this.mapToType(interfaceDefinition, getClassFromString(value.implementation), name);
+                        this.mapToType(interfaceDefinition, this.registry.get(value.implementation) ?? getClassFromString(value.implementation), name);
                     }
 
                     if (value.newInstance)
@@ -675,7 +597,7 @@ export class Factory extends AbstractDisposable implements IFactory
                         this.info("Creating new instance and mapping to value: '" + interfaceDefinition + "'" +
                             (name ? " with name '" + name + "'" : ""));
 
-                        this.mapToValue(interfaceDefinition, this.getInstance(interfaceDefinition), name);
+                        this.mapToValue(interfaceDefinition, this.getInstance(interfaceDefinition, name), name);
                     }
                 }
             }

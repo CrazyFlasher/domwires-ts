@@ -1,0 +1,14 @@
+{
+  "before": {
+    "Documents": 1,
+    "JSEventListeners": 26,
+    "Nodes": 103,
+    "JSHeapUsedSize": 2130676
+  },
+  "after": {
+    "Documents": 1,
+    "JSEventListeners": 26,
+    "Nodes": 104,
+    "JSHeapUsedSize": 2807804
+  }
+}

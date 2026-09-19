@@ -214,10 +214,10 @@ export class MockContext9 extends AbstractContext
         this.factory.mapToValue<MockVo5>(MockVo5, this.vo1);
         this.factory.mapToValue<MockVo6>(MockVo6, this.vo2);
 
-        this.map(MockMessageType.SHALOM, MockCommand21, {vo: this.vo2}).addGuards(MockTargetIsMockVo1);
-        this.map(MockMessageType.SHALOM, MockCommand23, {vo1: this.vo1, vo2: this.vo2}).addGuards(MockTargetIsMockVo2);
+        this.map(MockMessageType.SHALOM, MockCommand21, {data: {vo: this.vo2}}).addGuards(MockTargetIsMockVo1);
+        this.map(MockMessageType.SHALOM, MockCommand23, {data: {vo1: this.vo1, vo2: this.vo2}}).addGuards(MockTargetIsMockVo2);
 
-        this.executeCommand(MockCommand20, {vo: this.vo1});
+        this.execute(MockCommand20, {vo: this.vo1});
     }
 }
 
@@ -236,7 +236,7 @@ export class MockContext10 extends AbstractContext
 
         this.map(MockMessageType.HELLO, MockCommand24);
 
-        this.testModel.dispatchMessage(MockMessageType.HELLO);
+        this.testModel.dispatchMessage(MockMessageType.HELLO, {prop: ""});
     }
 
     public getTestModel(): MockModel2

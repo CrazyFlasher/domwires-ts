@@ -1,6 +1,6 @@
 {
   "name": "domwires",
-  "version": "2.1.0",
+  "version": "5.0.0-rc.1",
   "description": "Flexible and extensible MVC framework",
   "repository": {
     "type": "git",
@@ -11,37 +11,74 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "node": {
+        "import": {
+          "types": "./dist/index.d.mts",
+          "default": "./dist/index.mjs"
+        },
+        "require": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/index.js"
+        }
+      },
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/browser.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "default": "./dist/browser.mjs"
     },
     "./node": {
-      "types": "./dist/node.d.ts",
-      "default": "./dist/node.js"
+      "import": {
+        "types": "./dist/node.d.mts",
+        "default": "./dist/node.mjs"
+      },
+      "require": {
+        "types": "./dist/node.d.ts",
+        "default": "./dist/node.js"
+      }
     },
     "./package.json": "./package.json"
   },
   "files": [
     "dist/",
-    "docs/",
-    "README.md"
+    "src/",
+    "docs/*.md",
+    "docs/assets/*.svg",
+    "docs/snippets/*.ts",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=20.0.0"
   },
   "scripts": {
     "clean": "rimraf dist/ dist-test/ dist_client/ dist_example/",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.examples.json",
-    "build": "rimraf dist/ && tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.examples.json && tsc --noEmit -p tsconfig.test.json",
+    "build": "node tools/build.mjs",
     "test": "rimraf dist-test/ && tsc -p tsconfig.test.json && mocha \"dist-test/test/**/*.js\" --timeout=3000",
     "test-browser": "node browser/build.mjs && http-server ./dist_client -a localhost -p 1234 -o ./test.html",
     "example:build": "node examples/build.mjs",
     "example:smoke": "node examples/smoke.mjs",
     "example": "npm run example:build && http-server ./dist_example -a localhost -p 1235 -o ./index.html",
     "lint": "oxlint src test browser examples tools",
-    "copy-files": "copyfiles -u 1 dev.json dist/"
+    "copy-files": "copyfiles -u 1 dev.json dist/",
+    "test:consumer": "node tools/consumer-smoke.mjs",
+    "benchmark": "node --expose-gc tools/benchmark.mjs",
+    "browser:install": "node tools/playwright.mjs install chromium --only-shell",
+    "test:browser": "npm run example:build && node tools/playwright.mjs test -c browser/playwright.config.mjs",
+    "test:stress": "tsc -p tsconfig.test.json && node --expose-gc tools/lifecycle-stress.mjs",
+    "docs:assets": "node tools/docs-assets.mjs",
+    "docs:build": "npm run build && npm --prefix tools/docs run build",
+    "docs:check": "node tools/docs-check.mjs",
+    "prepack": "npm run build"
   },
-  "dependencies": {},
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@types/chai": "4.3.20",
     "@types/mocha": "10.0.10",
     "@types/node": "26.6.1",
@@ -56,5 +93,7 @@
   },
   "allowScripts": {
     "esbuild@0.28.2": true
-  }
+  },
+  "type": "commonjs",
+  "module": "./dist/browser.mjs"
 }

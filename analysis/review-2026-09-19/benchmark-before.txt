@@ -1,0 +1,73 @@
+
+> domwires@2.1.0 benchmark
+> node --expose-gc tools/benchmark.mjs
+
+{
+  "node": "v24.18.0",
+  "results": [
+    {
+      "scenario": "unmapped messages",
+      "iterations": 10000,
+      "medianDispatchMs": 10.032400000000052,
+      "samples": [
+        {
+          "dispatchMs": 21.371399999999994,
+          "retainedHeapBytes": 633784,
+          "pending": 10000
+        },
+        {
+          "dispatchMs": 15.253899999999703,
+          "retainedHeapBytes": 575552,
+          "pending": 10000
+        },
+        {
+          "dispatchMs": 9.913000000000466,
+          "retainedHeapBytes": 316096,
+          "pending": 10000
+        },
+        {
+          "dispatchMs": 10.032400000000052,
+          "retainedHeapBytes": 580368,
+          "pending": 10000
+        },
+        {
+          "dispatchMs": 9.22149999999965,
+          "retainedHeapBytes": 322696,
+          "pending": 10000
+        }
+      ]
+    },
+    {
+      "scenario": "synchronous mapped messages",
+      "iterations": 10000,
+      "medianDispatchMs": 61.78650000000016,
+      "samples": [
+        {
+          "dispatchMs": 62.67189999999937,
+          "retainedHeapBytes": 718304,
+          "pending": 10000
+        },
+        {
+          "dispatchMs": 65.79929999999877,
+          "retainedHeapBytes": 582176,
+          "pending": 10000
+        },
+        {
+          "dispatchMs": 50.371399999999994,
+          "retainedHeapBytes": 585920,
+          "pending": 10000
+        },
+        {
+          "dispatchMs": 61.78650000000016,
+          "retainedHeapBytes": 504208,
+          "pending": 10000
+        },
+        {
+          "dispatchMs": 37.990600000000995,
+          "retainedHeapBytes": 573736,
+          "pending": 10000
+        }
+      ]
+    }
+  ]
+}

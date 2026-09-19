@@ -1,61 +1,59 @@
+/* eslint-disable unicorn/no-useless-spread -- Snapshots protect iteration from removal and reentrant registration. */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import {inject, optional, postConstruct} from "../../di/Decorators";
 import {Factory, IFactory} from "../../factory/IFactory";
 import {
     HierarchyObjectContainer,
-    IHierarchyObjectContainer,
     IHierarchyObjectContainerImmutable
 } from "../hierarchy/IHierarchyObjectContainer";
+import {ContextConfigBuilder} from "./ContextConfigBuilder";
 import {IContext, IContextImmutable} from "./IContext";
-import {CommandMapper, ICommandMapper, MappingConfig, MappingConfigList} from "../command/ICommandMapper";
+import {CommandMapper, ICommandMapper, CommandMappingOptions, CommandArguments, MappedMessages, MappedPayload, MappedCommands, MappingResult, CommandTrace} from "../command/ICommandMapper";
 import {Enum} from "../../Enum";
-import {IMessage, IMessageDispatcher, IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
-import {Class, isContext, IS_CONTEXT, isHierarchyObject} from "../../Global";
+import {IMessageDispatcher, IMessageDispatcherImmutable} from "../message/IMessageDispatcher";
+import {IMessage, messageAtTarget} from "../message/IMessage";
+import {Class, Type, isContext, IS_CONTEXT, isHierarchyObject} from "../../Global";
 import {ICommand} from "../command/ICommand";
-import {IGuards} from "../command/IGuards";
-import {Logger, LogLevel} from "../../../logger/ILogger";
+import {ResourceScope, Resource, Cleanup} from "../../common/ResourceScope";
+import {TaskTracker} from "../../common/TaskTracker";
+import {ComponentRole, ModelRegistration, ChildContextOptions} from "./ContextRegistration";
 import {IHierarchyObject, IHierarchyObjectImmutable} from "../hierarchy/IHierarchyObject";
 import {ArrayUtils} from "../../utils/ArrayUtils";
 
+/** In-context forwarding policy; child-context boundaries additionally require explicit routes. */
 export type ContextConfig = {
+    /** Forward mediator intentions to model listeners. Default false. */
     readonly forwardMessageFromMediatorsToModels: boolean;
+    /** Forward mediator messages to other mediators. Default true. */
     readonly forwardMessageFromMediatorsToMediators: boolean;
+    /** Forward model notifications to mediators. Default true. */
     readonly forwardMessageFromModelsToMediators: boolean;
+    /** Forward model notifications to other models. Default false. */
     readonly forwardMessageFromModelsToModels: boolean;
 };
 
 type ChildRole = "model" | "mediator" | undefined;
 
-export class ContextConfigBuilder
-{
-    public forwardMessageFromMediatorsToModels = false;
-    public forwardMessageFromMediatorsToMediators = true;
-    public forwardMessageFromModelsToMediators = true;
-    public forwardMessageFromModelsToModels = false;
-
-    public build(): ContextConfig
-    {
-        return {
-            forwardMessageFromMediatorsToModels: this.forwardMessageFromMediatorsToModels,
-            forwardMessageFromMediatorsToMediators: this.forwardMessageFromMediatorsToMediators,
-            forwardMessageFromModelsToMediators: this.forwardMessageFromModelsToMediators,
-            forwardMessageFromModelsToModels: this.forwardMessageFromModelsToModels
-        };
-    }
-}
-
 export abstract class AbstractContext extends HierarchyObjectContainer<IHierarchyObject, IHierarchyObjectImmutable> implements IContext
 {
+    public execute<T>(command: Class<ICommand<T>>, ...args: CommandArguments<T>): Promise<void>
+    {
+        this.checkIfDisposed();
+        return this.commandMapper.execute(command, ...args);
+    }
     private static readonly MEDIATOR_ID_PREFIX: string = "__<!$Mediator$!>__";
     private static readonly MODEL_ID_PREFIX: string = "__<!$Model$!>__";
 
+    /** Context-owned scope. Available after super.init(); prefer provide() for role-specific dependencies. */
     @inject("IFactory") @optional()
     protected factory!: IFactory;
 
+    /** In-context forwarding policy. Supply ContextConfig through the factory before construction. */
     @inject("ContextConfig") @optional()
     protected config!: ContextConfig;
 
+    /** Context-owned command router, initialized by super.init(). Prefer the context's public command methods. */
     protected commandMapper!: ICommandMapper;
 
     private modelList: IHierarchyObject[] = [];
@@ -65,8 +63,183 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
      * Commands are executed asynchronously, while dispatchMessage() stays synchronous.
      * Every started command is tracked here, so it can be awaited with settle().
      */
-    private pendingCommands: Promise<void>[] = [];
+    private readonly resources = new ResourceScope();
+    private readonly roles = new Map<ComponentRole, IFactory>();
+    private readonly registeredModels = new Map<IHierarchyObject, {mutable: Type; immutable: Type}>();
+    private readonly contextRoutes = new Map<AbstractContext, ChildContextOptions>();
+    private readonly pendingRoutes = new Map<AbstractContext, ChildContextOptions>();
+    private bubbleToParent?: (message: IMessage) => boolean;
+    private closing?: Promise<void>;
+    private settling?: Promise<void>;
+    private readonly detachedWork = new TaskTracker();
+    private readonly provided = new Map<Type, unknown>();
 
+    public get pendingCount(): number
+    {
+        return (this.commandMapper?.pendingCount ?? 0) + [...this.contextRoutes.keys()].reduce((sum, child) => sum + child.pendingCount, 0);
+    }
+
+    /** Explicitly share a borrowed dependency with selected component roles. */
+    public provide<T>(token: Type<T>, value: NoInfer<T>, roles: readonly ComponentRole[] = ["command", "model", "mediator", "adapter"]): this
+    {
+        this.checkIfDisposed();
+        this.provided.set(token, value);
+        for (const role of roles) this.roles.get(role)!.mapToValue(token, value);
+        return this;
+    }
+
+    public own<T extends Resource>(resource: T): T { return this.resources.own(resource); }
+    public defer(cleanup: Cleanup): void { this.resources.defer(cleanup); }
+    public async start(): Promise<void>
+    {
+        try { await this.resources.start(); }
+        catch (error)
+        {
+            try { await this.close(); }
+            catch (cleanupError) { throw new AggregateError([error, cleanupError], "Context start and cleanup failed"); }
+            throw error;
+        }
+    }
+
+    public registerModel<M, R>(registration: ModelRegistration<M, R>): M & R & IHierarchyObject
+    {
+        this.checkIfDisposed();
+        const commands = this.roles.get("command")!;
+        const readers = ["mediator", "adapter", "model"] as const;
+        if (Object.is(registration.mutable, registration.immutable)) throw new Error("Mutable and immutable tokens must be distinct");
+        if (commands.injector.has(registration.mutable) || commands.injector.has(registration.immutable) ||
+            readers.some(role => this.roles.get(role)!.injector.has(registration.immutable)))
+            throw new Error("Model token already registered");
+        const model = registration.value ?? this.roles.get("model")!.getInstance(registration.implementation!);
+        if (this.contains(model)) throw new Error("Model is already attached");
+        commands.mapToValue(registration.mutable, model);
+        commands.mapToValue(registration.immutable, model);
+        for (const role of readers) this.roles.get(role)!.mapToValue(registration.immutable, model);
+        this.registeredModels.set(model, {mutable: registration.mutable, immutable: registration.immutable});
+        this.provided.set(registration.mutable, model);
+        this.provided.set(registration.immutable, model);
+        try { this.addModel(model, registration.id!); }
+        catch (error)
+        {
+            this.childRemoved(model);
+            if (!registration.value && !model.isDisposed) model.dispose();
+            throw error;
+        }
+        return model;
+    }
+
+    public createMediator<T extends IHierarchyObject>(type: Class<T>, id?: string): T
+    {
+        this.checkIfDisposed();
+        const mediator = this.roles.get("mediator")!.getInstance(type);
+        try { this.addMediator(mediator, id!); }
+        catch (error)
+        {
+            try { if (!mediator.isDisposed) mediator.dispose(); }
+            catch (cleanupError) { throw new AggregateError([error, cleanupError], "Mediator attachment and cleanup failed"); }
+            throw error;
+        }
+        return mediator;
+    }
+
+    /** Creates an infrastructure adapter with read access; call own() to transfer ownership. */
+    public createAdapter<T>(type: Class<T>): T
+    {
+        this.checkIfDisposed();
+        return this.roles.get("adapter")!.getInstance(type);
+    }
+
+    public addContext(child: AbstractContext, options: ChildContextOptions = {}): this
+    {
+        this.checkIfDisposed();
+        this.pendingRoutes.set(child, options);
+        try { super.add(child, options.id); }
+        finally { this.pendingRoutes.delete(child); }
+        return this;
+    }
+
+    /** Maintains role and context routing. Overrides must call super.childAdded(child). */
+    protected override childAdded(child: IHierarchyObject): void
+    {
+        if (child instanceof AbstractContext)
+        {
+            const options = this.pendingRoutes.get(child);
+            if (options)
+            {
+                this.contextRoutes.set(child, options);
+                child.bubbleToParent = options.bubble;
+            }
+        }
+    }
+
+    /** Child dependencies cross the boundary only through the listed exports. */
+    public createContext<T extends AbstractContext>(type: Class<T>, options: ChildContextOptions & {inherit?: readonly Type[]} = {}): T
+    {
+        this.checkIfDisposed();
+        let child: T | undefined;
+        const scope = this.factory.createScope({inherit: []});
+        scope.mapToValue("IFactory", scope);
+        try
+        {
+            for (const token of options.inherit ?? [])
+                scope.mapToValue(token, this.provided.has(token) ? this.provided.get(token) : this.factory.getInstance(token));
+            child = scope.getInstance(type);
+            child.defer(() => scope.dispose());
+            this.addContext(child, options);
+            return child;
+        }
+        catch (error)
+        {
+            try { if (child && !child.isDisposed) child.dispose(); }
+            catch (cleanupError) { throw new AggregateError([error, cleanupError], "Child initialization and cleanup failed"); }
+            finally { if (!scope.isDisposed) scope.dispose(); }
+            throw error;
+        }
+    }
+
+    /** Removes role bindings and routes. Overrides must call super.childRemoved(child). */
+    protected override childRemoved(child: IHierarchyObject): void
+    {
+        ArrayUtils.remove(this.modelList, child);
+        ArrayUtils.remove(this.mediatorList, child);
+        const registration = this.registeredModels.get(child);
+        if (registration)
+        {
+            this.roles.get("command")!.unmapFromValue(registration.mutable);
+            for (const scope of this.roles.values()) scope.unmapFromValue(registration.immutable);
+            this.registeredModels.delete(child);
+            this.provided.delete(registration.mutable);
+            this.provided.delete(registration.immutable);
+        }
+        if (child instanceof AbstractContext)
+        {
+            this.contextRoutes.delete(child);
+            child.bubbleToParent = undefined;
+        }
+    }
+
+    /** Abort immediately, then wait for commands and owned resources to finish cleanup. */
+    public close(): Promise<void>
+    {
+        if (this.closing) return this.closing;
+        const errors: unknown[] = [];
+        if (!this.isDisposed)
+        {
+            try { this.dispose(); } catch (error) { errors.push(error); }
+        }
+        this.closing = Promise.allSettled([this.settle(), this.resources.close(), this.detachedWork.settle()]).then(results => {
+            for (const result of results) if (result.status === "rejected") errors.push(result.reason);
+            if (errors.length) throw new AggregateError(errors, "Context close failed");
+        });
+        return this.closing;
+    }
+
+
+    /**
+     * Synchronous composition hook invoked by factory construction.
+     * Overrides must call super.init() before registration, mapping or role-based construction.
+     * Register asynchronous startup through own(resource) and call start() after construction.
+     */
     @postConstruct()
     protected init(): void
     {
@@ -75,19 +248,20 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
             this.config = new ContextConfigBuilder().build();
         }
 
-        if (!this.factory)
+        this.factory = this.factory?.createScope() ?? new Factory();
+        this.factory.mapToValue("IFactory", this.factory);
+        this.defer(() => this.factory.dispose());
+        for (const role of ["command", "model", "mediator", "adapter"] as const)
         {
-            this.factory = new Factory(new Logger(LogLevel.VERBOSE));
-            this.factory.mapToValue("IFactory", this.factory);
+            const scope = this.factory.createScope(role === "command" ? undefined : {inherit: ["ILogger"]});
+            scope.mapToValue("IFactory", scope);
+            this.roles.set(role, scope);
+            this.defer(() => scope.dispose());
         }
-
-        // the mapper is taken from a mapping, when the application provides one, and is created directly
-        // otherwise: the internal default must not depend on a global registration, that a bundler may drop
-        const commandMapperIsMapped: boolean = this.factory.hasTypeMapping("ICommandMapper") ||
-            this.factory.hasValueMapping("ICommandMapper");
-
-        this.commandMapper = this.factory.instantiateValueUnmapped(
-            commandMapperIsMapped ? "ICommandMapper" : CommandMapper);
+        const commands = this.roles.get("command")!;
+        const mapped = commands.injector.has("ICommandMapper");
+        this.commandMapper = commands.instantiateValueUnmapped(mapped ? "ICommandMapper" : CommandMapper);
+        commands.mapToValue("ICommandMapper", this.commandMapper);
     }
 
     public override add(child: IHierarchyObject, indexOrId?: number | string): boolean
@@ -153,14 +327,13 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
     {
         this.checkIfDisposed();
 
-        const success = super.add(child, indexOrId);
-
-        if (success)
+        if (this.contains(child)) return false;
+        list.push(child);
+        try
         {
-            list.push(child);
+            return super.add(child, indexOrId);
         }
-
-        return success;
+        catch (error) { ArrayUtils.remove(list, child); throw error; }
     }
 
     private _remove(list: IHierarchyObject[], childOrId: IHierarchyObject | string, dispose?: boolean): boolean
@@ -182,7 +355,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
     {
         this.checkIfDisposed();
 
-        list.map(value => this.remove(value, dispose));
+        [...list].forEach(value => this.remove(value, dispose));
 
         ArrayUtils.clear(list);
 
@@ -229,7 +402,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
     public addModel(child: IHierarchyObject, id: string): IContext;
     public addModel(child: IHierarchyObject, id?: string): IContext
     {
-        if (id) id = AbstractContext.MODEL_ID_PREFIX + id;
+        if (id !== undefined) id = AbstractContext.MODEL_ID_PREFIX + id;
 
         this._add(this.modelList, child, id);
 
@@ -252,7 +425,7 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
         return this._removeAll(this.modelList, dispose);
     }
 
-    public override removeAll(dispose?: boolean): IHierarchyObjectContainer
+    public override removeAll(dispose?: boolean): this
     {
         super.removeAll(dispose);
 
@@ -266,21 +439,21 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
     {
         this.checkIfDisposed();
 
-        return this.modelList;
+        return this.modelList.slice();
     }
 
     public get modelsImmutable(): ReadonlyArray<IHierarchyObjectImmutable>
     {
         this.checkIfDisposed();
 
-        return this.modelList;
+        return this.modelList.slice();
     }
 
     public addMediator(child: IHierarchyObject): IContext;
     public addMediator(child: IHierarchyObject, id: string): IContext;
     public addMediator(child: IHierarchyObject, id?: string): IContext
     {
-        if (id) id = AbstractContext.MEDIATOR_ID_PREFIX + id;
+        if (id !== undefined) id = AbstractContext.MEDIATOR_ID_PREFIX + id;
 
         this._add(this.mediatorList, child, id);
 
@@ -307,42 +480,47 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
     {
         this.checkIfDisposed();
 
-        return this.mediatorList;
+        return this.mediatorList.slice();
     }
 
     public get mediatorsImmutable(): ReadonlyArray<IHierarchyObjectImmutable>
     {
         this.checkIfDisposed();
 
-        return this.mediatorList;
+        return this.mediatorList.slice();
     }
 
     public override dispose(): void
     {
-        this.commandMapper.dispose();
-
-        this.nullifyContainers();
-
-        super.dispose();
-    }
-
-    private nullifyContainers(): void
-    {
-        // this.commandMapper = undefined;
+        this.checkIfDisposed();
+        const errors: unknown[] = [];
+        try { this.commandMapper?.dispose(); }
+        catch (error) { errors.push(error); }
+        for (const child of [...this.contextRoutes.keys()])
+        {
+            const closing = child.close();
+            this.detachedWork.track(closing);
+        }
+        this.resources.dispose();
+        try { super.dispose(); }
+        catch (error) { errors.push(error); }
+        if (errors.length) throw new AggregateError(errors, "Context disposal failed");
     }
 
     public override onMessageBubbled<DataType>(message: IMessage, data?: DataType): boolean
     {
         super.onMessageBubbled(message, data);
 
-        return false;
+        return this.bubbleToParent?.(message) ?? false;
     }
 
     public override handleMessage<DataType>(message: IMessage, data?: DataType): IMessageDispatcher
     {
         super.handleMessage(message, data);
 
-        this.tryToExecuteCommand(message.type, data, message.initialTarget);
+        if (this.isDisposed) return this;
+        if (this.trace || this.hasMapping(message.type)) void this.commandMapper.route(message);
+        if (this.isDisposed) return this;
 
         const initialTarget: IMessageDispatcherImmutable = message.initialTarget;
 
@@ -363,6 +541,13 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
                     this.forwardMessageFromMediator(message, data);
                 }
             }
+        }
+
+        for (const [child, route] of [...this.contextRoutes])
+        {
+            if (message.isPropagationStopped) break;
+            if (child === message.previousTarget || child === message.initialTarget || child.isDisposed) continue;
+            if (route.receive?.(message)) child.handleMessage(messageAtTarget(message, child), data);
         }
 
         return this;
@@ -392,19 +577,18 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
         }
     }
 
-    public map<T>(messageType: Enum, commandClass: Class<ICommand>, data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfig<T>;
-    public map<T>(messageType: Enum, commandClassList: Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
-    public map<T>(messageTypeList: Enum[], commandClass: Class<ICommand>, data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
-    public map<T>(messageTypeList: Enum[], commandClassList: Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfigList<T>;
-    public map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfig<T> | MappingConfigList<T>;
-    public map<T>(messageType: Enum | Enum[], commandClass: Class<ICommand> | Class<ICommand>[], data?: T, stopOnExecute?: boolean, once?: boolean): MappingConfig<T> | MappingConfigList<T>
+    public map<M extends MappedMessages, C extends MappedCommands<NoInfer<MappedPayload<M>>>>(
+        messages: M, commands: C, options?: CommandMappingOptions<NoInfer<MappedPayload<M>>>): MappingResult<M, C>
     {
         this.checkIfDisposed();
-
-        return this.commandMapper.map(messageType, commandClass, data, stopOnExecute, once);
+        return this.commandMapper.map(messages, commands, options);
     }
+    public get mapperId(): number { return this.commandMapper.mapperId; }
+    public get traceErrorCount(): number { return this.commandMapper.traceErrorCount; }
+    public get trace(): CommandTrace | undefined { return this.commandMapper.trace; }
+    public set trace(value: CommandTrace | undefined) { this.commandMapper.trace = value; }
 
-    public unmap(messageType: Enum, commandClass: Class<ICommand>): ICommandMapper
+    public unmap(messageType: Enum, commandClass: Class<ICommand<any>>): ICommandMapper
     {
         this.checkIfDisposed();
 
@@ -432,42 +616,26 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
         return this.commandMapper.hasMapping(messageType);
     }
 
-    public tryToExecuteCommand<T>(messageType: Enum, messageData?: T,
-                                  messageInitialTarget?: IMessageDispatcherImmutable): Promise<void>
+    public route(message: IMessage): Promise<void>
     {
         this.checkIfDisposed();
-
-        const command: Promise<void> = this.commandMapper.tryToExecuteCommand(messageType, messageData, messageInitialTarget);
-
-        // the promise is tracked, so it can be awaited with settle(); the error is reported here and
-        // is still available for the caller of settle()
-        const tracked: Promise<void> = command.catch((e: unknown) =>
-        {
-            this.error("Command execution failed:", e);
-
-            throw e;
-        });
-
-        tracked.catch(() => undefined);
-
-        this.pendingCommands.push(tracked);
-
-        return tracked;
+        return this.commandMapper.route(message);
     }
 
-    /**
-     * Waits, until all commands, that were started by received messages, are executed.
-     */
-    public async settle(): Promise<void>
+    public settle(): Promise<void>
     {
-        while (this.pendingCommands.length)
-        {
-            const pending: Promise<void>[] = this.pendingCommands;
-
-            this.pendingCommands = [];
-
-            await Promise.all(pending);
-        }
+        if (this.settling) return this.settling;
+        this.settling = (async () => {
+            const errors: unknown[] = [];
+            do
+            {
+                const results = await Promise.allSettled([this.commandMapper?.settle() ?? Promise.resolve(),
+                    ...[...this.contextRoutes.keys()].map(child => child.settle())]);
+                for (const result of results) if (result.status === "rejected") errors.push(result.reason);
+            } while (this.pendingCount);
+            if (errors.length) throw new AggregateError(errors, "Context commands failed");
+        })().finally(() => { this.settling = undefined; });
+        return this.settling;
     }
 
     private finalFilter(typeFilter: (child: IHierarchyObject) => boolean,
@@ -501,14 +669,6 @@ export abstract class AbstractContext extends HierarchyObjectContainer<IHierarch
         this.dispatchMessageToChildren(message, data, this.finalFilter(typeFilter, filter));
 
         return this;
-    }
-
-    public executeCommand<T>(commandClass: Class<ICommand>, data?: T, guardList?: Class<IGuards>[],
-                             guardNotList?: Class<IGuards>[]): Promise<void>
-    {
-        this.checkIfDisposed();
-
-        return this.commandMapper.executeCommand(commandClass, data, guardList, guardNotList);
     }
 
     /* eslint-disable-next-line @typescript-eslint/no-empty-function */

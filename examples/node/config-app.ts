@@ -1,13 +1,6 @@
-import {AbstractApp, Factory, IFactory, LogLevel, Logger} from "domwires";
+import {Factory, IFactory, LogLevel, Logger} from "domwires";
 import {createNodeConfigLoader} from "domwires/node";
-
-type AppConfig = {
-    readonly name: string;
-};
-
-class ExampleApp extends AbstractApp<AppConfig>
-{
-}
+import {AppConfig, ExampleApp} from "./ExampleApp";
 
 /**
  * The core of the framework has no dependencies on node built-ins, so the node config loader

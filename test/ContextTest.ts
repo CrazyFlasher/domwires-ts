@@ -1,3 +1,4 @@
+import {Message as RoutedMessage, MessageDispatcher as RouteOrigin} from "../src";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {Suite} from "mocha";
@@ -130,9 +131,9 @@ describe('ContextTest', function (this: Suite)
         const m: MockObj1 = f.instantiateValueUnmapped<MockObj1>(MockObj1);
         f.mapToValue<MockObj1>(MockObj1, m);
         f.mapToValue("string", "test", "olo");
-        c.map(MockMessageType.GOODBYE, MockCommand14, null, false, true);
+        c.map(MockMessageType.GOODBYE, MockCommand14, {stopOnExecute: true, once: true});
         c.map(MockMessageType.GOODBYE, MockCommand15);
-        c.tryToExecuteCommand(MockMessageType.GOODBYE);
+        c.route(new RoutedMessage(MockMessageType.GOODBYE, new RouteOrigin()));
         expect(m.d).equals(0);
     });
 
